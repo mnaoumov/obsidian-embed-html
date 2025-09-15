@@ -6,5 +6,6 @@
   "id": "embed-html",
   "isDesktopOnly": false,
   "name": "Embed HTML",
-  "version": "0.0.0"
+  "version": "1.0.0",
+  "minAppVersion": "1.9.12"
 }
