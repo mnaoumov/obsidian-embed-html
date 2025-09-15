@@ -1,0 +1,45 @@
+{
+  "name": "embed-html",
+  "version": "0.0.0",
+  "description": "Adds support for embedding HTML files.",
+  "keywords": [],
+  "license": "MIT",
+  "author": "mnaoumov",
+  "type": "module",
+  "scripts": {
+    "build": "obsidian-dev-utils build",
+    "build:clean": "obsidian-dev-utils build:clean",
+    "build:compile": "obsidian-dev-utils build:compile",
+    "build:compile:svelte": "obsidian-dev-utils build:compile:svelte",
+    "build:compile:typescript": "obsidian-dev-utils build:compile:typescript",
+    "dev": "obsidian-dev-utils dev",
+    "format": "obsidian-dev-utils format",
+    "format:check": "obsidian-dev-utils format:check",
+    "lint": "obsidian-dev-utils lint",
+    "lint:fix": "obsidian-dev-utils lint:fix",
+    "spellcheck": "obsidian-dev-utils spellcheck",
+    "version": "obsidian-dev-utils version"
+  },
+  "devDependencies": {
+    "@codemirror/language": "latest",
+    "@codemirror/state": "latest",
+    "@codemirror/view": "latest",
+    "@tsconfig/strictest": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "jiti": "latest",
+    "moment": "latest",
+    "obsidian": "latest",
+    "obsidian-dev-utils": "latest",
+    "obsidian-typings": "obsidian-public-latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "svelte": "latest"
+  },
+  "overrides": {
+    "@antfu/utils": "9.2.0",
+    "boolean": "npm:dry-uninstall",
+    "dompurify": "3.0.1"
+  }
+}

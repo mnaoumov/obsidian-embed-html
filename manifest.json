@@ -1,0 +1,10 @@
+{
+  "author": "mnaoumov",
+  "authorUrl": "https://github.com/mnaoumov/",
+  "description": "Adds support for embedding HTML files.",
+  "fundingUrl": "https://www.buymeacoffee.com/mnaoumov",
+  "id": "embed-html",
+  "isDesktopOnly": false,
+  "name": "Embed HTML",
+  "version": "0.0.0"
+}

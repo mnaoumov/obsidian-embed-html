@@ -1,0 +1,19 @@
+{
+  "version": "0.2",
+  "ignorePaths": [
+    "dist",
+    "node_modules",
+    "tsconfig.tsbuildinfo"
+  ],
+  "dictionaryDefinitions": [],
+  "dictionaries": [],
+  "words": [
+    "dblclick",
+    "mnaoumov",
+    "Naumov",
+    "tsbuildinfo"
+  ],
+  "ignoreWords": [],
+  "import": [],
+  "enabled": true
+}
