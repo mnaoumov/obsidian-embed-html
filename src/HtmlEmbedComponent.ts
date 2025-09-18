@@ -1,7 +1,4 @@
-import type {
-  EmbedComponent,
-  EmbedContext
-} from 'obsidian-typings';
+import type { EmbedComponent } from 'obsidian-typings';
 
 import {
   Component,
@@ -14,13 +11,13 @@ const WIDTH_ATTRIBUTE = 'width';
 const HEIGHT_ATTRIBUTE = 'height';
 
 export class HtmlEmbedComponent extends Component implements EmbedComponent {
-  public constructor(private readonly plugin: Plugin, private readonly context: EmbedContext, private readonly file: TFile) {
+  public constructor(private readonly plugin: Plugin, private readonly containerEl: HTMLElement, private readonly file: TFile) {
     super();
 
     const mo = new MutationObserver(() => {
       this.loadFile();
     });
-    mo.observe(this.context.containerEl, {
+    mo.observe(this.containerEl, {
       attributeFilter: [WIDTH_ATTRIBUTE, HEIGHT_ATTRIBUTE],
       attributes: true
     });
@@ -31,12 +28,12 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
   }
 
   public loadFile(): void {
-    this.context.containerEl.empty();
-    this.context.containerEl.createEl('iframe', {
+    this.containerEl.empty();
+    this.containerEl.createEl('iframe', {
       attr: {
-        height: this.context.containerEl.getAttr(HEIGHT_ATTRIBUTE) ?? this.plugin.settings.defaultHeight,
+        height: this.containerEl.getAttr(HEIGHT_ATTRIBUTE) ?? this.plugin.settings.defaultHeight,
         src: this.plugin.app.vault.getResourcePath(this.file),
-        width: this.context.containerEl.getAttr(WIDTH_ATTRIBUTE) ?? this.plugin.settings.defaultWidth
+        width: this.containerEl.getAttr(WIDTH_ATTRIBUTE) ?? this.plugin.settings.defaultWidth
       }
     });
   }
