@@ -20,7 +20,7 @@ interface Options {
 }
 
 export class HtmlEmbedComponent extends Component implements EmbedComponent {
-  public constructor(private readonly plugin: Plugin, private readonly containerEl: HTMLElement, private readonly file: TFile, private readonly subpath = '') {
+  public constructor(private readonly plugin: Plugin, private readonly containerEl: HTMLElement, private readonly file: TFile, private subpath = '') {
     super();
 
     const mo = new MutationObserver(() => {
@@ -75,6 +75,11 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
     });
 
     iframeEl.src = url;
+  }
+
+  public setSubpath(subpath: string): void {
+    this.subpath = subpath;
+    this.loadFile();
   }
 
   private initIframe(iframeDoc: HTMLDocument): void {

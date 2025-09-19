@@ -1,8 +1,8 @@
 import {
   FileView,
+  TFile,
   WorkspaceLeaf
 } from 'obsidian';
-import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
 
 import type { Plugin } from './Plugin.ts';
 
@@ -14,6 +14,7 @@ interface EphemeralState {
 
 export class HtmlFileView extends FileView {
   public static readonly VIEW_TYPE = 'html-file-view';
+  private htmlEmbedComponent!: HtmlEmbedComponent;
 
   public constructor(leaf: WorkspaceLeaf, private readonly plugin: Plugin) {
     super(leaf);
@@ -27,17 +28,16 @@ export class HtmlFileView extends FileView {
     return HtmlFileView.VIEW_TYPE;
   }
 
-  public override setEphemeralState(state: unknown): void {
-    super.setEphemeralState(state);
-    invokeAsyncSafely(async () => this.render(state as EphemeralState));
+  public override async onLoadFile(file: TFile): Promise<void> {
+    await super.onLoadFile(file);
+    this.htmlEmbedComponent = new HtmlEmbedComponent(this.plugin, this.contentEl, file);
+    this.addChild(this.htmlEmbedComponent);
+    await this.htmlEmbedComponent.loadFileAsync();
   }
 
-  private async render(ephemeralState: EphemeralState): Promise<void> {
-    if (!this.file) {
-      return;
-    }
-    const htmlEmbedComponent = new HtmlEmbedComponent(this.plugin, this.contentEl, this.file, ephemeralState.subpath);
-    this.addChild(htmlEmbedComponent);
-    await htmlEmbedComponent.loadFileAsync();
+  public override setEphemeralState(state: unknown): void {
+    super.setEphemeralState(state);
+    const ephemeralState = state as EphemeralState;
+    this.htmlEmbedComponent.setSubpath(ephemeralState.subpath ?? '');
   }
 }
