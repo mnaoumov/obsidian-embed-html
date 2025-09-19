@@ -78,6 +78,19 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
   }
 
   private initIframe(iframeDoc: HTMLDocument): void {
+    this.plugin.registerDomEvent(iframeDoc, 'click', (evt) => {
+      const iframeWin = iframeDoc.defaultView;
+      if (!iframeWin) {
+        return;
+      }
+      if (evt.target instanceof iframeWin.Element) {
+        const aEl = evt.target.closest('a');
+        if (aEl) {
+          aEl.target = '_blank';
+        }
+      }
+    });
+
     const options = this.parseOptions();
     if (!options.id) {
       return;
