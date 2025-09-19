@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.1
+
+- Fix Excalidraw rendering without id
+
 ## 1.1.0
 
 - Make all links open to blank
