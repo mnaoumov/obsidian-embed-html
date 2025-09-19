@@ -2,6 +2,52 @@
 
 This is a plugin for [Obsidian](https://obsidian.md/) that adds support for embedding HTML files.
 
+## Usage
+
+### Supported extensions
+
+You can embed HTML pages from files with following extension:
+
+- `htm`
+- `html`
+- `shtml`
+- `xht`
+- `xhtml`
+
+### Embed HTML with default width, height from plugin settings
+
+```markdown
+![[file.html]]
+```
+
+# Embed HTML with custom width
+
+```markdown
+![[file.html|400]]
+```
+
+# Embed HTML with custom width and height
+
+```markdown
+![[file.html|400x300]]
+```
+
+# Embed HTML and scroll to the element with id
+
+```markdown
+![[file.html#foo]]
+
+or
+
+![[file.html#foo&mode=scroll]]
+```
+
+# Embed HTML and extract element with id
+
+```markdown
+![[file.html#foo&mode=extract]]
+```
+
 ## Installation
 
 The plugin is not available in [the official Community Plugins repository](https://obsidian.md/plugins) yet.
