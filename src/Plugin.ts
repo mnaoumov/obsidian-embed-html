@@ -3,7 +3,7 @@ import { PluginBase } from 'obsidian-dev-utils/obsidian/Plugin/PluginBase';
 import type { PluginTypes } from './PluginTypes.ts';
 
 import { HtmlEmbedComponent } from './HtmlEmbedComponent.ts';
-import { HtmlFileView } from './HtmlView.ts';
+import { HtmlFileView } from './HtmlFileView.ts';
 import { PluginSettingsManager } from './PluginSettingsManager.ts';
 import { PluginSettingsTab } from './PluginSettingsTab.ts';
 
@@ -20,8 +20,8 @@ export class Plugin extends PluginBase<PluginTypes> {
 
   protected override async onloadImpl(): Promise<void> {
     await super.onloadImpl();
-    this.app.embedRegistry.registerExtensions(HTML_EXTENSIONS, (context, file) => {
-      return new HtmlEmbedComponent(this, context.containerEl, file);
+    this.app.embedRegistry.registerExtensions(HTML_EXTENSIONS, (context, file, subpath) => {
+      return new HtmlEmbedComponent(this, context.containerEl, file, subpath);
     });
     this.app.viewRegistry.registerExtensions(HTML_EXTENSIONS, HtmlFileView.VIEW_TYPE);
     HtmlFileView.register(this);

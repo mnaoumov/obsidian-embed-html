@@ -1,12 +1,16 @@
 import {
   FileView,
-  TFile,
   WorkspaceLeaf
 } from 'obsidian';
+import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
 
 import type { Plugin } from './Plugin.ts';
 
 import { HtmlEmbedComponent } from './HtmlEmbedComponent.ts';
+
+interface EphemeralState {
+  subpath?: string;
+}
 
 export class HtmlFileView extends FileView {
   public static readonly VIEW_TYPE = 'html-file-view';
@@ -23,11 +27,17 @@ export class HtmlFileView extends FileView {
     return HtmlFileView.VIEW_TYPE;
   }
 
-  public override async onLoadFile(file: TFile): Promise<void> {
-    await super.onLoadFile(file);
+  public override setEphemeralState(state: unknown): void {
+    super.setEphemeralState(state);
+    invokeAsyncSafely(async () => this.render(state as EphemeralState));
+  }
 
-    const htmlEmbedComponent = new HtmlEmbedComponent(this.plugin, this.contentEl, file);
+  private async render(ephemeralState: EphemeralState): Promise<void> {
+    if (!this.file) {
+      return;
+    }
+    const htmlEmbedComponent = new HtmlEmbedComponent(this.plugin, this.contentEl, this.file, ephemeralState.subpath);
     this.addChild(htmlEmbedComponent);
-    htmlEmbedComponent.loadFile();
+    await htmlEmbedComponent.loadFileAsync();
   }
 }
