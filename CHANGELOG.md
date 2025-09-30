@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.2
+
+- chore: enable conventional commits
+
 ## 1.1.1
 
 - Fix Excalidraw rendering without id
