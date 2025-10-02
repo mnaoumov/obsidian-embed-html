@@ -14,7 +14,7 @@ interface EphemeralState {
 
 export class HtmlFileView extends FileView {
   public static readonly VIEW_TYPE = 'html-file-view';
-  private htmlEmbedComponent!: HtmlEmbedComponent;
+  private htmlEmbedComponent?: HtmlEmbedComponent;
 
   public constructor(leaf: WorkspaceLeaf, private readonly plugin: Plugin) {
     super(leaf);
