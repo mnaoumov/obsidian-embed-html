@@ -38,6 +38,6 @@ export class HtmlFileView extends FileView {
   public override setEphemeralState(state: unknown): void {
     super.setEphemeralState(state);
     const ephemeralState = state as EphemeralState;
-    this.htmlEmbedComponent.setSubpath(ephemeralState.subpath ?? '');
+    this.htmlEmbedComponent?.setSubpath(ephemeralState.subpath ?? '');
   }
 }
