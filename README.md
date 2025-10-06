@@ -20,19 +20,19 @@ You can embed HTML pages from files with following extension:
 ![[file.html]]
 ```
 
-# Embed HTML with custom width
+### Embed HTML with custom width
 
 ```markdown
 ![[file.html|400]]
 ```
 
-# Embed HTML with custom width and height
+### Embed HTML with custom width and height
 
 ```markdown
 ![[file.html|400x300]]
 ```
 
-# Embed HTML and scroll to the element with id
+### Embed HTML and scroll to the element with id
 
 ```markdown
 ![[file.html#foo]]
@@ -42,7 +42,7 @@ or
 ![[file.html#foo&mode=scroll]]
 ```
 
-# Embed HTML and extract element with id
+### Embed HTML and extract element with id
 
 ```markdown
 ![[file.html#foo&mode=extract]]
@@ -74,7 +74,9 @@ For more details, refer to the [documentation](https://github.com/mnaoumov/obsid
 
 ## Support
 
-<a href="https://www.buymeacoffee.com/mnaoumov" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;"></a>
+<!-- markdownlint-disable MD033 -->
+<a href="https://www.buymeacoffee.com/mnaoumov" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60" width="217"></a>
+<!-- markdownlint-enable MD033 -->
 
 ## License
 
