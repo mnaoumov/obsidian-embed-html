@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.1.4
+
+- chore: update libs
+- chore: lint
+- chore: enable markdownlint
+
 ## 1.1.3
 
 - fix: build
