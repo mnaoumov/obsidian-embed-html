@@ -127,6 +127,7 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
 }
 `;
 
+        // eslint-disable-next-line obsidianmd/no-forbidden-elements -- need `style` element in custom `iframe`.
         iframeDoc.head.createEl('style', {
           text: css
         });
