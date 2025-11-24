@@ -25,27 +25,18 @@
     "version": "obsidian-dev-utils version"
   },
   "devDependencies": {
-    "@codemirror/language": "latest",
-    "@codemirror/state": "latest",
-    "@codemirror/view": "latest",
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@commitlint/types": "^20.0.0",
     "@tsconfig/strictest": "latest",
     "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
     "commitizen": "^4.3.1",
     "cz-conventional-changelog": "^3.3.0",
     "husky": "^9.1.7",
     "jiti": "latest",
-    "moment": "latest",
     "obsidian": "latest",
     "obsidian-dev-utils": "latest",
-    "obsidian-typings": "obsidian-public-latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "svelte": "latest"
+    "obsidian-typings": "obsidian-public-latest"
   },
   "overrides": {
     "@antfu/utils": "9.2.0",
