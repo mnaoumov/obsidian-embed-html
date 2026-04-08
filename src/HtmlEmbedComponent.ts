@@ -4,8 +4,8 @@ import {
   Component,
   TFile
 } from 'obsidian';
-import { invokeAsyncSafely } from 'obsidian-dev-utils/Async';
-import { trimStart } from 'obsidian-dev-utils/String';
+import { invokeAsyncSafely } from 'obsidian-dev-utils/async';
+import { trimStart } from 'obsidian-dev-utils/string';
 
 import type { Plugin } from './Plugin.ts';
 
