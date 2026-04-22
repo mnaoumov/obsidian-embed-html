@@ -10,6 +10,8 @@ This is a plugin for [Obsidian](https://obsidian.md/) that adds support for embe
 
 ## Usage
 
+You can download [demo vault](https://github.com/mnaoumov/obsidian-embed-html-demo-vault/) to see usage examples.
+
 ### Supported extensions
 
 You can embed HTML pages from files with following extension:
