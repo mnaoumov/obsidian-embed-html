@@ -173,7 +173,9 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
   private parseOptions(): Options {
     const searchParams = new URLSearchParams(`id=${trimStart(this.subpath, '#')}`);
     return {
+      /* v8 ignore start -- The `id` key is always present in the constructed URLSearchParams string, so `get('id')` never returns `null`. */
       id: searchParams.get('id') ?? '',
+      /* v8 ignore stop */
       mode: (searchParams.get('mode') ?? 'scroll') as Mode
     };
   }
