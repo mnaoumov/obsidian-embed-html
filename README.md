@@ -6,6 +6,8 @@
 
 This is a plugin for [Obsidian](https://obsidian.md/) that adds support for embedding HTML files.
 
+![Screenshot](<./images/screenshot.png>)
+
 ## Usage
 
 ### Supported extensions
