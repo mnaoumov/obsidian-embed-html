@@ -4,9 +4,9 @@ import {
   WorkspaceLeaf
 } from 'obsidian';
 
-import type { Plugin } from './Plugin.ts';
+import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
-import { HtmlEmbedComponent } from './HtmlEmbedComponent.ts';
+import { HtmlEmbedComponent } from './html-embed-component.ts';
 
 interface EphemeralState {
   subpath?: string;
@@ -16,12 +16,8 @@ export class HtmlFileView extends FileView {
   public static readonly VIEW_TYPE = 'html-file-view';
   private htmlEmbedComponent?: HtmlEmbedComponent;
 
-  public constructor(leaf: WorkspaceLeaf, private readonly plugin: Plugin) {
+  public constructor(leaf: WorkspaceLeaf, private readonly pluginSettingsComponent: PluginSettingsComponent) {
     super(leaf);
-  }
-
-  public static register(plugin: Plugin): void {
-    plugin.registerView(HtmlFileView.VIEW_TYPE, (leaf) => new HtmlFileView(leaf, plugin));
   }
 
   public override getViewType(): string {
@@ -30,7 +26,13 @@ export class HtmlFileView extends FileView {
 
   public override async onLoadFile(file: TFile): Promise<void> {
     await super.onLoadFile(file);
-    this.htmlEmbedComponent = new HtmlEmbedComponent(this.plugin, this.contentEl, file);
+    this.htmlEmbedComponent = new HtmlEmbedComponent({
+      app: this.app,
+      containerEl: this.contentEl,
+      file,
+      pluginSettingsComponent: this.pluginSettingsComponent,
+      subpath: ''
+    });
     this.addChild(this.htmlEmbedComponent);
     await this.htmlEmbedComponent.loadFileAsync();
   }
