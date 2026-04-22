@@ -1,16 +1,25 @@
 import type { EmbedComponent } from 'obsidian-typings';
 
 import {
+  App,
   Component,
   TFile
 } from 'obsidian';
 import { invokeAsyncSafely } from 'obsidian-dev-utils/async';
 import { trimStart } from 'obsidian-dev-utils/string';
 
-import type { Plugin } from './Plugin.ts';
+import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
 const WIDTH_ATTRIBUTE = 'width';
 const HEIGHT_ATTRIBUTE = 'height';
+
+interface HtmlEmbedComponentParams {
+  app: App;
+  containerEl: HTMLElement;
+  file: TFile;
+  pluginSettingsComponent: PluginSettingsComponent;
+  subpath: string;
+}
 
 type Mode = 'extract' | 'scroll';
 
@@ -20,8 +29,20 @@ interface Options {
 }
 
 export class HtmlEmbedComponent extends Component implements EmbedComponent {
-  public constructor(private readonly plugin: Plugin, private readonly containerEl: HTMLElement, private readonly file: TFile, private subpath = '') {
+  private readonly app: App;
+  private readonly containerEl: HTMLElement;
+  private readonly file: TFile;
+  private readonly pluginSettingsComponent: PluginSettingsComponent;
+  private subpath: string;
+
+  public constructor(params: HtmlEmbedComponentParams) {
     super();
+
+    this.app = params.app;
+    this.containerEl = params.containerEl;
+    this.file = params.file;
+    this.subpath = params.subpath;
+    this.pluginSettingsComponent = params.pluginSettingsComponent;
 
     const mo = new MutationObserver(() => {
       this.updateSize();
@@ -45,10 +66,10 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
 
     this.updateSize();
 
-    const html = await this.plugin.app.vault.read(this.file);
+    const html = await this.app.vault.read(this.file);
     const parsedDoc = new DOMParser().parseFromString(html, 'text/html');
     const base = parsedDoc.querySelector('base') ?? parsedDoc.head.createEl('base');
-    base.href = this.plugin.app.vault.getResourcePath(this.file);
+    base.href = this.app.vault.getResourcePath(this.file);
     parsedDoc.head.createEl('script', {
       attr: {
         src: `${location.origin}/enhance.js`
@@ -83,7 +104,7 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
   }
 
   private initIframe(iframeDoc: HTMLDocument): void {
-    this.plugin.registerDomEvent(iframeDoc, 'click', (evt) => {
+    this.registerDomEvent(iframeDoc, 'click', (evt) => {
       const iframeWin = iframeDoc.defaultView;
       if (!iframeWin) {
         return;
@@ -159,8 +180,8 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
 
   private updateSize(): void {
     this.containerEl.setCssProps({
-      height: toPx(this.containerEl.getAttr(HEIGHT_ATTRIBUTE) ?? this.plugin.settings.defaultHeight),
-      width: toPx(this.containerEl.getAttr(WIDTH_ATTRIBUTE) ?? this.plugin.settings.defaultWidth)
+      height: toPx(this.containerEl.getAttr(HEIGHT_ATTRIBUTE) ?? this.pluginSettingsComponent.settings.defaultHeight),
+      width: toPx(this.containerEl.getAttr(WIDTH_ATTRIBUTE) ?? this.pluginSettingsComponent.settings.defaultWidth)
     });
   }
 }

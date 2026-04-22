@@ -21,6 +21,7 @@
     "target": "ES2024",
     "types": [
       "@total-typescript/ts-reset",
+      "obsidian-typings",
       "node",
       "svelte"
     ],
