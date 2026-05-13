@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.9
+
+- refactor: new template
+
 ## 1.1.8
 
 - chore: update template
