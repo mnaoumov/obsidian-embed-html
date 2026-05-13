@@ -17,6 +17,7 @@ export class HtmlEmbedRegistryComponent extends Component {
   }
 
   public override onload(): void {
+    super.onload();
     this.app.embedRegistry.registerExtensions(this.htmlExtensions.list(), (context, file, subpath) => {
       return new HtmlEmbedComponent({
         app: this.app,

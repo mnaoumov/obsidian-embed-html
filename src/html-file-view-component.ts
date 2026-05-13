@@ -19,6 +19,7 @@ export class HtmlFileViewComponent extends Component {
   }
 
   public override onload(): void {
+    super.onload();
     this.app.viewRegistry.registerExtensions(this.htmlExtensions.list(), HtmlFileView.VIEW_TYPE);
     this.plugin.registerView(HtmlFileView.VIEW_TYPE, (leaf) => new HtmlFileView(leaf, this.pluginSettingsComponent));
     this.register(() => {
