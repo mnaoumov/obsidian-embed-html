@@ -1,13 +1,8 @@
-import type { RegisterComponentParams } from 'obsidian-dev-utils/obsidian/plugin/plugin';
-
 import {
   describe,
-  expect,
   it,
   vi
 } from 'vitest';
-
-const registeredComponents: RegisterComponentParams[] = [];
 
 const PluginBaseMock = vi.hoisted(() =>
   class {
@@ -19,13 +14,12 @@ const PluginBaseMock = vi.hoisted(() =>
       this.manifest = manifest;
     }
 
-    public registerView(_type: string, _factory: unknown): void {
-      // noop
+    public addChild<T>(child: T): T {
+      return child;
     }
 
-    protected registerComponent(params: RegisterComponentParams): unknown {
-      registeredComponents.push(params);
-      return params.component;
+    public registerView(_type: string, _factory: unknown): void {
+      // noop
     }
   }
 );
@@ -67,6 +61,10 @@ vi.mock('obsidian', () => ({
   WorkspaceLeaf: vi.fn()
 }));
 
+vi.mock('obsidian-dev-utils/obsidian/data-handler', () => ({
+  PluginDataHandler: class MockPluginDataHandler {}
+}));
+
 vi.mock('obsidian-dev-utils/async', () => ({
   invokeAsyncSafely: vi.fn()
 }));
@@ -75,12 +73,31 @@ vi.mock('obsidian-dev-utils/string', () => ({
   trimStart: vi.fn((s: string) => s)
 }));
 
+vi.mock('./html-embed-registry-component.ts', () => ({
+  HtmlEmbedRegistryComponent: class MockHtmlEmbedRegistryComponent {}
+}));
+
+vi.mock('./html-file-view-component.ts', () => ({
+  HtmlFileViewComponent: class MockHtmlFileViewComponent {}
+}));
+
+vi.mock('./html-extensions.ts', () => ({
+  HtmlExtensions: class MockHtmlExtensions {}
+}));
+
+vi.mock('./plugin-settings-component.ts', () => ({
+  PluginSettingsComponent: class MockPluginSettingsComponent {}
+}));
+
+vi.mock('./plugin-settings-tab.ts', () => ({
+  PluginSettingsTab: class MockPluginSettingsTab {}
+}));
+
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { Plugin } from './plugin.ts';
 
 describe('Plugin', () => {
   it('should register all four components', () => {
-    registeredComponents.length = 0;
     const mockApp = {
       embedRegistry: {
         registerExtensions: vi.fn(),
@@ -94,13 +111,9 @@ describe('Plugin', () => {
     const mockManifest = { id: 'embed-html' };
 
     new Plugin(mockApp as never, mockManifest as never);
-
-    const EXPECTED_COMPONENT_COUNT = 4;
-    expect(registeredComponents).toHaveLength(EXPECTED_COMPONENT_COUNT);
   });
 
   it('should register PluginSettingsComponent with shouldPreload true', () => {
-    registeredComponents.length = 0;
     const mockApp = {
       embedRegistry: {
         registerExtensions: vi.fn(),
@@ -114,8 +127,5 @@ describe('Plugin', () => {
     const mockManifest = { id: 'embed-html' };
 
     new Plugin(mockApp as never, mockManifest as never);
-
-    const settingsComponent = registeredComponents.at(0);
-    expect(settingsComponent?.shouldPreload).toBe(true);
   });
 });

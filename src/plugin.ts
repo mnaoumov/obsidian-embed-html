@@ -3,6 +3,7 @@ import type {
   PluginManifest
 } from 'obsidian';
 
+import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
 import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/plugin/components/plugin-settings-tab-component';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
 
@@ -15,10 +16,18 @@ import { PluginSettingsTab } from './plugin-settings-tab.ts';
 export class Plugin extends PluginBase {
   public constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
-    const pluginSettingsComponent = this.registerComponent({ component: new PluginSettingsComponent(this), shouldPreload: true });
+    const pluginSettingsComponent = this.addChild(new PluginSettingsComponent(new PluginDataHandler(this)));
     const htmlExtensions = new HtmlExtensions();
-    this.registerComponent({ component: new PluginSettingsTabComponent(this, new PluginSettingsTab({ plugin: this, pluginSettingsComponent })) });
-    this.registerComponent({ component: new HtmlEmbedRegistryComponent(this.app, pluginSettingsComponent, htmlExtensions) });
-    this.registerComponent({ component: new HtmlFileViewComponent(this.app, this, pluginSettingsComponent, htmlExtensions) });
+    this.addChild(
+      new PluginSettingsTabComponent({
+        plugin: this,
+        pluginSettingsTab: new PluginSettingsTab({
+          plugin: this,
+          pluginSettingsComponent
+        })
+      })
+    );
+    this.addChild(new HtmlEmbedRegistryComponent(this.app, pluginSettingsComponent, htmlExtensions));
+    this.addChild(new HtmlFileViewComponent(this.app, this, pluginSettingsComponent, htmlExtensions));
   }
 }
