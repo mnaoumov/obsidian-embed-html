@@ -1,4 +1,8 @@
 import {
+  noop,
+  noopAsync
+} from 'obsidian-dev-utils/function';
+import {
   describe,
   expect,
   it,
@@ -27,11 +31,11 @@ const FileViewMock = vi.hoisted(() =>
     }
 
     public async onLoadFile(_file: unknown): Promise<void> {
-      // noop
+      await noopAsync();
     }
 
     public setEphemeralState(_state: unknown): void {
-      // noop
+      noop();
     }
   }
 );
@@ -39,11 +43,11 @@ const FileViewMock = vi.hoisted(() =>
 vi.mock('obsidian', () => ({
   Component: class MockComponent {
     public register(): void {
-      // noop
+      noop();
     }
 
     public registerDomEvent(): void {
-      // noop
+      noop();
     }
   },
   FileView: FileViewMock,
@@ -79,11 +83,11 @@ describe('HtmlFileView', () => {
 
     globalThis.MutationObserver = class MockMutationObserver {
       public disconnect(): void {
-        // noop
+        noop();
       }
 
       public observe(): void {
-        // noop
+        noop();
       }
     } as unknown as typeof MutationObserver;
 
@@ -134,11 +138,11 @@ describe('HtmlFileView', () => {
 
     globalThis.MutationObserver = class MockMutationObserver {
       public disconnect(): void {
-        // noop
+        noop();
       }
 
       public observe(): void {
-        // noop
+        noop();
       }
     } as unknown as typeof MutationObserver;
 
@@ -193,11 +197,11 @@ describe('HtmlFileView', () => {
 
     globalThis.MutationObserver = class MockMutationObserver {
       public disconnect(): void {
-        // noop
+        noop();
       }
 
       public observe(): void {
-        // noop
+        noop();
       }
     } as unknown as typeof MutationObserver;
 

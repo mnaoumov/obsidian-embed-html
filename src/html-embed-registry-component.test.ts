@@ -1,3 +1,4 @@
+import { noop } from 'obsidian-dev-utils/function';
 import {
   describe,
   expect,
@@ -14,7 +15,11 @@ const ComponentMock = vi.hoisted(() =>
     }
 
     public registerDomEvent(): void {
-      // noop
+      noop();
+    }
+
+    public onload(): void {
+      noop();
     }
   }
 );
@@ -102,11 +107,11 @@ describe('HtmlEmbedRegistryComponent', () => {
 
     globalThis.MutationObserver = class MockMutationObserver {
       public disconnect(): void {
-        // noop
+        noop();
       }
 
       public observe(): void {
-        // noop
+        noop();
       }
     } as unknown as typeof MutationObserver;
 
@@ -152,11 +157,11 @@ describe('HtmlEmbedRegistryComponent', () => {
 
     globalThis.MutationObserver = class MockMutationObserver {
       public disconnect(): void {
-        // noop
+        noop();
       }
 
       public observe(): void {
-        // noop
+        noop();
       }
     } as unknown as typeof MutationObserver;
 

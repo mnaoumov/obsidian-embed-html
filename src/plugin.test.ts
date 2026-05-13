@@ -1,3 +1,4 @@
+import { noop } from 'obsidian-dev-utils/function';
 import {
   describe,
   it,
@@ -19,7 +20,7 @@ const PluginBaseMock = vi.hoisted(() =>
     }
 
     public registerView(_type: string, _factory: unknown): void {
-      // noop
+      noop();
     }
   }
 );
@@ -49,11 +50,11 @@ vi.mock('obsidian-dev-utils/obsidian/setting-ex', () => ({
 vi.mock('obsidian', () => ({
   Component: class MockComponent {
     public register(): void {
-      // noop
+      noop();
     }
 
     public registerDomEvent(): void {
-      // noop
+      noop();
     }
   },
   FileView: class MockFileView {},
