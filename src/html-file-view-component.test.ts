@@ -1,3 +1,4 @@
+import { noop } from 'obsidian-dev-utils/function';
 import {
   describe,
   expect,
@@ -11,6 +12,10 @@ const ComponentMock = vi.hoisted(() =>
   class {
     public register(cb: () => void): void {
       registerCallbacks.push(cb);
+    }
+
+    public onload(): void {
+      noop();
     }
   }
 );

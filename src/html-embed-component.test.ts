@@ -1,3 +1,4 @@
+import { noop } from 'obsidian-dev-utils/function';
 import {
   afterEach,
   beforeEach,
@@ -6,6 +7,8 @@ import {
   it,
   vi
 } from 'vitest';
+
+import { HtmlEmbedComponent } from './html-embed-component.ts';
 
 interface MockElement {
   addClass: ReturnType<typeof vi.fn>;
@@ -58,9 +61,6 @@ vi.mock('obsidian-dev-utils/async', () => ({
 vi.mock('obsidian-dev-utils/string', () => ({
   trimStart: trimStartMock
 }));
-
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { HtmlEmbedComponent } from './html-embed-component.ts';
 
 interface MockContainerEl {
   addEventListener: ReturnType<typeof vi.fn>;
@@ -134,7 +134,7 @@ describe('HtmlEmbedComponent', () => {
       public disconnect = mockMutationObserverDisconnect;
 
       public observe(): void {
-        // noop
+        noop();
       }
     } as unknown as typeof MutationObserver;
   });
