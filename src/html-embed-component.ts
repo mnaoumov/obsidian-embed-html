@@ -1,4 +1,4 @@
-import type { EmbedComponent } from 'obsidian-typings';
+import type { EmbedComponent } from '@obsidian-typings/obsidian-public-latest';
 
 import {
   App,
