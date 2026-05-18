@@ -4,7 +4,7 @@ import type {
 } from 'obsidian';
 
 import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
-import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/plugin/components/plugin-settings-tab-component';
+import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
 
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';

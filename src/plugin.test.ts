@@ -29,13 +29,13 @@ vi.mock('obsidian-dev-utils/obsidian/plugin/plugin', () => ({
   PluginBase: PluginBaseMock
 }));
 
-vi.mock('obsidian-dev-utils/obsidian/plugin/components/plugin-settings-tab-component', () => ({
+vi.mock('obsidian-dev-utils/obsidian/components/plugin-settings-tab-component', () => ({
   PluginSettingsTabComponent: class MockPluginSettingsTabComponent {
     public constructor(public plugin: unknown, public tab: unknown) {}
   }
 }));
 
-vi.mock('obsidian-dev-utils/obsidian/plugin/components/plugin-settings-component', () => ({
+vi.mock('obsidian-dev-utils/obsidian/components/plugin-settings-component', () => ({
   PluginSettingsComponentBase: class MockPluginSettingsComponentBase {}
 }));
 
