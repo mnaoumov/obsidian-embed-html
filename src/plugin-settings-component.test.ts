@@ -13,7 +13,7 @@ const PluginSettingsComponentBaseMock = vi.hoisted(() =>
   }
 );
 
-vi.mock('obsidian-dev-utils/obsidian/plugin/components/plugin-settings-component', () => ({
+vi.mock('obsidian-dev-utils/obsidian/components/plugin-settings-component', () => ({
   PluginSettingsComponentBase: PluginSettingsComponentBaseMock
 }));
 

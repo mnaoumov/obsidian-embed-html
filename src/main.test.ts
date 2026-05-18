@@ -9,11 +9,11 @@ vi.mock('obsidian-dev-utils/obsidian/plugin/plugin', () => ({
   PluginBase: vi.fn()
 }));
 
-vi.mock('obsidian-dev-utils/obsidian/plugin/components/plugin-settings-tab-component', () => ({
+vi.mock('obsidian-dev-utils/obsidian/components/plugin-settings-tab-component', () => ({
   PluginSettingsTabComponent: vi.fn()
 }));
 
-vi.mock('obsidian-dev-utils/obsidian/plugin/components/plugin-settings-component', () => ({
+vi.mock('obsidian-dev-utils/obsidian/components/plugin-settings-component', () => ({
   PluginSettingsComponentBase: vi.fn()
 }));
 
