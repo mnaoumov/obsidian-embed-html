@@ -1,4 +1,10 @@
+import type {
+  App,
+  TFile
+} from 'obsidian';
+
 import { noop } from 'obsidian-dev-utils/function';
+import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import {
   afterEach,
   beforeEach,
@@ -7,6 +13,8 @@ import {
   it,
   vi
 } from 'vitest';
+
+import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
 import { HtmlEmbedComponent } from './html-embed-component.ts';
 
@@ -63,7 +71,6 @@ vi.mock('obsidian-dev-utils/string', () => ({
 }));
 
 interface MockContainerEl {
-  addEventListener: ReturnType<typeof vi.fn>;
   createEl: ReturnType<typeof vi.fn>;
   empty: ReturnType<typeof vi.fn>;
   getAttr: ReturnType<typeof vi.fn>;
@@ -77,7 +84,6 @@ interface MockIframeEl {
 
 function createMockContainerEl(): MockContainerEl {
   return {
-    addEventListener: vi.fn(),
     createEl: vi.fn(),
     empty: vi.fn(),
     getAttr: vi.fn().mockReturnValue(null),
@@ -85,36 +91,30 @@ function createMockContainerEl(): MockContainerEl {
   };
 }
 
-interface MockPluginSettingsComponent {
-  settings: {
-    defaultHeight: string;
-    defaultWidth: string;
-  };
+function asContainerEl(mock: MockContainerEl): HTMLElement {
+  // strictProxy<HTMLElement>(mock) cannot be used here because vi.fn() mock function
+  // types are structurally incompatible with HTMLElement's overloaded method signatures
+  // (e.g. setCssProps, createEl). Last-resort test-only cast per project conventions.
+
+  return mock as unknown as HTMLElement;
 }
 
-function createMockPluginSettingsComponent(): MockPluginSettingsComponent {
-  return {
+function createMockPluginSettingsComponent(): PluginSettingsComponent {
+  return strictProxy<PluginSettingsComponent>({
     settings: {
       defaultHeight: '400px',
       defaultWidth: '100%'
     }
-  };
+  });
 }
 
-interface MockApp {
-  vault: {
-    getResourcePath: ReturnType<typeof vi.fn>;
-    read: ReturnType<typeof vi.fn>;
-  };
-}
-
-function createMockApp(): MockApp {
-  return {
-    vault: {
+function createMockApp(): App {
+  return strictProxy<App>({
+    vault: strictProxy<App['vault']>({
       getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
       read: vi.fn().mockResolvedValue('<html><head></head><body>Hello</body></html>')
-    }
-  };
+    })
+  });
 }
 
 let mockMutationObserverDisconnect: ReturnType<typeof vi.fn>;
@@ -150,10 +150,10 @@ describe('HtmlEmbedComponent', () => {
       const mockApp = createMockApp();
 
       new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -168,10 +168,10 @@ describe('HtmlEmbedComponent', () => {
       const mockApp = createMockApp();
 
       new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -189,10 +189,10 @@ describe('HtmlEmbedComponent', () => {
       const mockApp = createMockApp();
 
       new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -219,10 +219,10 @@ describe('HtmlEmbedComponent', () => {
       const mockApp = createMockApp();
 
       new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -246,10 +246,10 @@ describe('HtmlEmbedComponent', () => {
       const mockApp = createMockApp();
 
       new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -272,10 +272,10 @@ describe('HtmlEmbedComponent', () => {
       const mockApp = createMockApp();
 
       new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -316,10 +316,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -375,10 +375,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', mockLocation);
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -428,10 +428,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', mockLocation);
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -476,10 +476,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -528,10 +528,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -578,10 +578,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -600,10 +600,10 @@ describe('HtmlEmbedComponent', () => {
       const mockApp = createMockApp();
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -676,10 +676,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -738,10 +738,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -796,10 +796,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -860,10 +860,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 
@@ -946,10 +946,10 @@ describe('HtmlEmbedComponent', () => {
       vi.spyOn(Date, 'now').mockReturnValue(mockDateNow);
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: '#myId&mode=extract'
       });
 
@@ -1024,10 +1024,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: '#myId'
       });
 
@@ -1097,10 +1097,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: '#scrollTarget'
       });
 
@@ -1155,10 +1155,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: '#nonexistent'
       });
 
@@ -1225,10 +1225,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: '#myId&mode=invalid'
       });
 
@@ -1281,10 +1281,10 @@ describe('HtmlEmbedComponent', () => {
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
-        app: mockApp as never,
-        containerEl: containerEl as never,
-        file: {} as never,
-        pluginSettingsComponent: pluginSettingsComponent as never,
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: strictProxy<TFile>({}),
+        pluginSettingsComponent,
         subpath: ''
       });
 

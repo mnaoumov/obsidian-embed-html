@@ -1,13 +1,21 @@
+import type {
+  TFile,
+  WorkspaceLeaf
+} from 'obsidian';
+
 import {
   noop,
   noopAsync
 } from 'obsidian-dev-utils/function';
+import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import {
   describe,
   expect,
   it,
   vi
 } from 'vitest';
+
+import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
 const addedChildren: unknown[] = [];
 
@@ -72,8 +80,8 @@ describe('HtmlFileView', () => {
   });
 
   it('should return VIEW_TYPE from getViewType', () => {
-    const mockLeaf = { app: {} };
-    const view = new HtmlFileView(mockLeaf as never, {} as never);
+    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: strictProxy<WorkspaceLeaf['app']>({}) });
+    const view = new HtmlFileView(mockLeaf, strictProxy<PluginSettingsComponent>({}));
 
     expect(view.getViewType()).toBe('html-file-view');
   });
@@ -91,16 +99,16 @@ describe('HtmlFileView', () => {
       }
     } as unknown as typeof MutationObserver;
 
-    const mockApp = {
-      vault: {
+    const mockApp = strictProxy<WorkspaceLeaf['app']>({
+      vault: strictProxy<WorkspaceLeaf['app']['vault']>({
         getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
         read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
-      }
-    };
-    const mockLeaf = { app: mockApp };
-    const mockPluginSettingsComponent = {
+      })
+    });
+    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: mockApp });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
       settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    };
+    });
 
     const mockParsedDoc = {
       documentElement: { outerHTML: '<html></html>' },
@@ -119,16 +127,16 @@ describe('HtmlFileView', () => {
     globalThis.URL.revokeObjectURL = vi.fn();
     vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
-    const view = new HtmlFileView(mockLeaf as never, mockPluginSettingsComponent as never);
+    const view = new HtmlFileView(mockLeaf, mockPluginSettingsComponent);
 
-    const mockFile = {};
+    const mockFile = strictProxy<TFile>({});
     view.contentEl.createEl = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
       src: ''
     });
     view.contentEl.empty = vi.fn();
 
-    await view.onLoadFile(mockFile as never);
+    await view.onLoadFile(mockFile);
 
     expect(addedChildren).toHaveLength(1);
   });
@@ -146,16 +154,16 @@ describe('HtmlFileView', () => {
       }
     } as unknown as typeof MutationObserver;
 
-    const mockApp = {
-      vault: {
+    const mockApp = strictProxy<WorkspaceLeaf['app']>({
+      vault: strictProxy<WorkspaceLeaf['app']['vault']>({
         getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
         read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
-      }
-    };
-    const mockLeaf = { app: mockApp };
-    const mockPluginSettingsComponent = {
+      })
+    });
+    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: mockApp });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
       settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    };
+    });
 
     const mockParsedDoc = {
       documentElement: { outerHTML: '<html></html>' },
@@ -174,7 +182,7 @@ describe('HtmlFileView', () => {
     globalThis.URL.revokeObjectURL = vi.fn();
     vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
-    const view = new HtmlFileView(mockLeaf as never, mockPluginSettingsComponent as never);
+    const view = new HtmlFileView(mockLeaf, mockPluginSettingsComponent);
 
     view.contentEl.createEl = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
@@ -182,7 +190,7 @@ describe('HtmlFileView', () => {
     });
     view.contentEl.empty = vi.fn();
 
-    await view.onLoadFile({} as never);
+    await view.onLoadFile(strictProxy<TFile>({}));
 
     const mockInvokeAsyncSafely = (await import('obsidian-dev-utils/async')).invokeAsyncSafely as ReturnType<typeof vi.fn>;
     mockInvokeAsyncSafely.mockClear();
@@ -205,16 +213,16 @@ describe('HtmlFileView', () => {
       }
     } as unknown as typeof MutationObserver;
 
-    const mockApp = {
-      vault: {
+    const mockApp = strictProxy<WorkspaceLeaf['app']>({
+      vault: strictProxy<WorkspaceLeaf['app']['vault']>({
         getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
         read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
-      }
-    };
-    const mockLeaf = { app: mockApp };
-    const mockPluginSettingsComponent = {
+      })
+    });
+    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: mockApp });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
       settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    };
+    });
 
     const mockParsedDoc = {
       documentElement: { outerHTML: '<html></html>' },
@@ -233,7 +241,7 @@ describe('HtmlFileView', () => {
     globalThis.URL.revokeObjectURL = vi.fn();
     vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
-    const view = new HtmlFileView(mockLeaf as never, mockPluginSettingsComponent as never);
+    const view = new HtmlFileView(mockLeaf, mockPluginSettingsComponent);
 
     view.contentEl.createEl = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
@@ -241,7 +249,7 @@ describe('HtmlFileView', () => {
     });
     view.contentEl.empty = vi.fn();
 
-    await view.onLoadFile({} as never);
+    await view.onLoadFile(strictProxy<TFile>({}));
 
     const mockInvokeAsyncSafely = (await import('obsidian-dev-utils/async')).invokeAsyncSafely as ReturnType<typeof vi.fn>;
     mockInvokeAsyncSafely.mockClear();
@@ -252,8 +260,8 @@ describe('HtmlFileView', () => {
   });
 
   it('should not crash when setEphemeralState is called before onLoadFile', () => {
-    const mockLeaf = { app: {} };
-    const view = new HtmlFileView(mockLeaf as never, {} as never);
+    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: strictProxy<WorkspaceLeaf['app']>({}) });
+    const view = new HtmlFileView(mockLeaf, strictProxy<PluginSettingsComponent>({}));
 
     expect(() => {
       view.setEphemeralState({ subpath: '#test' });

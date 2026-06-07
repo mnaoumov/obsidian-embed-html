@@ -1,10 +1,16 @@
+import type { App } from 'obsidian';
+
 import { noop } from 'obsidian-dev-utils/function';
+import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import {
   describe,
   expect,
   it,
   vi
 } from 'vitest';
+
+import type { HtmlExtensions } from './html-extensions.ts';
+import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
 const registerCallbacks: (() => void)[] = [];
 
@@ -46,23 +52,23 @@ describe('HtmlEmbedRegistryComponent', () => {
     registerCallbacks.length = 0;
     const mockRegisterExtensions = vi.fn();
     const mockUnregisterExtensions = vi.fn();
-    const mockApp = {
-      embedRegistry: {
+    const mockApp = strictProxy<App>({
+      embedRegistry: strictProxy<App['embedRegistry']>({
         registerExtensions: mockRegisterExtensions,
         unregisterExtensions: mockUnregisterExtensions
-      }
-    };
-    const mockPluginSettingsComponent = {
+      })
+    });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
       settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    };
-    const mockHtmlExtensions = {
+    });
+    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
       list: vi.fn().mockReturnValue(['htm', 'html'])
-    };
+    });
 
     const component = new HtmlEmbedRegistryComponent(
-      mockApp as never,
-      mockPluginSettingsComponent as never,
-      mockHtmlExtensions as never
+      mockApp,
+      mockPluginSettingsComponent,
+      mockHtmlExtensions
     );
 
     component.onload();
@@ -75,23 +81,24 @@ describe('HtmlEmbedRegistryComponent', () => {
 
   it('should register cleanup that unregisters extensions', () => {
     registerCallbacks.length = 0;
-    const mockApp = {
-      embedRegistry: {
+    const mockUnregisterExtensions = vi.fn();
+    const mockApp = strictProxy<App>({
+      embedRegistry: strictProxy<App['embedRegistry']>({
         registerExtensions: vi.fn(),
-        unregisterExtensions: vi.fn()
-      }
-    };
-    const mockPluginSettingsComponent = {
+        unregisterExtensions: mockUnregisterExtensions
+      })
+    });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
       settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    };
-    const mockHtmlExtensions = {
+    });
+    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
       list: vi.fn().mockReturnValue(['htm', 'html'])
-    };
+    });
 
     const component = new HtmlEmbedRegistryComponent(
-      mockApp as never,
-      mockPluginSettingsComponent as never,
-      mockHtmlExtensions as never
+      mockApp,
+      mockPluginSettingsComponent,
+      mockHtmlExtensions
     );
 
     component.onload();
@@ -99,7 +106,7 @@ describe('HtmlEmbedRegistryComponent', () => {
     expect(registerCallbacks).toHaveLength(1);
     registerCallbacks.at(0)?.();
 
-    expect(mockApp.embedRegistry.unregisterExtensions).toHaveBeenCalledWith(['htm', 'html']);
+    expect(mockUnregisterExtensions).toHaveBeenCalledWith(['htm', 'html']);
   });
 
   it('should create HtmlEmbedComponent from factory function', () => {
@@ -115,39 +122,40 @@ describe('HtmlEmbedRegistryComponent', () => {
       }
     } as unknown as typeof MutationObserver;
 
-    const mockApp = {
-      embedRegistry: {
-        registerExtensions: vi.fn(),
+    const mockRegisterExtensions = vi.fn();
+    const mockApp = strictProxy<App>({
+      embedRegistry: strictProxy<App['embedRegistry']>({
+        registerExtensions: mockRegisterExtensions,
         unregisterExtensions: vi.fn()
-      }
-    };
-    const mockPluginSettingsComponent = {
+      })
+    });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
       settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    };
-    const mockHtmlExtensions = {
+    });
+    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
       list: vi.fn().mockReturnValue(['html'])
-    };
+    });
 
     const component = new HtmlEmbedRegistryComponent(
-      mockApp as never,
-      mockPluginSettingsComponent as never,
-      mockHtmlExtensions as never
+      mockApp,
+      mockPluginSettingsComponent,
+      mockHtmlExtensions
     );
 
     component.onload();
 
-    const factory = mockApp.embedRegistry.registerExtensions.mock.calls.at(0)?.[1] as (
+    const factory = mockRegisterExtensions.mock.calls.at(0)?.[1] as (
       context: { containerEl: HTMLElement },
       file: unknown,
       subpath: string | undefined
     ) => unknown;
 
-    const mockContainerEl = {
+    const mockContainerEl = strictProxy<HTMLElement>({
       getAttr: vi.fn().mockReturnValue(null),
       setCssProps: vi.fn()
-    };
+    });
 
-    const result = factory({ containerEl: mockContainerEl as never }, {}, undefined);
+    const result = factory({ containerEl: mockContainerEl }, {}, undefined);
 
     expect(result).toBeDefined();
   });
@@ -165,40 +173,41 @@ describe('HtmlEmbedRegistryComponent', () => {
       }
     } as unknown as typeof MutationObserver;
 
-    const mockApp = {
-      embedRegistry: {
-        registerExtensions: vi.fn(),
+    const mockRegisterExtensions = vi.fn();
+    const mockApp = strictProxy<App>({
+      embedRegistry: strictProxy<App['embedRegistry']>({
+        registerExtensions: mockRegisterExtensions,
         unregisterExtensions: vi.fn()
-      }
-    };
-    const mockPluginSettingsComponent = {
+      })
+    });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
       settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    };
-    const mockHtmlExtensions = {
+    });
+    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
       list: vi.fn().mockReturnValue(['html'])
-    };
+    });
 
     const component = new HtmlEmbedRegistryComponent(
-      mockApp as never,
-      mockPluginSettingsComponent as never,
-      mockHtmlExtensions as never
+      mockApp,
+      mockPluginSettingsComponent,
+      mockHtmlExtensions
     );
 
     component.onload();
 
-    const factory = mockApp.embedRegistry.registerExtensions.mock.calls.at(0)?.[1] as (
+    const factory = mockRegisterExtensions.mock.calls.at(0)?.[1] as (
       context: { containerEl: HTMLElement },
       file: unknown,
       subpath: string | undefined
     ) => unknown;
 
-    const mockContainerEl = {
+    const mockContainerEl = strictProxy<HTMLElement>({
       getAttr: vi.fn().mockReturnValue(null),
       setCssProps: vi.fn()
-    };
+    });
 
     expect(() => {
-      factory({ containerEl: mockContainerEl as never }, {}, undefined);
+      factory({ containerEl: mockContainerEl }, {}, undefined);
     }).not.toThrow();
   });
 });

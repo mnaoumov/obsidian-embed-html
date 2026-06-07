@@ -1,3 +1,6 @@
+import type { Plugin } from 'obsidian';
+
+import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import {
   describe,
   expect,
@@ -5,10 +8,12 @@ import {
   vi
 } from 'vitest';
 
+import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+
 interface MockSettingInstance {
   addText: ReturnType<typeof vi.fn>;
-  setDesc: (desc: unknown) => MockSettingInstance;
-  setName: (name: string) => MockSettingInstance;
+  setDesc(desc: unknown): MockSettingInstance;
+  setName(name: string): MockSettingInstance;
 }
 
 const settingInstances: MockSettingInstance[] = [];
@@ -66,7 +71,8 @@ describe('PluginSettingsTab', () => {
       return fragment;
     });
 
-    const tab = new PluginSettingsTab({ plugin: {}, pluginSettingsComponent: {} } as never);
+    const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
     tab.display();
 
     const EXPECTED_SETTING_COUNT = 2;
@@ -82,7 +88,8 @@ describe('PluginSettingsTab', () => {
       return fragment;
     });
 
-    const tab = new PluginSettingsTab({ plugin: {}, pluginSettingsComponent: {} } as never);
+    const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
     tab.display();
 
     expect(settingInstances.at(0)?.setName).toHaveBeenCalledWith('Default width');
@@ -100,7 +107,8 @@ describe('PluginSettingsTab', () => {
       return fragment;
     });
 
-    const tab = new PluginSettingsTab({ plugin: {}, pluginSettingsComponent: {} } as never);
+    const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
     tab.display();
 
     expect(hoisted.keys).toContain('defaultWidth');
