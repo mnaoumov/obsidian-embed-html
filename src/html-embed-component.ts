@@ -2,10 +2,10 @@ import type { EmbedComponent } from '@obsidian-typings/obsidian-public-latest';
 
 import {
   App,
-  Component,
   TFile
 } from 'obsidian';
 import { invokeAsyncSafely } from 'obsidian-dev-utils/async';
+import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
 import { trimStart } from 'obsidian-dev-utils/string';
 
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
@@ -13,29 +13,29 @@ import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 const WIDTH_ATTRIBUTE = 'width';
 const HEIGHT_ATTRIBUTE = 'height';
 
-interface HtmlEmbedComponentParams {
-  app: App;
-  containerEl: HTMLElement;
-  file: TFile;
-  pluginSettingsComponent: PluginSettingsComponent;
-  subpath: string;
+interface HtmlEmbedComponentConstructorParams {
+  readonly app: App;
+  readonly containerEl: HTMLElement;
+  readonly file: TFile;
+  readonly pluginSettingsComponent: PluginSettingsComponent;
+  readonly subpath: string;
 }
 
 type Mode = 'extract' | 'scroll';
 
 interface Options {
-  id: string;
-  mode: Mode;
+  readonly id: string;
+  readonly mode: Mode;
 }
 
-export class HtmlEmbedComponent extends Component implements EmbedComponent {
+export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   private readonly app: App;
   private readonly containerEl: HTMLElement;
   private readonly file: TFile;
   private readonly pluginSettingsComponent: PluginSettingsComponent;
   private subpath: string;
 
-  public constructor(params: HtmlEmbedComponentParams) {
+  public constructor(params: HtmlEmbedComponentConstructorParams) {
     super();
 
     this.app = params.app;

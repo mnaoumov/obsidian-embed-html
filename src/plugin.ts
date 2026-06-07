@@ -3,9 +3,10 @@ import type {
   PluginManifest
 } from 'obsidian';
 
-import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
 import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
+import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
+import { PluginEventSourceImpl } from 'obsidian-dev-utils/obsidian/plugin/plugin-event-source';
 
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
 import { HtmlExtensions } from './html-extensions.ts';
@@ -16,7 +17,12 @@ import { PluginSettingsTab } from './plugin-settings-tab.ts';
 export class Plugin extends PluginBase {
   public constructor(app: App, manifest: PluginManifest) {
     super(app, manifest);
-    const pluginSettingsComponent = this.addChild(new PluginSettingsComponent(new PluginDataHandler(this)));
+    const pluginSettingsComponent = this.addChild(
+      new PluginSettingsComponent({
+        dataHandler: new PluginDataHandler(this),
+        pluginEventSource: new PluginEventSourceImpl(this)
+      })
+    );
     const htmlExtensions = new HtmlExtensions();
     this.addChild(
       new PluginSettingsTabComponent({

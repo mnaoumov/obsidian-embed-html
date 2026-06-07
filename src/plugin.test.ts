@@ -1,4 +1,10 @@
+import type {
+  App,
+  PluginManifest
+} from 'obsidian';
+
 import { noop } from 'obsidian-dev-utils/function';
+import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import {
   describe,
   it,
@@ -99,34 +105,34 @@ import { Plugin } from './plugin.ts';
 
 describe('Plugin', () => {
   it('should register all four components', () => {
-    const mockApp = {
-      embedRegistry: {
+    const mockApp = strictProxy<App>({
+      embedRegistry: strictProxy<App['embedRegistry']>({
         registerExtensions: vi.fn(),
         unregisterExtensions: vi.fn()
-      },
-      viewRegistry: {
+      }),
+      viewRegistry: strictProxy<App['viewRegistry']>({
         registerExtensions: vi.fn(),
         unregisterExtensions: vi.fn()
-      }
-    };
-    const mockManifest = { id: 'embed-html' };
+      })
+    });
+    const mockManifest = strictProxy<PluginManifest>({ id: 'embed-html' });
 
-    new Plugin(mockApp as never, mockManifest as never);
+    new Plugin(mockApp, mockManifest);
   });
 
   it('should register PluginSettingsComponent with shouldPreload true', () => {
-    const mockApp = {
-      embedRegistry: {
+    const mockApp = strictProxy<App>({
+      embedRegistry: strictProxy<App['embedRegistry']>({
         registerExtensions: vi.fn(),
         unregisterExtensions: vi.fn()
-      },
-      viewRegistry: {
+      }),
+      viewRegistry: strictProxy<App['viewRegistry']>({
         registerExtensions: vi.fn(),
         unregisterExtensions: vi.fn()
-      }
-    };
-    const mockManifest = { id: 'embed-html' };
+      })
+    });
+    const mockManifest = strictProxy<PluginManifest>({ id: 'embed-html' });
 
-    new Plugin(mockApp as never, mockManifest as never);
+    new Plugin(mockApp, mockManifest);
   });
 });

@@ -1,10 +1,17 @@
+import type { App } from 'obsidian';
+
 import { noop } from 'obsidian-dev-utils/function';
+import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import {
   describe,
   expect,
   it,
   vi
 } from 'vitest';
+
+import type { HtmlExtensions } from './html-extensions.ts';
+import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { Plugin } from './plugin.ts';
 
 const registerCallbacks: (() => void)[] = [];
 
@@ -50,25 +57,25 @@ describe('HtmlFileViewComponent', () => {
     const mockRegisterExtensions = vi.fn();
     const mockUnregisterExtensions = vi.fn();
     const mockRegisterView = vi.fn();
-    const mockApp = {
-      viewRegistry: {
+    const mockApp = strictProxy<App>({
+      viewRegistry: strictProxy<App['viewRegistry']>({
         registerExtensions: mockRegisterExtensions,
         unregisterExtensions: mockUnregisterExtensions
-      }
-    };
-    const mockPlugin = {
+      })
+    });
+    const mockPlugin = strictProxy<Plugin>({
       registerView: mockRegisterView
-    };
-    const mockPluginSettingsComponent = {};
-    const mockHtmlExtensions = {
+    });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({});
+    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
       list: vi.fn().mockReturnValue(['htm', 'html'])
-    };
+    });
 
     const component = new HtmlFileViewComponent(
-      mockApp as never,
-      mockPlugin as never,
-      mockPluginSettingsComponent as never,
-      mockHtmlExtensions as never
+      mockApp,
+      mockPlugin,
+      mockPluginSettingsComponent,
+      mockHtmlExtensions
     );
 
     component.onload();
@@ -79,25 +86,26 @@ describe('HtmlFileViewComponent', () => {
 
   it('should register cleanup that unregisters extensions', () => {
     registerCallbacks.length = 0;
-    const mockApp = {
-      viewRegistry: {
+    const mockUnregisterExtensions = vi.fn();
+    const mockApp = strictProxy<App>({
+      viewRegistry: strictProxy<App['viewRegistry']>({
         registerExtensions: vi.fn(),
-        unregisterExtensions: vi.fn()
-      }
-    };
-    const mockPlugin = {
+        unregisterExtensions: mockUnregisterExtensions
+      })
+    });
+    const mockPlugin = strictProxy<Plugin>({
       registerView: vi.fn()
-    };
-    const mockPluginSettingsComponent = {};
-    const mockHtmlExtensions = {
+    });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({});
+    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
       list: vi.fn().mockReturnValue(['htm', 'html'])
-    };
+    });
 
     const component = new HtmlFileViewComponent(
-      mockApp as never,
-      mockPlugin as never,
-      mockPluginSettingsComponent as never,
-      mockHtmlExtensions as never
+      mockApp,
+      mockPlugin,
+      mockPluginSettingsComponent,
+      mockHtmlExtensions
     );
 
     component.onload();
@@ -105,35 +113,36 @@ describe('HtmlFileViewComponent', () => {
     expect(registerCallbacks).toHaveLength(1);
     registerCallbacks.at(0)?.();
 
-    expect(mockApp.viewRegistry.unregisterExtensions).toHaveBeenCalledWith(['htm', 'html']);
+    expect(mockUnregisterExtensions).toHaveBeenCalledWith(['htm', 'html']);
   });
 
   it('should create HtmlFileView from view factory', () => {
     registerCallbacks.length = 0;
-    const mockApp = {
-      viewRegistry: {
+    const mockRegisterView = vi.fn();
+    const mockApp = strictProxy<App>({
+      viewRegistry: strictProxy<App['viewRegistry']>({
         registerExtensions: vi.fn(),
         unregisterExtensions: vi.fn()
-      }
-    };
-    const mockPlugin = {
-      registerView: vi.fn()
-    };
-    const mockPluginSettingsComponent = {};
-    const mockHtmlExtensions = {
+      })
+    });
+    const mockPlugin = strictProxy<Plugin>({
+      registerView: mockRegisterView
+    });
+    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({});
+    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
       list: vi.fn().mockReturnValue(['html'])
-    };
+    });
 
     const component = new HtmlFileViewComponent(
-      mockApp as never,
-      mockPlugin as never,
-      mockPluginSettingsComponent as never,
-      mockHtmlExtensions as never
+      mockApp,
+      mockPlugin,
+      mockPluginSettingsComponent,
+      mockHtmlExtensions
     );
 
     component.onload();
 
-    const viewFactory = mockPlugin.registerView.mock.calls.at(0)?.[1] as (leaf: unknown) => unknown;
+    const viewFactory = mockRegisterView.mock.calls.at(0)?.[1] as (leaf: unknown) => unknown;
     const mockLeaf = { app: mockApp };
     const result = viewFactory(mockLeaf);
 

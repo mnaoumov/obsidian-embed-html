@@ -1,13 +1,13 @@
 import type { App } from 'obsidian';
 
-import { Component } from 'obsidian';
+import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
 
 import type { HtmlExtensions } from './html-extensions.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
 import { HtmlEmbedComponent } from './html-embed-component.ts';
 
-export class HtmlEmbedRegistryComponent extends Component {
+export class HtmlEmbedRegistryComponent extends ComponentEx {
   public constructor(
     private readonly app: App,
     private readonly pluginSettingsComponent: PluginSettingsComponent,
