@@ -92,6 +92,7 @@ describe('HtmlFileView', () => {
     } as unknown as typeof MutationObserver;
 
     const mockApp = {
+      isDarkMode: vi.fn().mockReturnValue(false),
       vault: {
         getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
         read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
@@ -124,6 +125,7 @@ describe('HtmlFileView', () => {
     const mockFile = {};
     view.contentEl.createEl = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
+      setCssStyles: vi.fn(),
       src: ''
     });
     view.contentEl.empty = vi.fn();
@@ -147,6 +149,7 @@ describe('HtmlFileView', () => {
     } as unknown as typeof MutationObserver;
 
     const mockApp = {
+      isDarkMode: vi.fn().mockReturnValue(false),
       vault: {
         getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
         read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
@@ -178,6 +181,7 @@ describe('HtmlFileView', () => {
 
     view.contentEl.createEl = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
+      setCssStyles: vi.fn(),
       src: ''
     });
     view.contentEl.empty = vi.fn();
@@ -206,6 +210,7 @@ describe('HtmlFileView', () => {
     } as unknown as typeof MutationObserver;
 
     const mockApp = {
+      isDarkMode: vi.fn().mockReturnValue(false),
       vault: {
         getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
         read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
@@ -237,6 +242,7 @@ describe('HtmlFileView', () => {
 
     view.contentEl.createEl = vi.fn().mockReturnValue({
       addEventListener: vi.fn(),
+      setCssStyles: vi.fn(),
       src: ''
     });
     view.contentEl.empty = vi.fn();
