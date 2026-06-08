@@ -32,6 +32,7 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
   private readonly app: App;
   private readonly containerEl: HTMLElement;
   private readonly file: TFile;
+  private iframeEl: HTMLIFrameElement | null = null;
   private readonly pluginSettingsComponent: PluginSettingsComponent;
   private subpath: string;
 
@@ -86,6 +87,8 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
         width: '100%'
       }
     });
+    this.iframeEl = iframeEl;
+    this.applyColorScheme();
 
     iframeEl.addEventListener('load', () => {
       URL.revokeObjectURL(url);
@@ -98,9 +101,22 @@ export class HtmlEmbedComponent extends Component implements EmbedComponent {
     iframeEl.src = url;
   }
 
+  public override onload(): void {
+    super.onload();
+    this.registerEvent(this.app.workspace.on('css-change', () => {
+      this.applyColorScheme();
+    }));
+  }
+
   public setSubpath(subpath: string): void {
     this.subpath = subpath;
     this.loadFile();
+  }
+
+  private applyColorScheme(): void {
+    this.iframeEl?.setCssStyles({
+      colorScheme: this.app.isDarkMode() ? 'dark' : 'light'
+    });
   }
 
   private initIframe(iframeDoc: HTMLDocument): void {

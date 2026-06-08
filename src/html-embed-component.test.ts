@@ -38,12 +38,20 @@ let domEventHandlers: Map<string, (evt: unknown) => void>;
 
 const ComponentMock = vi.hoisted(() =>
   class {
+    public onload(): void {
+      noop();
+    }
+
     public register(cb: () => void): void {
       registerCallbacks.push(cb);
     }
 
     public registerDomEvent(_target: unknown, event: string, handler: (evt: unknown) => void): void {
       domEventHandlers.set(event, handler);
+    }
+
+    public registerEvent(_eventRef: unknown): void {
+      noop();
     }
   }
 );
@@ -72,6 +80,7 @@ interface MockContainerEl {
 
 interface MockIframeEl {
   addEventListener: ReturnType<typeof vi.fn>;
+  setCssStyles: ReturnType<typeof vi.fn>;
   src: string;
 }
 
@@ -102,17 +111,25 @@ function createMockPluginSettingsComponent(): MockPluginSettingsComponent {
 }
 
 interface MockApp {
+  isDarkMode: ReturnType<typeof vi.fn>;
   vault: {
     getResourcePath: ReturnType<typeof vi.fn>;
     read: ReturnType<typeof vi.fn>;
+  };
+  workspace: {
+    on: ReturnType<typeof vi.fn>;
   };
 }
 
 function createMockApp(): MockApp {
   return {
+    isDarkMode: vi.fn().mockReturnValue(false),
     vault: {
       getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
       read: vi.fn().mockResolvedValue('<html><head></head><body>Hello</body></html>')
+    },
+    workspace: {
+      on: vi.fn().mockReturnValue({})
     }
   };
 }
@@ -291,6 +308,7 @@ describe('HtmlEmbedComponent', () => {
     it('should call invokeAsyncSafely with loadFileAsync', () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
+        setCssStyles: vi.fn(),
         src: ''
       };
       const containerEl = createMockContainerEl();
@@ -338,6 +356,7 @@ describe('HtmlEmbedComponent', () => {
     it('should empty the container and create an iframe', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
+        setCssStyles: vi.fn(),
         src: ''
       };
       const containerEl = createMockContainerEl();
@@ -397,6 +416,7 @@ describe('HtmlEmbedComponent', () => {
     it('should set base href and add enhance script', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
+        setCssStyles: vi.fn(),
         src: ''
       };
       const containerEl = createMockContainerEl();
@@ -448,6 +468,7 @@ describe('HtmlEmbedComponent', () => {
     it('should create base element if none exists', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
+        setCssStyles: vi.fn(),
         src: ''
       };
       const containerEl = createMockContainerEl();
@@ -503,6 +524,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
       const containerEl = createMockContainerEl();
@@ -553,6 +575,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: null,
+        setCssStyles: vi.fn(),
         src: ''
       };
       const containerEl = createMockContainerEl();
@@ -650,6 +673,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -712,6 +736,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -770,6 +795,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -834,6 +860,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -916,6 +943,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -998,6 +1026,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -1071,6 +1100,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -1129,6 +1159,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -1199,6 +1230,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -1255,6 +1287,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
         src: ''
       };
 
@@ -1292,6 +1325,120 @@ describe('HtmlEmbedComponent', () => {
       loadHandler?.();
 
       expect(mockContentDocument.getElementById).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('color scheme', () => {
+    function stubGlobalsForLoad(): void {
+      const mockParsedDoc = {
+        documentElement: { outerHTML: '<html></html>' },
+        head: { createEl: vi.fn().mockReturnValue({}) },
+        querySelector: vi.fn().mockReturnValue({ href: '' })
+      };
+
+      globalThis.DOMParser = class MockDOMParser {
+        public parseFromString(): unknown {
+          return mockParsedDoc;
+        }
+      } as unknown as typeof DOMParser;
+
+      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
+      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      globalThis.URL.revokeObjectURL = vi.fn();
+      vi.stubGlobal('location', { origin: 'app://obsidian.md' });
+    }
+
+    it('should set the iframe color-scheme to dark when the app is in dark mode', async () => {
+      const mockIframeEl: MockIframeEl = {
+        addEventListener: vi.fn(),
+        setCssStyles: vi.fn(),
+        src: ''
+      };
+      const containerEl = createMockContainerEl();
+      containerEl.createEl.mockReturnValue(mockIframeEl);
+      const pluginSettingsComponent = createMockPluginSettingsComponent();
+      const mockApp = createMockApp();
+      mockApp.isDarkMode.mockReturnValue(true);
+
+      stubGlobalsForLoad();
+
+      const component = new HtmlEmbedComponent({
+        app: mockApp as never,
+        containerEl: containerEl as never,
+        file: {} as never,
+        pluginSettingsComponent: pluginSettingsComponent as never,
+        subpath: ''
+      });
+
+      await component.loadFileAsync();
+
+      expect(mockIframeEl.setCssStyles).toHaveBeenCalledWith({ colorScheme: 'dark' });
+    });
+
+    it('should set the iframe color-scheme to light when the app is in light mode', async () => {
+      const mockIframeEl: MockIframeEl = {
+        addEventListener: vi.fn(),
+        setCssStyles: vi.fn(),
+        src: ''
+      };
+      const containerEl = createMockContainerEl();
+      containerEl.createEl.mockReturnValue(mockIframeEl);
+      const pluginSettingsComponent = createMockPluginSettingsComponent();
+      const mockApp = createMockApp();
+      mockApp.isDarkMode.mockReturnValue(false);
+
+      stubGlobalsForLoad();
+
+      const component = new HtmlEmbedComponent({
+        app: mockApp as never,
+        containerEl: containerEl as never,
+        file: {} as never,
+        pluginSettingsComponent: pluginSettingsComponent as never,
+        subpath: ''
+      });
+
+      await component.loadFileAsync();
+
+      expect(mockIframeEl.setCssStyles).toHaveBeenCalledWith({ colorScheme: 'light' });
+    });
+
+    it('should re-apply the color-scheme when the css-change event fires', async () => {
+      const mockIframeEl: MockIframeEl = {
+        addEventListener: vi.fn(),
+        setCssStyles: vi.fn(),
+        src: ''
+      };
+      const containerEl = createMockContainerEl();
+      containerEl.createEl.mockReturnValue(mockIframeEl);
+      const pluginSettingsComponent = createMockPluginSettingsComponent();
+      const mockApp = createMockApp();
+
+      let cssChangeCallback: (() => void) | undefined;
+      mockApp.workspace.on.mockImplementation((event: string, callback: () => void) => {
+        if (event === 'css-change') {
+          cssChangeCallback = callback;
+        }
+        return {};
+      });
+
+      stubGlobalsForLoad();
+
+      const component = new HtmlEmbedComponent({
+        app: mockApp as never,
+        containerEl: containerEl as never,
+        file: {} as never,
+        pluginSettingsComponent: pluginSettingsComponent as never,
+        subpath: ''
+      });
+
+      component.onload();
+      await component.loadFileAsync();
+      expect(mockIframeEl.setCssStyles).toHaveBeenLastCalledWith({ colorScheme: 'light' });
+
+      mockApp.isDarkMode.mockReturnValue(true);
+      cssChangeCallback?.();
+
+      expect(mockIframeEl.setCssStyles).toHaveBeenLastCalledWith({ colorScheme: 'dark' });
     });
   });
 });
