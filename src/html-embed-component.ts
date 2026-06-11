@@ -78,6 +78,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
 
     const iframeHtml = parsedDoc.documentElement.outerHTML;
     const blob = new Blob([iframeHtml], { type: 'text/html' });
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- URL.createObjectURL is the Web URL API, available in Obsidian's Electron renderer; the rule incorrectly flags it as a Node experimental builtin.
     const url = URL.createObjectURL(blob);
 
     const iframeEl = this.containerEl.createEl('iframe', {
@@ -88,6 +89,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     });
 
     iframeEl.addEventListener('load', () => {
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins -- URL.revokeObjectURL is the Web URL API, available in Obsidian's Electron renderer; the rule incorrectly flags it as a Node experimental builtin.
       URL.revokeObjectURL(url);
       if (!iframeEl.contentDocument) {
         return;
