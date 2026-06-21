@@ -1,117 +1,92 @@
-import type { Plugin } from 'obsidian';
+import type {
+  App as AppOriginal,
+  Plugin
+} from 'obsidian';
+import type { GenericVoidFunction } from 'obsidian-dev-utils/function';
+import type { PluginSettingsComponentBase } from 'obsidian-dev-utils/obsidian/components/plugin-settings-component';
 
+import { noopAsync } from 'obsidian-dev-utils/function';
+import { castTo } from 'obsidian-dev-utils/object-utils';
+import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/plugin/plugin-settings-tab';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { App } from 'obsidian-test-mocks/obsidian';
 import {
+  beforeEach,
   describe,
   expect,
   it,
   vi
 } from 'vitest';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
-
-interface MockSettingInstance {
-  addText: ReturnType<typeof vi.fn>;
-  setDesc(desc: unknown): MockSettingInstance;
-  setName(name: string): MockSettingInstance;
-}
-
-const settingInstances: MockSettingInstance[] = [];
-const boundKeys: string[] = [];
-
-const hoisted = vi.hoisted(() => {
-  const instances: MockSettingInstance[] = [];
-  const keys: string[] = [];
-
-  class PluginSettingsTabBaseMock {
-    public containerEl = {};
-
-    public bind(_component: unknown, key: string): void {
-      keys.push(key);
-    }
-
-    public display(): void {
-      /* Base implementation */
-    }
-  }
-
-  return { instances, keys, PluginSettingsTabBaseMock };
-});
-
-vi.mock('obsidian-dev-utils/obsidian/setting-ex', () => ({
-  SettingEx: class MockSettingEx {
-    public addText = vi.fn().mockImplementation(function addTextMock(this: MockSettingInstance, cb: (text: unknown) => void) {
-      cb({ mockText: true });
-      return this;
-    });
-
-    public setDesc = vi.fn().mockReturnThis();
-    public setName = vi.fn().mockReturnThis();
-
-    public constructor() {
-      settingInstances.push(this as unknown as MockSettingInstance);
-    }
-  }
-}));
-
-vi.mock('obsidian-dev-utils/obsidian/plugin/plugin-settings-tab', () => ({
-  PluginSettingsTabBase: hoisted.PluginSettingsTabBaseMock
-}));
-
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { PluginSettingsTab } from './plugin-settings-tab.ts';
+import { PluginSettings } from './plugin-settings.ts';
+
+let app: AppOriginal;
+
+beforeEach(() => {
+  vi.restoreAllMocks();
+  app = App.createConfigured__().asOriginalType__();
+  // The real `bind` is exercised by `obsidian-dev-utils`'s own tests. Here we only need to observe
+  // that the tab wires each text component to the correct setting key, so we stub its return value
+  // (an allowed test double): the real test-mocks `TextComponent` is a strict proxy that throws on
+  // the `setPlaceholderValue` duck-typing probe inside the real `bind`.
+  vi.spyOn(PluginSettingsTabBase.prototype, 'bind').mockImplementation((valueComponent) => valueComponent);
+});
 
 describe('PluginSettingsTab', () => {
   it('should create width and height settings on display', () => {
-    settingInstances.length = 0;
+    const tab = createTab();
 
-    globalThis.createFragment = vi.fn((cb?: (f: DocumentFragment) => void) => {
-      const fragment = { appendText: vi.fn() } as unknown as DocumentFragment;
-      cb?.(fragment);
-      return fragment;
-    });
-
-    const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
     tab.displayLegacy();
 
     const EXPECTED_SETTING_COUNT = 2;
-    expect(settingInstances).toHaveLength(EXPECTED_SETTING_COUNT);
+    expect(tab.containerEl.children).toHaveLength(EXPECTED_SETTING_COUNT);
   });
 
   it('should set correct names for settings', () => {
-    settingInstances.length = 0;
+    const tab = createTab();
 
-    globalThis.createFragment = vi.fn((cb?: (f: DocumentFragment) => void) => {
-      const fragment = { appendText: vi.fn() } as unknown as DocumentFragment;
-      cb?.(fragment);
-      return fragment;
-    });
-
-    const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
     tab.displayLegacy();
 
-    expect(settingInstances.at(0)?.setName).toHaveBeenCalledWith('Default width');
-    expect(settingInstances.at(1)?.setName).toHaveBeenCalledWith('Default height');
+    expect(tab.containerEl.textContent).toContain('Default width');
+    expect(tab.containerEl.textContent).toContain('Default height');
   });
 
   it('should bind defaultWidth and defaultHeight via addText callbacks', () => {
-    settingInstances.length = 0;
-    boundKeys.length = 0;
-    hoisted.keys.length = 0;
+    const tab = createTab();
 
-    globalThis.createFragment = vi.fn((cb?: (f: DocumentFragment) => void) => {
-      const fragment = { appendText: vi.fn() } as unknown as DocumentFragment;
-      cb?.(fragment);
-      return fragment;
-    });
-
-    const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
-    // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
     tab.displayLegacy();
 
-    expect(hoisted.keys).toContain('defaultWidth');
-    expect(hoisted.keys).toContain('defaultHeight');
+    const boundKeys = vi.mocked(PluginSettingsTabBase.prototype.bind).mock.calls.map((call) => call[1]);
+    expect(boundKeys).toContain('defaultWidth');
+    expect(boundKeys).toContain('defaultHeight');
   });
 });
+
+function createTab(): PluginSettingsTab {
+  const plugin = strictProxy<Plugin>({
+    app,
+    manifest: { id: 'embed-html' }
+  });
+  const pluginSettingsComponent = createMockSettingsComponent();
+  return new PluginSettingsTab({ plugin, pluginSettingsComponent });
+}
+
+function createMockSettingsComponent(): PluginSettingsComponentBase<PluginSettings> {
+  return strictProxy<PluginSettingsComponentBase<PluginSettings>>({
+    defaultSettings: new PluginSettings(),
+    on: castTo<PluginSettingsComponentBase<PluginSettings>['on']>(vi.fn((_name: string, _callback: GenericVoidFunction) => ({
+      asyncEventSource: {
+        offref: vi.fn()
+      }
+    }))),
+    revalidate: vi.fn(() => Promise.resolve({ defaultHeight: '', defaultWidth: '' })),
+    saveToFile: vi.fn(() => noopAsync()),
+    setProperty: vi.fn(() => Promise.resolve('')),
+    settingsState: {
+      effectiveValues: new PluginSettings(),
+      inputValues: new PluginSettings(),
+      validationMessages: { defaultHeight: '', defaultWidth: '' }
+    }
+  });
+}
