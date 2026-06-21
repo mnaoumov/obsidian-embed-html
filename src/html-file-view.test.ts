@@ -3,12 +3,13 @@ import type {
   WorkspaceLeaf
 } from 'obsidian';
 
-import {
-  noop,
-  noopAsync
-} from 'obsidian-dev-utils/function';
+import { Component } from 'obsidian';
+import { noopAsync } from 'obsidian-dev-utils/function';
+import { castTo } from 'obsidian-dev-utils/object-utils';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { App } from 'obsidian-test-mocks/obsidian';
 import {
+  beforeEach,
   describe,
   expect,
   it,
@@ -17,62 +18,28 @@ import {
 
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
-const addedChildren: unknown[] = [];
+interface EmbedStub extends Component {
+  loadFileAsync: ReturnType<typeof vi.fn>;
+  setSubpath: ReturnType<typeof vi.fn>;
+}
 
-const FileViewMock = vi.hoisted(() =>
-  class {
-    public app: unknown;
-    public contentEl = {
-      getAttr: vi.fn().mockReturnValue(null),
-      setCssProps: vi.fn()
-    };
-
-    public leaf: unknown;
-
-    public constructor(leaf: unknown) {
-      this.leaf = leaf;
-      this.app = (leaf as { app: unknown }).app;
-    }
-
-    public addChild(child: unknown): void {
-      addedChildren.push(child);
-    }
-
-    public async onLoadFile(_file: unknown): Promise<void> {
-      await noopAsync();
-    }
-
-    public setEphemeralState(_state: unknown): void {
-      noop();
-    }
-  }
-);
-
-vi.mock('obsidian', () => ({
-  Component: class MockComponent {
-    public register(): void {
-      noop();
-    }
-
-    public registerDomEvent(): void {
-      noop();
-    }
-  },
-  FileView: FileViewMock,
-  TFile: vi.fn(),
-  WorkspaceLeaf: vi.fn()
-}));
-
-vi.mock('obsidian-dev-utils/async', () => ({
-  invokeAsyncSafely: vi.fn()
-}));
-
-vi.mock('obsidian-dev-utils/string', () => ({
-  trimStart: vi.fn((s: string) => s)
+vi.mock('./html-embed-component.ts', () => ({
+  // eslint-disable-next-line prefer-arrow-callback, func-names -- mock must be constructable with `new` and return a loadable Component.
+  HtmlEmbedComponent: vi.fn(function (): Component {
+    const component = castTo<EmbedStub>(new Component());
+    component.loadFileAsync = vi.fn(noopAsync);
+    component.setSubpath = vi.fn();
+    return component;
+  })
 }));
 
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { HtmlEmbedComponent } from './html-embed-component.ts';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { HtmlFileView } from './html-file-view.ts';
+
+let pluginSettingsComponent: PluginSettingsComponent;
+let leaf: WorkspaceLeaf;
 
 describe('HtmlFileView', () => {
   it('should have correct VIEW_TYPE', () => {
@@ -80,191 +47,67 @@ describe('HtmlFileView', () => {
   });
 
   it('should return VIEW_TYPE from getViewType', () => {
-    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: strictProxy<WorkspaceLeaf['app']>({}) });
-    const view = new HtmlFileView(mockLeaf, strictProxy<PluginSettingsComponent>({}));
-
+    const view = new HtmlFileView(leaf, pluginSettingsComponent);
     expect(view.getViewType()).toBe('html-file-view');
   });
 
   it('should create HtmlEmbedComponent and load file on onLoadFile', async () => {
-    addedChildren.length = 0;
+    const view = new HtmlFileView(leaf, pluginSettingsComponent);
+    const file = strictProxy<TFile>({});
+    const addChildSpy = vi.spyOn(view, 'addChild');
 
-    globalThis.MutationObserver = class MockMutationObserver {
-      public disconnect(): void {
-        noop();
-      }
+    await view.onLoadFile(file);
 
-      public observe(): void {
-        noop();
-      }
-    } as unknown as typeof MutationObserver;
+    expect(vi.mocked(HtmlEmbedComponent)).toHaveBeenCalledOnce();
+    const params = vi.mocked(HtmlEmbedComponent).mock.calls[0]?.[0];
+    expect(params?.app).toBe(view.app);
+    expect(params?.containerEl).toBe(view.contentEl);
+    expect(params?.file).toBe(file);
+    expect(params?.pluginSettingsComponent).toBe(pluginSettingsComponent);
+    expect(params?.subpath).toBe('');
 
-    const mockApp = strictProxy<WorkspaceLeaf['app']>({
-      vault: strictProxy<WorkspaceLeaf['app']['vault']>({
-        getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
-        read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
-      })
-    });
-    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: mockApp });
-    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
-      settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    });
-
-    const mockParsedDoc = {
-      documentElement: { outerHTML: '<html></html>' },
-      head: { createEl: vi.fn().mockReturnValue({}) },
-      querySelector: vi.fn().mockReturnValue({ href: '' })
-    };
-
-    globalThis.DOMParser = class MockDOMParser {
-      public parseFromString(): unknown {
-        return mockParsedDoc;
-      }
-    } as unknown as typeof DOMParser;
-
-    globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-    globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-    globalThis.URL.revokeObjectURL = vi.fn();
-    vi.stubGlobal('location', { origin: 'app://obsidian.md' });
-
-    const view = new HtmlFileView(mockLeaf, mockPluginSettingsComponent);
-
-    const mockFile = strictProxy<TFile>({});
-    view.contentEl.createEl = vi.fn().mockReturnValue({
-      addEventListener: vi.fn(),
-      src: ''
-    });
-    view.contentEl.empty = vi.fn();
-
-    await view.onLoadFile(mockFile);
-
-    expect(addedChildren).toHaveLength(1);
+    const embed = embedInstance();
+    expect(addChildSpy).toHaveBeenCalledExactlyOnceWith(embed);
+    expect(embed.loadFileAsync).toHaveBeenCalledOnce();
   });
 
   it('should delegate setEphemeralState to htmlEmbedComponent', async () => {
-    addedChildren.length = 0;
-
-    globalThis.MutationObserver = class MockMutationObserver {
-      public disconnect(): void {
-        noop();
-      }
-
-      public observe(): void {
-        noop();
-      }
-    } as unknown as typeof MutationObserver;
-
-    const mockApp = strictProxy<WorkspaceLeaf['app']>({
-      vault: strictProxy<WorkspaceLeaf['app']['vault']>({
-        getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
-        read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
-      })
-    });
-    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: mockApp });
-    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
-      settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    });
-
-    const mockParsedDoc = {
-      documentElement: { outerHTML: '<html></html>' },
-      head: { createEl: vi.fn().mockReturnValue({}) },
-      querySelector: vi.fn().mockReturnValue({ href: '' })
-    };
-
-    globalThis.DOMParser = class MockDOMParser {
-      public parseFromString(): unknown {
-        return mockParsedDoc;
-      }
-    } as unknown as typeof DOMParser;
-
-    globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-    globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-    globalThis.URL.revokeObjectURL = vi.fn();
-    vi.stubGlobal('location', { origin: 'app://obsidian.md' });
-
-    const view = new HtmlFileView(mockLeaf, mockPluginSettingsComponent);
-
-    view.contentEl.createEl = vi.fn().mockReturnValue({
-      addEventListener: vi.fn(),
-      src: ''
-    });
-    view.contentEl.empty = vi.fn();
-
+    const view = new HtmlFileView(leaf, pluginSettingsComponent);
     await view.onLoadFile(strictProxy<TFile>({}));
 
-    const mockInvokeAsyncSafely = (await import('obsidian-dev-utils/async')).invokeAsyncSafely as ReturnType<typeof vi.fn>;
-    mockInvokeAsyncSafely.mockClear();
-
+    const embed = embedInstance();
     view.setEphemeralState({ subpath: '#test' });
 
-    expect(mockInvokeAsyncSafely).toHaveBeenCalled();
+    expect(embed.setSubpath).toHaveBeenCalledExactlyOnceWith('#test');
   });
 
   it('should use empty string when ephemeral state has no subpath', async () => {
-    addedChildren.length = 0;
-
-    globalThis.MutationObserver = class MockMutationObserver {
-      public disconnect(): void {
-        noop();
-      }
-
-      public observe(): void {
-        noop();
-      }
-    } as unknown as typeof MutationObserver;
-
-    const mockApp = strictProxy<WorkspaceLeaf['app']>({
-      vault: strictProxy<WorkspaceLeaf['app']['vault']>({
-        getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
-        read: vi.fn().mockResolvedValue('<html><head></head><body></body></html>')
-      })
-    });
-    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: mockApp });
-    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({
-      settings: { defaultHeight: '400px', defaultWidth: '100%' }
-    });
-
-    const mockParsedDoc = {
-      documentElement: { outerHTML: '<html></html>' },
-      head: { createEl: vi.fn().mockReturnValue({}) },
-      querySelector: vi.fn().mockReturnValue({ href: '' })
-    };
-
-    globalThis.DOMParser = class MockDOMParser {
-      public parseFromString(): unknown {
-        return mockParsedDoc;
-      }
-    } as unknown as typeof DOMParser;
-
-    globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-    globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-    globalThis.URL.revokeObjectURL = vi.fn();
-    vi.stubGlobal('location', { origin: 'app://obsidian.md' });
-
-    const view = new HtmlFileView(mockLeaf, mockPluginSettingsComponent);
-
-    view.contentEl.createEl = vi.fn().mockReturnValue({
-      addEventListener: vi.fn(),
-      src: ''
-    });
-    view.contentEl.empty = vi.fn();
-
+    const view = new HtmlFileView(leaf, pluginSettingsComponent);
     await view.onLoadFile(strictProxy<TFile>({}));
 
-    const mockInvokeAsyncSafely = (await import('obsidian-dev-utils/async')).invokeAsyncSafely as ReturnType<typeof vi.fn>;
-    mockInvokeAsyncSafely.mockClear();
-
+    const embed = embedInstance();
     view.setEphemeralState({});
 
-    expect(mockInvokeAsyncSafely).toHaveBeenCalled();
+    expect(embed.setSubpath).toHaveBeenCalledExactlyOnceWith('');
   });
 
   it('should not crash when setEphemeralState is called before onLoadFile', () => {
-    const mockLeaf = strictProxy<WorkspaceLeaf>({ app: strictProxy<WorkspaceLeaf['app']>({}) });
-    const view = new HtmlFileView(mockLeaf, strictProxy<PluginSettingsComponent>({}));
+    const view = new HtmlFileView(leaf, pluginSettingsComponent);
 
     expect(() => {
       view.setEphemeralState({ subpath: '#test' });
     }).not.toThrow();
   });
 });
+
+beforeEach(() => {
+  vi.clearAllMocks();
+
+  const app = App.createConfigured__();
+  leaf = app.workspace.getLeaf().asOriginalType3__();
+  pluginSettingsComponent = strictProxy<PluginSettingsComponent>({});
+});
+
+function embedInstance(): EmbedStub {
+  return castTo<EmbedStub>(vi.mocked(HtmlEmbedComponent).mock.results[0]?.value);
+}

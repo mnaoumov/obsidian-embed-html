@@ -4,6 +4,7 @@ import type {
 } from 'obsidian';
 
 import { noop } from 'obsidian-dev-utils/function';
+import { castTo } from 'obsidian-dev-utils/object-utils';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import {
   afterEach,
@@ -26,50 +27,6 @@ interface MockElement {
   target?: string;
 }
 
-const invokeAsyncSafelyMock = vi.hoisted(() =>
-  vi.fn((fn: () => Promise<void>) => {
-    void fn();
-  })
-);
-
-const trimStartMock = vi.hoisted(() =>
-  vi.fn((str: string, prefix: string) => {
-    if (str.startsWith(prefix)) {
-      return str.slice(prefix.length);
-    }
-    return str;
-  })
-);
-
-const registerCallbacks: (() => void)[] = [];
-let domEventHandlers: Map<string, (evt: unknown) => void>;
-
-const ComponentMock = vi.hoisted(() =>
-  class {
-    public register(cb: () => void): void {
-      registerCallbacks.push(cb);
-    }
-
-    public registerDomEvent(_target: unknown, event: string, handler: (evt: unknown) => void): void {
-      domEventHandlers.set(event, handler);
-    }
-  }
-);
-
-vi.mock('obsidian', () => ({
-  App: vi.fn(),
-  Component: ComponentMock,
-  TFile: vi.fn()
-}));
-
-vi.mock('obsidian-dev-utils/async', () => ({
-  invokeAsyncSafely: invokeAsyncSafelyMock
-}));
-
-vi.mock('obsidian-dev-utils/string', () => ({
-  trimStart: trimStartMock
-}));
-
 interface MockContainerEl {
   createEl: ReturnType<typeof vi.fn>;
   empty: ReturnType<typeof vi.fn>;
@@ -81,6 +38,8 @@ interface MockIframeEl {
   addEventListener: ReturnType<typeof vi.fn>;
   src: string;
 }
+
+const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
 function createMockContainerEl(): MockContainerEl {
   return {
@@ -109,12 +68,27 @@ function createMockPluginSettingsComponent(): PluginSettingsComponent {
 }
 
 function createMockApp(): App {
-  return strictProxy<App>({
+  const app = strictProxy<App>({
     vault: strictProxy<App['vault']>({
       getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
       read: vi.fn().mockResolvedValue('<html><head></head><body>Hello</body></html>')
     })
   });
+
+  // The real dev-utils helpers (invokeAsyncSafely / debug) read and write a shared state holder on
+  // the app. Seed it on the raw target behind the strict-proxy so those helpers can run, and expose
+  // the same app as the global instance so helpers that resolve state without an explicit app argument
+  // read/write the same holder.
+  seedOnRawTarget(app, 'obsidianDevUtilsState', {});
+  castTo<{ app: App }>(window).app = app;
+
+  return app;
+}
+
+function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknown): void {
+  const proxyWithTarget = castTo<Partial<Record<symbol, object>>>(strictProxiedObject);
+  const rawTarget = proxyWithTarget[STRICT_PROXY_TARGET_SYMBOL] ?? strictProxiedObject;
+  castTo<Record<string, unknown>>(rawTarget)[key] = value;
 }
 
 let mockMutationObserverDisconnect: ReturnType<typeof vi.fn>;
@@ -122,8 +96,6 @@ let mockMutationObserverCallback: MutationCallback;
 
 describe('HtmlEmbedComponent', () => {
   beforeEach(() => {
-    registerCallbacks.length = 0;
-    domEventHandlers = new Map();
     mockMutationObserverDisconnect = vi.fn();
 
     globalThis.MutationObserver = class MockMutationObserver {
@@ -162,12 +134,12 @@ describe('HtmlEmbedComponent', () => {
       expect(containerEl.setCssProps).toHaveBeenCalled();
     });
 
-    it('should register cleanup that disconnects MutationObserver', () => {
+    it('should register cleanup that disconnects MutationObserver on unload', () => {
       const containerEl = createMockContainerEl();
       const pluginSettingsComponent = createMockPluginSettingsComponent();
       const mockApp = createMockApp();
 
-      new HtmlEmbedComponent({
+      const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
         file: strictProxy<TFile>({}),
@@ -175,8 +147,10 @@ describe('HtmlEmbedComponent', () => {
         subpath: ''
       });
 
-      expect(registerCallbacks).toHaveLength(1);
-      registerCallbacks.at(0)?.();
+      // The real ComponentEx only runs registered cleanups during unload(), and only when the
+      // component has been loaded. Drive the real load/unload lifecycle to exercise the cleanup.
+      component.load();
+      component.unload();
 
       expect(mockMutationObserverDisconnect).toHaveBeenCalled();
     });
@@ -288,7 +262,7 @@ describe('HtmlEmbedComponent', () => {
   });
 
   describe('loadFile', () => {
-    it('should call invokeAsyncSafely with loadFileAsync', () => {
+    it('should trigger the async load path (empty container and create iframe)', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
         src: ''
@@ -323,14 +297,19 @@ describe('HtmlEmbedComponent', () => {
         subpath: ''
       });
 
-      invokeAsyncSafelyMock.mockClear();
-      invokeAsyncSafelyMock.mockImplementation((fn: () => Promise<void>) => {
-        void fn();
-      });
+      // loadFile() uses the real fire-and-forget invokeAsyncSafely; observe the effect rather than
+      // asserting the helper was called.
       component.loadFile();
 
-      expect(invokeAsyncSafelyMock).toHaveBeenCalled();
-      expect(containerEl.empty).toHaveBeenCalled();
+      await vi.waitFor(() => {
+        expect(containerEl.empty).toHaveBeenCalled();
+        expect(containerEl.createEl).toHaveBeenCalledWith('iframe', {
+          attr: {
+            height: '100%',
+            width: '100%'
+          }
+        });
+      });
     });
   });
 
@@ -491,9 +470,16 @@ describe('HtmlEmbedComponent', () => {
 
     it('should revoke object URL and init iframe on load', async () => {
       let loadHandler: (() => void) | undefined;
+      const clickHandlerSpy = vi.fn();
       const mockContentDocument = {
+        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
+          if (event === 'click') {
+            clickHandlerSpy.mockImplementation(handler);
+          }
+        }),
         defaultView: null,
         getElementById: vi.fn().mockReturnValue(null),
+        removeEventListener: vi.fn(),
         scrollingElement: null
       };
       const mockIframeEl: { contentDocument: unknown } & MockIframeEl = {
@@ -541,7 +527,8 @@ describe('HtmlEmbedComponent', () => {
       loadHandler?.();
 
       expect(globalThis.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test-url');
-      expect(domEventHandlers.has('click')).toBe(true);
+      // The real registerDomEvent calls contentDocument.addEventListener('click', handler).
+      expect(findClickHandler(mockContentDocument.addEventListener)).toBeDefined();
     });
 
     it('should return early from load handler when contentDocument is null', async () => {
@@ -589,15 +576,36 @@ describe('HtmlEmbedComponent', () => {
       loadHandler?.();
 
       expect(globalThis.URL.revokeObjectURL).toHaveBeenCalled();
-      expect(domEventHandlers.has('click')).toBe(false);
     });
   });
 
   describe('setSubpath', () => {
-    it('should update subpath and call loadFile', () => {
+    it('should update subpath and reload the file', async () => {
+      const mockIframeEl: MockIframeEl = {
+        addEventListener: vi.fn(),
+        src: ''
+      };
       const containerEl = createMockContainerEl();
+      containerEl.createEl.mockReturnValue(mockIframeEl);
       const pluginSettingsComponent = createMockPluginSettingsComponent();
       const mockApp = createMockApp();
+
+      const mockParsedDoc = {
+        documentElement: { outerHTML: '<html></html>' },
+        head: { createEl: vi.fn().mockReturnValue({}) },
+        querySelector: vi.fn().mockReturnValue({ href: '' })
+      };
+
+      globalThis.DOMParser = class MockDOMParser {
+        public parseFromString(): unknown {
+          return mockParsedDoc;
+        }
+      } as unknown as typeof DOMParser;
+
+      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
+      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      globalThis.URL.revokeObjectURL = vi.fn();
+      vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
         app: mockApp,
@@ -607,13 +615,12 @@ describe('HtmlEmbedComponent', () => {
         subpath: ''
       });
 
-      invokeAsyncSafelyMock.mockClear();
-      invokeAsyncSafelyMock.mockImplementation(() => {
-        // Don't actually invoke the async function in this test
-      });
+      // setSubpath delegates to loadFile, which fires the real async load path.
       component.setSubpath('#myId');
 
-      expect(invokeAsyncSafelyMock).toHaveBeenCalled();
+      await vi.waitFor(() => {
+        expect(containerEl.createEl).toHaveBeenCalled();
+      });
     });
   });
 
@@ -638,8 +645,10 @@ describe('HtmlEmbedComponent', () => {
       Object.setPrototypeOf(mockClickTarget, MockElement.prototype);
 
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: mockIframeWin,
-        getElementById: vi.fn().mockReturnValue(null)
+        getElementById: vi.fn().mockReturnValue(null),
+        removeEventListener: vi.fn()
       };
 
       let loadHandler: (() => void) | undefined;
@@ -686,7 +695,7 @@ describe('HtmlEmbedComponent', () => {
       await component.loadFileAsync();
       loadHandler?.();
 
-      const clickHandler = domEventHandlers.get('click');
+      const clickHandler = findClickHandler(mockContentDocument.addEventListener);
       expect(clickHandler).toBeDefined();
 
       clickHandler?.({ target: mockClickTarget });
@@ -700,8 +709,10 @@ describe('HtmlEmbedComponent', () => {
       const mockClickTarget = { notAnElement: true };
 
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: mockIframeWin,
-        getElementById: vi.fn().mockReturnValue(null)
+        getElementById: vi.fn().mockReturnValue(null),
+        removeEventListener: vi.fn()
       };
 
       let loadHandler: (() => void) | undefined;
@@ -748,7 +759,7 @@ describe('HtmlEmbedComponent', () => {
       await component.loadFileAsync();
       loadHandler?.();
 
-      const clickHandler = domEventHandlers.get('click');
+      const clickHandler = findClickHandler(mockContentDocument.addEventListener);
       expect(clickHandler).toBeDefined();
 
       expect(() => {
@@ -758,8 +769,10 @@ describe('HtmlEmbedComponent', () => {
 
     it('should not crash when defaultView is null', async () => {
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: null,
-        getElementById: vi.fn().mockReturnValue(null)
+        getElementById: vi.fn().mockReturnValue(null),
+        removeEventListener: vi.fn()
       };
 
       let loadHandler: (() => void) | undefined;
@@ -806,7 +819,7 @@ describe('HtmlEmbedComponent', () => {
       await component.loadFileAsync();
       loadHandler?.();
 
-      const clickHandler = domEventHandlers.get('click');
+      const clickHandler = findClickHandler(mockContentDocument.addEventListener);
       expect(clickHandler).toBeDefined();
 
       expect(() => {
@@ -822,8 +835,10 @@ describe('HtmlEmbedComponent', () => {
       const mockIframeWin = { Element: MockElement };
 
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: mockIframeWin,
-        getElementById: vi.fn().mockReturnValue(null)
+        getElementById: vi.fn().mockReturnValue(null),
+        removeEventListener: vi.fn()
       };
 
       let loadHandler: (() => void) | undefined;
@@ -870,7 +885,7 @@ describe('HtmlEmbedComponent', () => {
       await component.loadFileAsync();
       loadHandler?.();
 
-      const clickHandler = domEventHandlers.get('click');
+      const clickHandler = findClickHandler(mockContentDocument.addEventListener);
 
       expect(() => {
         clickHandler?.({ target: mockClickTarget });
@@ -901,11 +916,13 @@ describe('HtmlEmbedComponent', () => {
 
       const createdStyleEl = {};
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: { Element: class {} },
         getElementById: vi.fn().mockReturnValue(targetEl),
         head: {
           createEl: vi.fn().mockReturnValue(createdStyleEl)
-        }
+        },
+        removeEventListener: vi.fn()
       };
 
       let loadHandler: (() => void) | undefined;
@@ -984,9 +1001,11 @@ describe('HtmlEmbedComponent', () => {
       };
 
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: { Element: class {} },
         documentElement: {},
         getElementById: vi.fn().mockReturnValue(targetEl),
+        removeEventListener: vi.fn(),
         scrollingElement: mockScrollingEl
       };
 
@@ -1057,9 +1076,11 @@ describe('HtmlEmbedComponent', () => {
       };
 
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: { Element: class {} },
         documentElement: mockDocumentElement,
         getElementById: vi.fn().mockReturnValue(targetEl),
+        removeEventListener: vi.fn(),
         scrollingElement: null
       };
 
@@ -1116,8 +1137,10 @@ describe('HtmlEmbedComponent', () => {
 
     it('should do nothing when element is not found', async () => {
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: { Element: class {} },
         getElementById: vi.fn().mockReturnValue(null),
+        removeEventListener: vi.fn(),
         scrollingElement: { scrollBy: vi.fn() }
       };
 
@@ -1184,10 +1207,12 @@ describe('HtmlEmbedComponent', () => {
       };
 
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: { Element: class {} },
         documentElement: {},
         getElementById: vi.fn().mockReturnValue(targetEl),
         head: { createEl: vi.fn() },
+        removeEventListener: vi.fn(),
         scrollingElement: mockScrollingEl
       };
 
@@ -1243,8 +1268,10 @@ describe('HtmlEmbedComponent', () => {
   describe('initIframe - no subpath', () => {
     it('should not try to find element when no subpath id', async () => {
       const mockContentDocument = {
+        addEventListener: vi.fn(),
         defaultView: { Element: class {} },
-        getElementById: vi.fn()
+        getElementById: vi.fn(),
+        removeEventListener: vi.fn()
       };
 
       let loadHandler: (() => void) | undefined;
@@ -1295,3 +1322,10 @@ describe('HtmlEmbedComponent', () => {
     });
   });
 });
+
+function findClickHandler(
+  addEventListenerMock: ReturnType<typeof vi.fn>
+): ((evt: { target: unknown }) => void) | undefined {
+  const clickCall = addEventListenerMock.mock.calls.find((call) => call[0] === 'click');
+  return clickCall?.[1] as ((evt: { target: unknown }) => void) | undefined;
+}

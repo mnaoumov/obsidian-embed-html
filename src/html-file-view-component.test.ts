@@ -1,7 +1,10 @@
-import type { App } from 'obsidian';
+import type {
+  App,
+  ViewCreator
+} from 'obsidian';
 
-import { noop } from 'obsidian-dev-utils/function';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { App as AppMock } from 'obsidian-test-mocks/obsidian';
 import {
   describe,
   expect,
@@ -13,139 +16,78 @@ import type { HtmlExtensions } from './html-extensions.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 import type { Plugin } from './plugin.ts';
 
-const registerCallbacks: (() => void)[] = [];
-
-const ComponentMock = vi.hoisted(() =>
-  class {
-    public register(cb: () => void): void {
-      registerCallbacks.push(cb);
-    }
-
-    public onload(): void {
-      noop();
-    }
-  }
-);
-
-const FileViewMock = vi.hoisted(() =>
-  class {
-    public static readonly VIEW_TYPE = 'html-file-view';
-  }
-);
-
-vi.mock('obsidian', () => ({
-  Component: ComponentMock,
-  FileView: FileViewMock,
-  TFile: vi.fn(),
-  WorkspaceLeaf: vi.fn()
-}));
-
-vi.mock('obsidian-dev-utils/async', () => ({
-  invokeAsyncSafely: vi.fn()
-}));
-
-vi.mock('obsidian-dev-utils/string', () => ({
-  trimStart: vi.fn((s: string) => s)
-}));
-
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { HtmlFileViewComponent } from './html-file-view-component.ts';
+import { HtmlFileView } from './html-file-view.ts';
+
+const VIEW_TYPE = 'html-file-view';
 
 describe('HtmlFileViewComponent', () => {
-  it('should register extensions and view on load', () => {
-    registerCallbacks.length = 0;
-    const mockRegisterExtensions = vi.fn();
-    const mockUnregisterExtensions = vi.fn();
-    const mockRegisterView = vi.fn();
-    const mockApp = strictProxy<App>({
-      viewRegistry: strictProxy<App['viewRegistry']>({
-        registerExtensions: mockRegisterExtensions,
-        unregisterExtensions: mockUnregisterExtensions
-      })
-    });
-    const mockPlugin = strictProxy<Plugin>({
-      registerView: mockRegisterView
-    });
-    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({});
-    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
-      list: vi.fn().mockReturnValue(['htm', 'html'])
-    });
+  it('should register extensions and the view on load', () => {
+    const harness = createHarness();
 
-    const component = new HtmlFileViewComponent(
-      mockApp,
-      mockPlugin,
-      mockPluginSettingsComponent,
-      mockHtmlExtensions
-    );
+    harness.component.load();
 
-    component.onload();
-
-    expect(mockRegisterExtensions).toHaveBeenCalledWith(['htm', 'html'], 'html-file-view');
-    expect(mockRegisterView).toHaveBeenCalledWith('html-file-view', expect.any(Function));
+    expect(harness.registerExtensions).toHaveBeenCalledWith(['html'], VIEW_TYPE);
+    expect(harness.registerView).toHaveBeenCalledWith(VIEW_TYPE, expect.any(Function));
   });
 
-  it('should register cleanup that unregisters extensions', () => {
-    registerCallbacks.length = 0;
-    const mockUnregisterExtensions = vi.fn();
-    const mockApp = strictProxy<App>({
-      viewRegistry: strictProxy<App['viewRegistry']>({
-        registerExtensions: vi.fn(),
-        unregisterExtensions: mockUnregisterExtensions
-      })
-    });
-    const mockPlugin = strictProxy<Plugin>({
-      registerView: vi.fn()
-    });
-    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({});
-    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
-      list: vi.fn().mockReturnValue(['htm', 'html'])
-    });
+  it('should create an HtmlFileView instance from the registered view factory', () => {
+    const harness = createHarness();
 
-    const component = new HtmlFileViewComponent(
-      mockApp,
-      mockPlugin,
-      mockPluginSettingsComponent,
-      mockHtmlExtensions
-    );
+    harness.component.load();
 
-    component.onload();
+    const factory = harness.registerView.mock.calls[0]?.[1];
+    expect(factory).toBeInstanceOf(Function);
 
-    expect(registerCallbacks).toHaveLength(1);
-    registerCallbacks.at(0)?.();
+    // The real test-mocks App mints a real WorkspaceLeaf whose `app__` satisfies the real
+    // test-mocks FileView/ItemView/View constructor chain that HtmlFileView extends.
+    const leaf = AppMock.createConfigured__().workspace.getLeaf();
+    const view = factory?.(leaf.asOriginalType3__());
 
-    expect(mockUnregisterExtensions).toHaveBeenCalledWith(['htm', 'html']);
+    expect(view).toBeInstanceOf(HtmlFileView);
   });
 
-  it('should create HtmlFileView from view factory', () => {
-    registerCallbacks.length = 0;
-    const mockRegisterView = vi.fn();
-    const mockApp = strictProxy<App>({
-      viewRegistry: strictProxy<App['viewRegistry']>({
-        registerExtensions: vi.fn(),
-        unregisterExtensions: vi.fn()
-      })
-    });
-    const mockPlugin = strictProxy<Plugin>({
-      registerView: mockRegisterView
-    });
-    const mockPluginSettingsComponent = strictProxy<PluginSettingsComponent>({});
-    const mockHtmlExtensions = strictProxy<HtmlExtensions>({
-      list: vi.fn().mockReturnValue(['html'])
-    });
+  it('should unregister extensions when unloaded', () => {
+    const harness = createHarness();
 
-    const component = new HtmlFileViewComponent(
-      mockApp,
-      mockPlugin,
-      mockPluginSettingsComponent,
-      mockHtmlExtensions
-    );
+    harness.component.load();
+    expect(harness.unregisterExtensions).not.toHaveBeenCalled();
 
-    component.onload();
+    harness.component.unload();
 
-    const viewFactory = mockRegisterView.mock.calls.at(0)?.[1] as (leaf: unknown) => unknown;
-    const mockLeaf = { app: mockApp };
-    const result = viewFactory(mockLeaf);
-
-    expect(result).toBeDefined();
+    expect(harness.unregisterExtensions).toHaveBeenCalledWith(['html']);
   });
 });
+
+interface Harness {
+  readonly component: HtmlFileViewComponent;
+  readonly registerExtensions: ReturnType<typeof vi.fn>;
+  readonly registerView: ReturnType<typeof vi.fn<(viewType: string, viewCreator: ViewCreator) => void>>;
+  readonly unregisterExtensions: ReturnType<typeof vi.fn>;
+}
+
+function createHarness(): Harness {
+  const registerExtensions = vi.fn();
+  const unregisterExtensions = vi.fn();
+  const registerView = vi.fn<(viewType: string, viewCreator: ViewCreator) => void>();
+
+  const app = strictProxy<App>({
+    viewRegistry: strictProxy<App['viewRegistry']>({
+      registerExtensions,
+      unregisterExtensions
+    })
+  });
+  const plugin = strictProxy<Plugin>({ registerView });
+  const pluginSettingsComponent = strictProxy<PluginSettingsComponent>({});
+  const htmlExtensions = strictProxy<HtmlExtensions>({
+    list: vi.fn(() => ['html'])
+  });
+
+  const component = new HtmlFileViewComponent(app, plugin, pluginSettingsComponent, htmlExtensions);
+  return {
+    component,
+    registerExtensions,
+    registerView,
+    unregisterExtensions
+  };
+}
