@@ -73,7 +73,7 @@ describe('PluginSettingsTab', () => {
 
     const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
-    tab.display();
+    tab.displayLegacy();
 
     const EXPECTED_SETTING_COUNT = 2;
     expect(settingInstances).toHaveLength(EXPECTED_SETTING_COUNT);
@@ -90,7 +90,7 @@ describe('PluginSettingsTab', () => {
 
     const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
-    tab.display();
+    tab.displayLegacy();
 
     expect(settingInstances.at(0)?.setName).toHaveBeenCalledWith('Default width');
     expect(settingInstances.at(1)?.setName).toHaveBeenCalledWith('Default height');
@@ -109,7 +109,7 @@ describe('PluginSettingsTab', () => {
 
     const tab = new PluginSettingsTab({ plugin: strictProxy<Plugin>({}), pluginSettingsComponent: strictProxy<PluginSettingsComponent>({}) });
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- testing the display() method which delegates to PluginSettingsTabBase; the @deprecated tag is inherited from Obsidian's SettingTab.display.
-    tab.display();
+    tab.displayLegacy();
 
     expect(hoisted.keys).toContain('defaultWidth');
     expect(hoisted.keys).toContain('defaultHeight');
