@@ -41,7 +41,11 @@ let htmlExtensions: HtmlExtensions;
 
 describe('HtmlEmbedRegistryComponent', () => {
   it('should register the html extensions with an embed factory on load', () => {
-    const component = new HtmlEmbedRegistryComponent(app, pluginSettingsComponent, htmlExtensions);
+    const component = new HtmlEmbedRegistryComponent({
+      app,
+      htmlExtensions,
+      pluginSettingsComponent
+    });
 
     component.load();
 
@@ -49,7 +53,11 @@ describe('HtmlEmbedRegistryComponent', () => {
   });
 
   it('should unregister the html extensions when the component is unloaded', () => {
-    const component = new HtmlEmbedRegistryComponent(app, pluginSettingsComponent, htmlExtensions);
+    const component = new HtmlEmbedRegistryComponent({
+      app,
+      htmlExtensions,
+      pluginSettingsComponent
+    });
 
     component.load();
     expect(unregisterExtensions).not.toHaveBeenCalled();
@@ -60,7 +68,11 @@ describe('HtmlEmbedRegistryComponent', () => {
   });
 
   it('should build an HtmlEmbedComponent from the registered factory with the provided subpath', () => {
-    const component = new HtmlEmbedRegistryComponent(app, pluginSettingsComponent, htmlExtensions);
+    const component = new HtmlEmbedRegistryComponent({
+      app,
+      htmlExtensions,
+      pluginSettingsComponent
+    });
     component.load();
 
     const factory = getRegisteredFactory();
@@ -70,7 +82,11 @@ describe('HtmlEmbedRegistryComponent', () => {
   });
 
   it('should default the subpath to an empty string when none is provided', () => {
-    const component = new HtmlEmbedRegistryComponent(app, pluginSettingsComponent, htmlExtensions);
+    const component = new HtmlEmbedRegistryComponent({
+      app,
+      htmlExtensions,
+      pluginSettingsComponent
+    });
     component.load();
 
     const factory = getRegisteredFactory();

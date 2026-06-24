@@ -7,13 +7,22 @@ import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
 import { HtmlEmbedComponent } from './html-embed-component.ts';
 
+interface HtmlEmbedRegistryComponentConstructorParams {
+  readonly app: App;
+  readonly htmlExtensions: HtmlExtensions;
+  readonly pluginSettingsComponent: PluginSettingsComponent;
+}
+
 export class HtmlEmbedRegistryComponent extends ComponentEx {
-  public constructor(
-    private readonly app: App,
-    private readonly pluginSettingsComponent: PluginSettingsComponent,
-    private readonly htmlExtensions: HtmlExtensions
-  ) {
+  private readonly app: App;
+  private readonly htmlExtensions: HtmlExtensions;
+  private readonly pluginSettingsComponent: PluginSettingsComponent;
+
+  public constructor(params: HtmlEmbedRegistryComponentConstructorParams) {
     super();
+    this.app = params.app;
+    this.pluginSettingsComponent = params.pluginSettingsComponent;
+    this.htmlExtensions = params.htmlExtensions;
   }
 
   public override onload(): void {
