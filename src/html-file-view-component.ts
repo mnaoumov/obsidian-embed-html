@@ -1,29 +1,47 @@
-import type { App } from 'obsidian';
+import type { ExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
+import type { ViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
 
 import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
 
 import type { HtmlExtensions } from './html-extensions.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
-import type { Plugin } from './plugin.ts';
 
 import { HtmlFileView } from './html-file-view.ts';
 
+interface HtmlFileViewComponentConstructorParams {
+  readonly extensionsRegistrar: ExtensionsRegistrar;
+  readonly htmlExtensions: HtmlExtensions;
+  readonly pluginSettingsComponent: PluginSettingsComponent;
+  readonly viewRegistrar: ViewRegistrar;
+}
+
 export class HtmlFileViewComponent extends ComponentEx {
-  public constructor(
-    private readonly app: App,
-    private readonly plugin: Plugin,
-    private readonly pluginSettingsComponent: PluginSettingsComponent,
-    private readonly htmlExtensions: HtmlExtensions
-  ) {
+  private readonly extensionsRegistrar: ExtensionsRegistrar;
+  private readonly htmlExtensions: HtmlExtensions;
+  private readonly pluginSettingsComponent: PluginSettingsComponent;
+  private readonly viewRegistrar: ViewRegistrar;
+
+  public constructor(params: HtmlFileViewComponentConstructorParams) {
     super();
+    this.extensionsRegistrar = params.extensionsRegistrar;
+    this.pluginSettingsComponent = params.pluginSettingsComponent;
+    this.htmlExtensions = params.htmlExtensions;
+    this.viewRegistrar = params.viewRegistrar;
   }
 
   public override onload(): void {
     super.onload();
-    this.app.viewRegistry.registerExtensions(this.htmlExtensions.list(), HtmlFileView.VIEW_TYPE);
-    this.plugin.registerView(HtmlFileView.VIEW_TYPE, (leaf) => new HtmlFileView(leaf, this.pluginSettingsComponent));
-    this.register(() => {
-      this.app.viewRegistry.unregisterExtensions(this.htmlExtensions.list());
+
+    this.extensionsRegistrar.registerExtensions({
+      extensions: this.htmlExtensions.list(),
+      viewType: HtmlFileView.VIEW_TYPE
+    });
+
+    this.viewRegistrar.registerView({
+      type: HtmlFileView.VIEW_TYPE,
+      viewCreator: (leaf) => {
+        return new HtmlFileView(leaf, this.pluginSettingsComponent);
+      }
     });
   }
 }

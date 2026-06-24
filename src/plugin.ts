@@ -1,7 +1,9 @@
 import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
 import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
+import { PluginExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
 import { PluginEventSourceImpl } from 'obsidian-dev-utils/obsidian/plugin/plugin-event-source';
+import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
 
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
 import { HtmlExtensions } from './html-extensions.ts';
@@ -27,7 +29,20 @@ export class Plugin extends PluginBase {
         })
       })
     );
-    this.addChild(new HtmlEmbedRegistryComponent(this.app, pluginSettingsComponent, htmlExtensions));
-    this.addChild(new HtmlFileViewComponent(this.app, this, pluginSettingsComponent, htmlExtensions));
+    this.addChild(
+      new HtmlEmbedRegistryComponent({
+        app: this.app,
+        htmlExtensions,
+        pluginSettingsComponent
+      })
+    );
+    this.addChild(
+      new HtmlFileViewComponent({
+        extensionsRegistrar: new PluginExtensionsRegistrar(this),
+        htmlExtensions,
+        pluginSettingsComponent,
+        viewRegistrar: new PluginViewRegistrar(this)
+      })
+    );
   }
 }
