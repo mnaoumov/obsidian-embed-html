@@ -13,7 +13,7 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
         f.appendText('The default width of the embedded HTML file, if not specified.');
       }))
       .addText((text) => {
-        this.bind(text, 'defaultWidth');
+        this.bind({ propertyName: 'defaultWidth', valueComponent: text });
       });
 
     new SettingEx(this.containerEl)
@@ -22,7 +22,7 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
         f.appendText('The default height of the embedded HTML file, if not specified.');
       }))
       .addText((text) => {
-        this.bind(text, 'defaultHeight');
+        this.bind({ propertyName: 'defaultHeight', valueComponent: text });
       });
   }
 }
