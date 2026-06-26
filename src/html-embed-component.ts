@@ -173,7 +173,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   }
 
   private parseOptions(): Options {
-    const searchParams = new URLSearchParams(`id=${trimStart(this.subpath, '#')}`);
+    const searchParams = new URLSearchParams(`id=${trimStart({ prefix: '#', str: this.subpath })}`);
     return {
       /* v8 ignore start -- The `id` key is always present in the constructed URLSearchParams string, so `get('id')` never returns `null`. */
       id: searchParams.get('id') ?? '',

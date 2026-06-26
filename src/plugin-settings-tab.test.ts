@@ -30,7 +30,7 @@ beforeEach(() => {
   // that the tab wires each text component to the correct setting key, so we stub its return value
   // (an allowed test double): the real test-mocks `TextComponent` is a strict proxy that throws on
   // the `setPlaceholderValue` duck-typing probe inside the real `bind`.
-  vi.spyOn(PluginSettingsTabBase.prototype, 'bind').mockImplementation((valueComponent) => valueComponent);
+  vi.spyOn(PluginSettingsTabBase.prototype, 'bind').mockImplementation((params) => params.valueComponent);
 });
 
 describe('PluginSettingsTab', () => {
@@ -57,7 +57,7 @@ describe('PluginSettingsTab', () => {
 
     tab.displayLegacy();
 
-    const boundKeys = vi.mocked(PluginSettingsTabBase.prototype.bind).mock.calls.map((call) => call[1]);
+    const boundKeys = vi.mocked(PluginSettingsTabBase.prototype.bind).mock.calls.map((call) => call[0].propertyName);
     expect(boundKeys).toContain('defaultWidth');
     expect(boundKeys).toContain('defaultHeight');
   });
