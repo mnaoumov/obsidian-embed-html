@@ -32,13 +32,14 @@ Embed HTML is an Obsidian plugin that adds support for embedding HTML files (`ht
   - `main.ts` — Obsidian entry point (default export of `Plugin`)
   - `plugin.ts` — `Plugin` extends `PluginBase`; in `onloadImpl` wires up the settings component, settings tab, the embed registry component, and the file view component
   - `html-extensions.ts` — `HtmlExtensions.list()` returns the supported HTML file extensions
-  - `html-embed-component.ts` — `HtmlEmbedComponent` (implements `EmbedComponent`); renders an HTML file into a sandboxed `<iframe>` (object-URL blob, injected `<base>` + `enhance.js`), handles size from `width`/`height` attributes or settings, and supports `#id` subpath `scroll`/`extract` modes
+  - `html-embed-component.ts` — `HtmlEmbedComponent` (implements `EmbedComponent`); renders an HTML file into a sandboxed `<iframe>` (object-URL blob, injected `<base>` + `enhance.js`), and supports `#id` subpath `scroll`/`extract` modes. Sizing: `resolveSize()` merges the parsed `alt` token (see `size-spec.ts`), the `width`/`height` attributes, and the settings defaults into six CSS box properties applied via `setCssProps`; content-keyword axes (`min-content`/`max-content`/`fit-content`) are measured live by a `ResizeObserver` (`measure()` — collapses the iframe to `0px` inside a temporarily-expanded container to read true content size; for content-width it injects a `body { width: <keyword> }` style)
+  - `size-spec.ts` — `parseSizeSpec(token)` (pure, deterministic) turns the container's `alt` token into a `SizeSpec`. Obsidian only routes pure-digit `N`/`NxM` tokens into `width`/`height` attributes; every other token lands verbatim in `alt`. Accepts a full CSS-declaration form (`width: …; min-height: …`) and short forms (`WxH`, `W`, `xH`, `-` → `fit-content`). Value validation is deferred to apply-time (browser CSSOM), keeping the parser jsdom/Chromium-agnostic
   - `html-embed-registry-component.ts` — `HtmlEmbedRegistryComponent`; registers/unregisters the HTML extensions with `app.embedRegistry` so `![[file.html]]` embeds work
   - `html-file-view.ts` — `HtmlFileView` extends `FileView`; opens an HTML file in its own leaf, hosting an `HtmlEmbedComponent` and forwarding ephemeral subpath state
   - `html-file-view-component.ts` — `HtmlFileViewComponent`; registers the file extensions and the `HtmlFileView` view type via injected `ExtensionsRegistrar`/`ViewRegistrar`
-  - `plugin-settings.ts` — `PluginSettings` data class (`defaultWidth`, `defaultHeight`)
+  - `plugin-settings.ts` — `PluginSettings` data class; six CSS defaults: `defaultWidth`, `defaultHeight`, `defaultMinWidth`, `defaultMaxWidth`, `defaultMinHeight`, `defaultMaxHeight` (min/max default to `''` = unset)
   - `plugin-settings-component.ts` — `PluginSettingsComponent` extends `PluginSettingsComponentBase<PluginSettings>`
-  - `plugin-settings-tab.ts` — `PluginSettingsTab` extends `PluginSettingsTabBase<PluginSettings>`; renders the default width/height settings UI
+  - `plugin-settings-tab.ts` — `PluginSettingsTab` extends `PluginSettingsTabBase<PluginSettings>`; renders the six sizing settings in two `SettingGroupEx` groups (Width / Height). CSS keywords in descriptions use `appendCodeBlock` (dev-utils) so the `obsidianmd/ui/sentence-case` rule does not flag them
 - **`main` field** points to `src/main.ts` (Obsidian plugin source entry; built artifact is `dist/build/main.js`, not published to npm).
 
 ## Known Issues
