@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2.0.1
+
+- chore: spellcheck
+- test: cover reading-view scroll re-render on android too
+- fix: keep embeds rendered after scrolling out of view and back
+
 ## 2.0.0
 
 - feat: re #12 #6
