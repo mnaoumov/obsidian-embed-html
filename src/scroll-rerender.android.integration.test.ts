@@ -1,3 +1,3 @@
 import { registerScrollRerenderSuite } from './scroll-rerender-shared.integration.test.ts';
 
-registerScrollRerenderSuite('desktop');
+registerScrollRerenderSuite('android');
