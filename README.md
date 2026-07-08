@@ -41,6 +41,40 @@ You can embed HTML pages from files with following extension:
 ![[file.html|400x300]]
 ```
 
+### Embed HTML with custom height only
+
+```markdown
+![[file.html|x300]]
+```
+
+### Auto-fit the embed to its content
+
+Use the `-` marker (shorthand for the CSS `fit-content` keyword) to size a dimension to the embedded content instead of a fixed value — no inner scrollbar when the content overflows, and no empty gap when it is shorter:
+
+```markdown
+![[file.html|-]]        # default width, height fits the content
+![[file.html|600x-]]    # width 600px, height fits the content
+![[file.html|-x400]]    # width fits the content, height 400px
+![[file.html|-x-]]      # both fit the content
+```
+
+The embed updates reactively as the content's size changes (e.g. images finishing loading, expandable sections).
+
+### Full sizing control (CSS declarations)
+
+For finer control — including min/max clamps — pass a list of CSS declarations. Any of `width`, `height`, `min-width`, `max-width`, `min-height`, `max-height` are accepted, with any CSS length/percentage or a content keyword (`max-content`, `min-content`, `fit-content`):
+
+```markdown
+![[file.html|height: max-content; min-height: 200px; max-height: 800px]]
+![[file.html|width: 50%; min-width: 300px]]
+```
+
+Unknown properties and invalid values are ignored, falling back to the defaults from the plugin settings.
+
+### Default sizing settings
+
+The plugin settings provide global defaults for all six properties (`Default width`, `Default height`, `Default min/max width`, `Default min/max height`), grouped by axis. `Default width` and `Default height` also accept a content keyword to make auto-fit the default. Any per-embed token overrides these defaults.
+
 ### Embed HTML and scroll to the element with id
 
 ```markdown

@@ -8,6 +8,13 @@ export const configs: Linter.Config[] = [
   },
   ...defineEslintConfigs(),
   {
+    // `HtmlEmbedComponent` builds `<style>` elements inside its own sandboxed `<iframe>` document (not the Obsidian app DOM the rule guards), so the forbidden-elements rule does not apply here.
+    files: ['src/html-embed-component.ts'],
+    rules: {
+      'obsidianmd/no-forbidden-elements': 'off'
+    }
+  },
+  {
     files: ['src/**/*.test.ts'],
     rules: {
       '@typescript-eslint/no-extraneous-class': 'off',
@@ -16,6 +23,7 @@ export const configs: Linter.Config[] = [
       'no-restricted-syntax': 'off',
       'no-void': 'off',
       'obsidianmd/no-global-this': 'off',
+      'obsidianmd/prefer-file-manager-trash-file': 'off',
       'perfectionist/sort-classes': 'off',
       'perfectionist/sort-modules': 'off'
     }
