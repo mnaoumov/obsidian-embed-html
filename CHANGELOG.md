@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2.0.0
+
+- feat: re #12 #6
+- test: wire integration-testing vitest-setup into integration projects
+- chore: update libs
+- chore: clean up tsconfig
+
 ## 1.1.12
 
 - refactor: new template
