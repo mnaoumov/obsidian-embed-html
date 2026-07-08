@@ -60,7 +60,7 @@ interface MockHead {
 
 interface MockIframeEl {
   addEventListener: ReturnType<typeof vi.fn>;
-  src: string;
+  srcdoc: string;
 }
 
 interface MockIframeElWithContent extends MockIframeEl {
@@ -336,7 +336,7 @@ describe('HtmlEmbedComponent', () => {
     it('should trigger the async load path (empty container and create iframe)', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
-        src: ''
+        srcdoc: ''
       };
       const containerEl = createMockContainerEl();
       containerEl.createEl.mockReturnValue(mockIframeEl);
@@ -357,9 +357,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -390,7 +387,7 @@ describe('HtmlEmbedComponent', () => {
     it('should empty the container and create an iframe', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
-        src: ''
+        srcdoc: ''
       };
       const containerEl = createMockContainerEl();
       containerEl.createEl.mockReturnValue(mockIframeEl);
@@ -415,11 +412,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');
-      window.URL.revokeObjectURL = vi.fn();
-
       const mockLocation = { origin: 'app://obsidian.md' };
       vi.stubGlobal('location', mockLocation);
 
@@ -440,13 +432,13 @@ describe('HtmlEmbedComponent', () => {
           width: '100%'
         }
       });
-      expect(mockIframeEl.src).toBe('blob:test-url');
+      expect(mockIframeEl.srcdoc).toBe('<html><head></head><body>Hello</body></html>');
     });
 
     it('should set base href and add enhance script', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
-        src: ''
+        srcdoc: ''
       };
       const containerEl = createMockContainerEl();
       containerEl.createEl.mockReturnValue(mockIframeEl);
@@ -470,10 +462,6 @@ describe('HtmlEmbedComponent', () => {
           }
         }
       );
-
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
 
       const mockLocation = { origin: 'app://obsidian.md' };
       vi.stubGlobal('location', mockLocation);
@@ -499,7 +487,7 @@ describe('HtmlEmbedComponent', () => {
     it('should create base element if none exists', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
-        src: ''
+        srcdoc: ''
       };
       const containerEl = createMockContainerEl();
       containerEl.createEl.mockReturnValue(mockIframeEl);
@@ -523,9 +511,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -542,7 +527,7 @@ describe('HtmlEmbedComponent', () => {
       expect(mockCreatedBaseEl.href).toBe('app://vault/file.html');
     });
 
-    it('should revoke object URL and init iframe on load', async () => {
+    it('should init iframe on load', async () => {
       let loadHandler: (() => void) | undefined;
       const clickHandlerSpy = vi.fn();
       const mockContentDocument = {
@@ -563,7 +548,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
       const containerEl = createMockContainerEl();
       containerEl.createEl.mockReturnValue(mockIframeEl);
@@ -584,9 +569,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -602,7 +584,6 @@ describe('HtmlEmbedComponent', () => {
       expect(loadHandler).toBeDefined();
       loadHandler?.();
 
-      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test-url');
       // The real registerDomEvent calls contentDocument.addEventListener('click', handler).
       expect(findClickHandler(mockContentDocument.addEventListener)).toBeDefined();
     });
@@ -616,7 +597,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: null,
-        src: ''
+        srcdoc: ''
       };
       const containerEl = createMockContainerEl();
       containerEl.createEl.mockReturnValue(mockIframeEl);
@@ -637,9 +618,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -651,9 +629,12 @@ describe('HtmlEmbedComponent', () => {
       });
 
       await component.loadFileAsync();
+      const setCssPropsCallCountBeforeLoad = containerEl.setCssProps.mock.calls.length;
       loadHandler?.();
 
-      expect(window.URL.revokeObjectURL).toHaveBeenCalled();
+      // With a null contentDocument the load handler returns early.
+      // It does not re-run applySize (which would otherwise call setCssProps again).
+      expect(containerEl.setCssProps.mock.calls.length).toBe(setCssPropsCallCountBeforeLoad);
     });
   });
 
@@ -661,7 +642,7 @@ describe('HtmlEmbedComponent', () => {
     it('should update subpath and reload the file', async () => {
       const mockIframeEl: MockIframeEl = {
         addEventListener: vi.fn(),
-        src: ''
+        srcdoc: ''
       };
       const containerEl = createMockContainerEl();
       containerEl.createEl.mockReturnValue(mockIframeEl);
@@ -682,9 +663,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -739,7 +717,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -761,9 +739,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -805,7 +780,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -827,9 +802,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -867,7 +839,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -889,9 +861,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -935,7 +904,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -957,9 +926,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1021,7 +987,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -1043,9 +1009,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const mockDateNow = 1234567890;
@@ -1107,7 +1070,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -1129,9 +1092,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1184,7 +1144,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -1206,9 +1166,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1246,7 +1203,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -1268,9 +1225,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1320,7 +1274,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -1342,9 +1296,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1380,7 +1331,7 @@ describe('HtmlEmbedComponent', () => {
           }
         }),
         contentDocument: mockContentDocument,
-        src: ''
+        srcdoc: ''
       };
 
       const containerEl = createMockContainerEl();
@@ -1402,9 +1353,6 @@ describe('HtmlEmbedComponent', () => {
         }
       );
 
-      window.Blob = castTo<typeof Blob>(vi.fn());
-      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1642,9 +1590,6 @@ describe('auto-fit sizing', () => {
         }
       }
     );
-    window.Blob = castTo<typeof Blob>(vi.fn());
-    window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-    window.URL.revokeObjectURL = vi.fn();
     vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
     const component = createContentComponent(containerEl, null);

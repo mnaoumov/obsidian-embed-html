@@ -113,9 +113,6 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     });
 
     const iframeHtml = parsedDoc.documentElement.outerHTML;
-    const blob = new Blob([iframeHtml], { type: 'text/html' });
-    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- URL.createObjectURL is the Web URL API, available in Obsidian's Electron renderer; the rule incorrectly flags it as a Node experimental builtin.
-    const url = URL.createObjectURL(blob);
 
     const iframeEl = this.containerEl.createEl('iframe', {
       attr: {
@@ -126,8 +123,6 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     this.iframeEl = iframeEl;
 
     iframeEl.addEventListener('load', () => {
-      // eslint-disable-next-line n/no-unsupported-features/node-builtins -- URL.revokeObjectURL is the Web URL API, available in Obsidian's Electron renderer; the rule incorrectly flags it as a Node experimental builtin.
-      URL.revokeObjectURL(url);
       if (!iframeEl.contentDocument) {
         return;
       }
@@ -135,7 +130,12 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       this.applySize();
     });
 
-    iframeEl.src = url;
+    // Embed the document via `srcdoc` rather than an object-URL `src`.
+    // Reading-view virtualization detaches and re-attaches each embed's DOM on scroll.
+    // Re-attaching an iframe reloads it from its source, and an object URL is single-use:
+    // It is revoked after the first load, so that reload would resolve to a blank page.
+    // `srcdoc` carries the markup on the element itself, so it reloads cleanly every time.
+    iframeEl.srcdoc = iframeHtml;
   }
 
   public setSubpath(subpath: string): void {

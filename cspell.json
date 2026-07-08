@@ -17,7 +17,8 @@
     "obsidianmd",
     "offref",
     "sandboxed",
-    "tsbuildinfo"
+    "tsbuildinfo",
+    "virtualizes"
   ],
   "ignoreWords": [],
   "import": [],
