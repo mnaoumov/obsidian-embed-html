@@ -164,7 +164,7 @@ beforeEach(() => {
 async function createLoadedPlugin(): Promise<Plugin> {
   const plugin = new Plugin(app, manifest);
   // PluginBase.onload is async; driving the real async load path (as the obsidian-dev-utils reference
-  // test does) runs every universal component plus onloadImpl.
+  // Test does) runs every universal component plus onloadImpl.
   await plugin.onload();
   return plugin;
 }

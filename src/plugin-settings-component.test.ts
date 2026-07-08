@@ -31,7 +31,7 @@ describe('PluginSettingsComponent', () => {
     });
 
     // Real base + the PluginSettings class is what produces the default settings shape, so equality
-    // here proves the subclass forwarded `pluginSettingsClass: PluginSettings` to the real base.
+    // Here proves the subclass forwarded `pluginSettingsClass: PluginSettings` to the real base.
     expect(component).toBeInstanceOf(PluginSettingsComponentBase);
     expect(component.defaultSettings).toEqual(new PluginSettings());
     expect(component.settings).toEqual(new PluginSettings());

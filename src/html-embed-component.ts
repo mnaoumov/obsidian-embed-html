@@ -25,6 +25,8 @@ const CONTENT_WIDTH_STYLE_ID = 'embed-html-content-width';
 const MEASURING_IFRAME_HEIGHT = '0px';
 const MEASURING_CONTAINER_HEIGHT = '100000px';
 
+const STYLE_TAG_NAME = 'style';
+
 interface HtmlEmbedComponentConstructorParams {
   readonly app: App;
   readonly containerEl: HTMLElement;
@@ -239,7 +241,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
 }
 `;
 
-        iframeDoc.head.createEl('style', {
+        iframeDoc.head.createEl(STYLE_TAG_NAME, {
           text: css
         });
         break;
@@ -273,7 +275,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       return;
     }
 
-    this.contentWidthStyleEl = iframeDoc.head.createEl('style', {
+    this.contentWidthStyleEl = iframeDoc.head.createEl(STYLE_TAG_NAME, {
       attr: { id: CONTENT_WIDTH_STYLE_ID },
       text: css
     });

@@ -19,6 +19,33 @@ import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
 import { HtmlEmbedComponent } from './html-embed-component.ts';
 
+interface ClickEvent {
+  target: unknown;
+}
+
+type ClickHandler = (evt: ClickEvent) => void;
+
+interface ComponentWithApplySize {
+  applySize(): void;
+}
+
+interface ComponentWithIframeEl {
+  iframeEl: unknown;
+}
+
+interface LoadedContentComponent {
+  component: HtmlEmbedComponent;
+  fireLoad(): void;
+}
+
+interface MockContainerEl {
+  createEl: ReturnType<typeof vi.fn>;
+  empty: ReturnType<typeof vi.fn>;
+  getAttr: ReturnType<typeof vi.fn>;
+  setCssProps: ReturnType<typeof vi.fn>;
+  style: MockStyle;
+}
+
 interface MockElement {
   addClass: ReturnType<typeof vi.fn>;
   closest: ReturnType<typeof vi.fn>;
@@ -27,12 +54,8 @@ interface MockElement {
   target?: string;
 }
 
-interface MockContainerEl {
+interface MockHead {
   createEl: ReturnType<typeof vi.fn>;
-  empty: ReturnType<typeof vi.fn>;
-  getAttr: ReturnType<typeof vi.fn>;
-  setCssProps: ReturnType<typeof vi.fn>;
-  style: { height: string };
 }
 
 interface MockIframeEl {
@@ -40,7 +63,65 @@ interface MockIframeEl {
   src: string;
 }
 
+interface MockIframeElWithContent extends MockIframeEl {
+  contentDocument: unknown;
+}
+
+interface MockScrollHeight {
+  scrollHeight: number;
+}
+
+interface MockScrollWidth {
+  scrollWidth: number;
+}
+
+interface MockStyle {
+  height: string;
+}
+
+interface SizingIframeDoc {
+  [key: string]: unknown;
+  body: MockScrollWidth;
+  defaultView: unknown;
+  documentElement: MockScrollHeight;
+  head: MockHead;
+}
+
+interface WindowWithApp {
+  app: App;
+}
+
+class MockIframeElement {
+  public readonly isMockIframeElement = true;
+}
+
 const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
+
+function asContainerEl(mock: MockContainerEl): HTMLElement {
+  // StrictProxy<HTMLElement>(mock) cannot be used here because vi.fn() mock function
+  // Types are structurally incompatible with HTMLElement's overloaded method signatures
+  // (e.g. setCssProps, createEl). Last-resort test-only cast per project conventions.
+
+  return castTo<HTMLElement>(mock);
+}
+
+function createMockApp(): App {
+  const app = strictProxy<App>({
+    vault: strictProxy<App['vault']>({
+      getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
+      read: vi.fn().mockResolvedValue('<html><head></head><body>Hello</body></html>')
+    })
+  });
+
+  // The real dev-utils helpers (invokeAsyncSafely / debug) read and write a shared state holder on
+  // The app. Seed it on the raw target behind the strict-proxy so those helpers can run, and expose
+  // The same app as the global instance so helpers that resolve state without an explicit app argument
+  // Read/write the same holder.
+  seedOnRawTarget(app, 'obsidianDevUtilsState', {});
+  castTo<WindowWithApp>(window).app = app;
+
+  return app;
+}
 
 function createMockContainerEl(): MockContainerEl {
   return {
@@ -50,14 +131,6 @@ function createMockContainerEl(): MockContainerEl {
     setCssProps: vi.fn(),
     style: { height: '' }
   };
-}
-
-function asContainerEl(mock: MockContainerEl): HTMLElement {
-  // strictProxy<HTMLElement>(mock) cannot be used here because vi.fn() mock function
-  // types are structurally incompatible with HTMLElement's overloaded method signatures
-  // (e.g. setCssProps, createEl). Last-resort test-only cast per project conventions.
-
-  return mock as unknown as HTMLElement;
 }
 
 function createMockPluginSettingsComponent(): PluginSettingsComponent {
@@ -73,24 +146,6 @@ function createMockPluginSettingsComponent(): PluginSettingsComponent {
   });
 }
 
-function createMockApp(): App {
-  const app = strictProxy<App>({
-    vault: strictProxy<App['vault']>({
-      getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
-      read: vi.fn().mockResolvedValue('<html><head></head><body>Hello</body></html>')
-    })
-  });
-
-  // The real dev-utils helpers (invokeAsyncSafely / debug) read and write a shared state holder on
-  // the app. Seed it on the raw target behind the strict-proxy so those helpers can run, and expose
-  // the same app as the global instance so helpers that resolve state without an explicit app argument
-  // read/write the same holder.
-  seedOnRawTarget(app, 'obsidianDevUtilsState', {});
-  castTo<{ app: App }>(window).app = app;
-
-  return app;
-}
-
 function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknown): void {
   const proxyWithTarget = castTo<Partial<Record<symbol, object>>>(strictProxiedObject);
   const rawTarget = proxyWithTarget[STRICT_PROXY_TARGET_SYMBOL] ?? strictProxiedObject;
@@ -104,17 +159,19 @@ describe('HtmlEmbedComponent', () => {
   beforeEach(() => {
     mockMutationObserverDisconnect = vi.fn();
 
-    globalThis.MutationObserver = class MockMutationObserver {
-      public constructor(callback: MutationCallback) {
-        mockMutationObserverCallback = callback;
-      }
+    window.MutationObserver = castTo<typeof MutationObserver>(
+      class MockMutationObserver {
+        public disconnect = mockMutationObserverDisconnect;
 
-      public disconnect = mockMutationObserverDisconnect;
+        public constructor(callback: MutationCallback) {
+          mockMutationObserverCallback = callback;
+        }
 
-      public observe(): void {
-        noop();
+        public observe(): void {
+          noop();
+        }
       }
-    } as unknown as typeof MutationObserver;
+    );
   });
 
   afterEach(() => {
@@ -154,7 +211,7 @@ describe('HtmlEmbedComponent', () => {
       });
 
       // The real ComponentEx only runs registered cleanups during unload(), and only when the
-      // component has been loaded. Drive the real load/unload lifecycle to exercise the cleanup.
+      // Component has been loaded. Drive the real load/unload lifecycle to exercise the cleanup.
       component.load();
       component.unload();
 
@@ -292,15 +349,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -311,8 +370,8 @@ describe('HtmlEmbedComponent', () => {
         subpath: ''
       });
 
-      // loadFile() uses the real fire-and-forget invokeAsyncSafely; observe the effect rather than
-      // asserting the helper was called.
+      // LoadFile() uses the real fire-and-forget invokeAsyncSafely; observe the effect rather than
+      // Asserting the helper was called.
       component.loadFile();
 
       await vi.waitFor(() => {
@@ -348,21 +407,18 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue(mockBaseEl)
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {
-        public constructor(
-          public parts: unknown[],
-          public options: unknown
-        ) {}
-      } as unknown as typeof Blob;
+      window.Blob = castTo<typeof Blob>(vi.fn());
 
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');
+      window.URL.revokeObjectURL = vi.fn();
 
       const mockLocation = { origin: 'app://obsidian.md' };
       vi.stubGlobal('location', mockLocation);
@@ -407,15 +463,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue(mockBaseEl)
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
 
       const mockLocation = { origin: 'app://obsidian.md' };
       vi.stubGlobal('location', mockLocation);
@@ -457,15 +515,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue(null)
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -496,7 +556,7 @@ describe('HtmlEmbedComponent', () => {
         removeEventListener: vi.fn(),
         scrollingElement: null
       };
-      const mockIframeEl: { contentDocument: unknown } & MockIframeEl = {
+      const mockIframeEl: MockIframeElWithContent = {
         addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
           if (event === 'load') {
             loadHandler = handler;
@@ -516,15 +576,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:test-url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -540,14 +602,14 @@ describe('HtmlEmbedComponent', () => {
       expect(loadHandler).toBeDefined();
       loadHandler?.();
 
-      expect(globalThis.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test-url');
+      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:test-url');
       // The real registerDomEvent calls contentDocument.addEventListener('click', handler).
       expect(findClickHandler(mockContentDocument.addEventListener)).toBeDefined();
     });
 
     it('should return early from load handler when contentDocument is null', async () => {
       let loadHandler: (() => void) | undefined;
-      const mockIframeEl: { contentDocument: null } & MockIframeEl = {
+      const mockIframeEl: MockIframeElWithContent = {
         addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
           if (event === 'load') {
             loadHandler = handler;
@@ -567,15 +629,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -589,7 +653,7 @@ describe('HtmlEmbedComponent', () => {
       await component.loadFileAsync();
       loadHandler?.();
 
-      expect(globalThis.URL.revokeObjectURL).toHaveBeenCalled();
+      expect(window.URL.revokeObjectURL).toHaveBeenCalled();
     });
   });
 
@@ -610,15 +674,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -629,7 +695,7 @@ describe('HtmlEmbedComponent', () => {
         subpath: ''
       });
 
-      // setSubpath delegates to loadFile, which fires the real async load path.
+      // SetSubpath delegates to loadFile, which fires the real async load path.
       component.setSubpath('#myId');
 
       await vi.waitFor(() => {
@@ -654,7 +720,7 @@ describe('HtmlEmbedComponent', () => {
         parentElement: null
       };
 
-      const MockElement = class {};
+      const MockElement = MockIframeElement;
       const mockIframeWin = { Element: MockElement };
       Object.setPrototypeOf(mockClickTarget, MockElement.prototype);
 
@@ -687,15 +753,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -718,7 +786,7 @@ describe('HtmlEmbedComponent', () => {
     });
 
     it('should not set target when click target is not an instance of iframe Element', async () => {
-      const MockElement = class {};
+      const MockElement = MockIframeElement;
       const mockIframeWin = { Element: MockElement };
       const mockClickTarget = { notAnElement: true };
 
@@ -751,15 +819,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -811,15 +881,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -842,8 +914,8 @@ describe('HtmlEmbedComponent', () => {
     });
 
     it('should not set target when click target is not inside an anchor', async () => {
-      const MockElement = class {};
-      const mockClickTarget = Object.create(MockElement.prototype) as MockElement;
+      const MockElement = MockIframeElement;
+      const mockClickTarget = castTo<MockElement>(Object.create(MockElement.prototype));
       mockClickTarget.closest = vi.fn().mockReturnValue(null);
 
       const mockIframeWin = { Element: MockElement };
@@ -877,15 +949,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -931,7 +1005,7 @@ describe('HtmlEmbedComponent', () => {
       const createdStyleEl = {};
       const mockContentDocument = {
         addEventListener: vi.fn(),
-        defaultView: { Element: class {} },
+        defaultView: { Element: MockIframeElement },
         getElementById: vi.fn().mockReturnValue(targetEl),
         head: {
           createEl: vi.fn().mockReturnValue(createdStyleEl)
@@ -961,15 +1035,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const mockDateNow = 1234567890;
@@ -1016,7 +1092,7 @@ describe('HtmlEmbedComponent', () => {
 
       const mockContentDocument = {
         addEventListener: vi.fn(),
-        defaultView: { Element: class {} },
+        defaultView: { Element: MockIframeElement },
         documentElement: {},
         getElementById: vi.fn().mockReturnValue(targetEl),
         removeEventListener: vi.fn(),
@@ -1045,15 +1121,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1091,7 +1169,7 @@ describe('HtmlEmbedComponent', () => {
 
       const mockContentDocument = {
         addEventListener: vi.fn(),
-        defaultView: { Element: class {} },
+        defaultView: { Element: MockIframeElement },
         documentElement: mockDocumentElement,
         getElementById: vi.fn().mockReturnValue(targetEl),
         removeEventListener: vi.fn(),
@@ -1120,15 +1198,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1152,7 +1232,7 @@ describe('HtmlEmbedComponent', () => {
     it('should do nothing when element is not found', async () => {
       const mockContentDocument = {
         addEventListener: vi.fn(),
-        defaultView: { Element: class {} },
+        defaultView: { Element: MockIframeElement },
         getElementById: vi.fn().mockReturnValue(null),
         removeEventListener: vi.fn(),
         scrollingElement: { scrollBy: vi.fn() }
@@ -1180,15 +1260,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1222,7 +1304,7 @@ describe('HtmlEmbedComponent', () => {
 
       const mockContentDocument = {
         addEventListener: vi.fn(),
-        defaultView: { Element: class {} },
+        defaultView: { Element: MockIframeElement },
         documentElement: {},
         getElementById: vi.fn().mockReturnValue(targetEl),
         head: { createEl: vi.fn() },
@@ -1252,15 +1334,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1283,7 +1367,7 @@ describe('HtmlEmbedComponent', () => {
     it('should not try to find element when no subpath id', async () => {
       const mockContentDocument = {
         addEventListener: vi.fn(),
-        defaultView: { Element: class {} },
+        defaultView: { Element: MockIframeElement },
         getElementById: vi.fn(),
         removeEventListener: vi.fn()
       };
@@ -1310,15 +1394,17 @@ describe('HtmlEmbedComponent', () => {
         querySelector: vi.fn().mockReturnValue({ href: '' })
       };
 
-      globalThis.DOMParser = class MockDOMParser {
-        public parseFromString(): unknown {
-          return mockParsedDoc;
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
         }
-      } as unknown as typeof DOMParser;
+      );
 
-      globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-      globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-      globalThis.URL.revokeObjectURL = vi.fn();
+      window.Blob = castTo<typeof Blob>(vi.fn());
+      window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+      window.URL.revokeObjectURL = vi.fn();
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
       const component = new HtmlEmbedComponent({
@@ -1356,7 +1442,7 @@ describe('auto-fit sizing', () => {
     containerEl.getAttr.mockImplementation((attr: string) => (attr === 'alt' ? 'min-width: 100px; max-height: 800px' : null));
     const component = createContentComponent(containerEl, null);
 
-    castTo<{ applySize(): void }>(component).applySize();
+    castTo<ComponentWithApplySize>(component).applySize();
 
     expect(containerEl.setCssProps).toHaveBeenLastCalledWith({
       'height': '400px',
@@ -1445,7 +1531,7 @@ describe('auto-fit sizing', () => {
     const { component, fireLoad } = await loadContentComponent(containerEl, iframeDoc);
 
     fireLoad();
-    castTo<{ applySize(): void }>(component).applySize();
+    castTo<ComponentWithApplySize>(component).applySize();
 
     expect(iframeDoc.head.createEl).toHaveBeenCalledTimes(1);
   });
@@ -1457,7 +1543,7 @@ describe('auto-fit sizing', () => {
     const { component, fireLoad } = await loadContentComponent(containerEl, iframeDoc);
 
     fireLoad();
-    castTo<{ iframeEl: null }>(component).iframeEl = null;
+    castTo<ComponentWithIframeEl>(component).iframeEl = null;
     containerEl.setCssProps.mockClear();
     resizeObserverCallback?.();
 
@@ -1484,31 +1570,28 @@ describe('auto-fit sizing', () => {
   }
 
   function createMockResizeObserver(): typeof ResizeObserver {
-    return class MockResizeObserver {
-      public disconnect = resizeObserverDisconnect;
+    return castTo<typeof ResizeObserver>(
+      class MockResizeObserver {
+        public disconnect = resizeObserverDisconnect;
 
-      public observe = resizeObserverObserve;
+        public observe = resizeObserverObserve;
 
-      public constructor(callback: () => void) {
-        resizeObserverCallback = callback;
+        public constructor(callback: () => void) {
+          resizeObserverCallback = callback;
+        }
+
+        public unobserve(): void {
+          noop();
+        }
       }
-
-      public unobserve(): void {
-        noop();
-      }
-    } as unknown as typeof ResizeObserver;
+    );
   }
 
-  function createSizingIframeDoc(): {
-    body: { scrollWidth: number };
-    defaultView: unknown;
-    documentElement: { scrollHeight: number };
-    head: { createEl: ReturnType<typeof vi.fn> };
-  } & Record<string, unknown> {
+  function createSizingIframeDoc(): SizingIframeDoc {
     return {
       addEventListener: vi.fn(),
       body: { scrollWidth: MEASURED_WIDTH },
-      defaultView: { Element: class {}, ResizeObserver: createMockResizeObserver() },
+      defaultView: { Element: MockIframeElement, ResizeObserver: createMockResizeObserver() },
       documentElement: { scrollHeight: MEASURED_HEIGHT },
       getElementById: vi.fn().mockReturnValue(null),
       head: { createEl: vi.fn().mockReturnValue({}) },
@@ -1525,7 +1608,7 @@ describe('auto-fit sizing', () => {
       subpath: ''
     });
     if (iframeEl) {
-      castTo<{ iframeEl: unknown }>(component).iframeEl = iframeEl;
+      castTo<ComponentWithIframeEl>(component).iframeEl = iframeEl;
     }
     return component;
   }
@@ -1533,7 +1616,7 @@ describe('auto-fit sizing', () => {
   async function loadContentComponent(
     containerEl: MockContainerEl,
     iframeDoc: Record<string, unknown>
-  ): Promise<{ component: HtmlEmbedComponent; fireLoad(): void }> {
+  ): Promise<LoadedContentComponent> {
     let loadHandler: (() => void) | undefined;
     const iframeEl = {
       addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
@@ -1552,14 +1635,16 @@ describe('auto-fit sizing', () => {
       head: { createEl: vi.fn().mockReturnValue({}) },
       querySelector: vi.fn().mockReturnValue({ href: '' })
     };
-    globalThis.DOMParser = class MockDOMParser {
-      public parseFromString(): unknown {
-        return mockParsedDoc;
+    window.DOMParser = castTo<typeof DOMParser>(
+      class MockDOMParser {
+        public parseFromString(): unknown {
+          return mockParsedDoc;
+        }
       }
-    } as unknown as typeof DOMParser;
-    globalThis.Blob = class MockBlob {} as unknown as typeof Blob;
-    globalThis.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
-    globalThis.URL.revokeObjectURL = vi.fn();
+    );
+    window.Blob = castTo<typeof Blob>(vi.fn());
+    window.URL.createObjectURL = vi.fn().mockReturnValue('blob:url');
+    window.URL.revokeObjectURL = vi.fn();
     vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
     const component = createContentComponent(containerEl, null);
@@ -1575,7 +1660,7 @@ describe('auto-fit sizing', () => {
 
 function findClickHandler(
   addEventListenerMock: ReturnType<typeof vi.fn>
-): ((evt: { target: unknown }) => void) | undefined {
+): ClickHandler | undefined {
   const clickCall = addEventListenerMock.mock.calls.find((call) => call[0] === 'click');
-  return clickCall?.[1] as ((evt: { target: unknown }) => void) | undefined;
+  return clickCall?.[1] as ClickHandler | undefined;
 }

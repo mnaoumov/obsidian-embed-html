@@ -27,9 +27,9 @@ beforeEach(() => {
   vi.restoreAllMocks();
   app = App.createConfigured__().asOriginalType__();
   // The real `bind` is exercised by `obsidian-dev-utils`'s own tests. Here we only need to observe
-  // that the tab wires each text component to the correct setting key, so we stub its return value
+  // That the tab wires each text component to the correct setting key, so we stub its return value
   // (an allowed test double): the real test-mocks `TextComponent` is a strict proxy that throws on
-  // the `setPlaceholderValue` duck-typing probe inside the real `bind`.
+  // The `setPlaceholderValue` duck-typing probe inside the real `bind`.
   vi.spyOn(PluginSettingsTabBase.prototype, 'bind').mockImplementation((params) => params.valueComponent);
 });
 
@@ -73,25 +73,9 @@ describe('PluginSettingsTab', () => {
   });
 });
 
-function createTab(): PluginSettingsTab {
-  const plugin = strictProxy<Plugin>({
-    app,
-    manifest: { id: 'embed-html' }
-  });
-  const pluginSettingsComponent = createMockSettingsComponent();
-  return new PluginSettingsTab({ plugin, pluginSettingsComponent });
-}
-
-function emptyStringRecord(): { [Key in keyof PluginSettings]: string } {
-  return {
-    defaultHeight: '',
-    defaultMaxHeight: '',
-    defaultMaxWidth: '',
-    defaultMinHeight: '',
-    defaultMinWidth: '',
-    defaultWidth: ''
-  };
-}
+type EmptyStringRecord = {
+  [Key in keyof PluginSettings]: string;
+};
 
 function createMockSettingsComponent(): PluginSettingsComponentBase<PluginSettings> {
   return strictProxy<PluginSettingsComponentBase<PluginSettings>>({
@@ -110,4 +94,24 @@ function createMockSettingsComponent(): PluginSettingsComponentBase<PluginSettin
       validationMessages: emptyStringRecord()
     }
   });
+}
+
+function createTab(): PluginSettingsTab {
+  const plugin = strictProxy<Plugin>({
+    app,
+    manifest: { id: 'embed-html' }
+  });
+  const pluginSettingsComponent = createMockSettingsComponent();
+  return new PluginSettingsTab({ plugin, pluginSettingsComponent });
+}
+
+function emptyStringRecord(): EmptyStringRecord {
+  return {
+    defaultHeight: '',
+    defaultMaxHeight: '',
+    defaultMaxWidth: '',
+    defaultMinHeight: '',
+    defaultMinWidth: '',
+    defaultWidth: ''
+  };
 }

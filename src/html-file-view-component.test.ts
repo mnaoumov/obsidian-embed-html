@@ -3,7 +3,7 @@ import type { ViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
 
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
-import { App as AppMock } from 'obsidian-test-mocks/obsidian';
+import { App } from 'obsidian-test-mocks/obsidian';
 import {
   beforeEach,
   describe,
@@ -77,8 +77,8 @@ describe('HtmlFileViewComponent', () => {
     const viewCreator = castTo<RegisterViewParams>(params).viewCreator;
 
     // The real test-mocks App mints a real WorkspaceLeaf whose `app__` satisfies the real
-    // test-mocks FileView/ItemView/View constructor chain that HtmlFileView extends.
-    const leaf = AppMock.createConfigured__().workspace.getLeaf();
+    // Test-mocks FileView/ItemView/View constructor chain that HtmlFileView extends.
+    const leaf = App.createConfigured__().workspace.getLeaf();
     const view = viewCreator(leaf.asOriginalType3__());
 
     expect(view).toBeInstanceOf(HtmlFileView);

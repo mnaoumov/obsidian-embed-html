@@ -4,13 +4,13 @@ import type {
   EmbedRegistry
 } from '@obsidian-typings/obsidian-public-latest';
 import type {
-  App,
+  App as AppOriginal,
   TFile
 } from 'obsidian';
 
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
-import { App as AppMock } from 'obsidian-test-mocks/obsidian';
+import { App } from 'obsidian-test-mocks/obsidian';
 import {
   beforeEach,
   describe,
@@ -33,7 +33,7 @@ type EmbedFactory = (context: EmbedContext, file: TFile, subpath?: string) => Em
 
 const EXTENSIONS = ['html'];
 
-let app: App;
+let app: AppOriginal;
 let registerExtensions: ReturnType<typeof vi.fn<EmbedRegistry['registerExtensions']>>;
 let unregisterExtensions: ReturnType<typeof vi.fn<EmbedRegistry['unregisterExtensions']>>;
 let pluginSettingsComponent: PluginSettingsComponent;
@@ -100,8 +100,8 @@ beforeEach(() => {
   vi.clearAllMocks();
 
   // The HtmlEmbedComponent built by the factory constructs a MutationObserver in its constructor, so a
-  // browser-global stub is needed to execute the real factory body.
-  globalThis.MutationObserver = class {
+  // Browser-global stub is needed to execute the real factory body.
+  window.MutationObserver = class {
     public disconnect(): void {
       // No-op observer for the unit environment.
     }
@@ -118,10 +118,10 @@ beforeEach(() => {
   registerExtensions = vi.fn<EmbedRegistry['registerExtensions']>();
   unregisterExtensions = vi.fn<EmbedRegistry['unregisterExtensions']>();
 
-  const appMock = AppMock.createConfigured__();
+  const appMock = App.createConfigured__();
   app = appMock.asOriginalType__();
   // The configured App mock has no embedRegistry; attach a strict-proxy one so the real onload can call
-  // the documented registerExtensions / unregisterExtensions API.
+  // The documented registerExtensions / unregisterExtensions API.
   castTo<AppWithEmbedRegistry>(app).embedRegistry = strictProxy<EmbedRegistry>({
     registerExtensions,
     unregisterExtensions
