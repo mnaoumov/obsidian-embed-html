@@ -121,6 +121,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       }
     });
     this.iframeEl = iframeEl;
+    this.applyColorScheme();
 
     iframeEl.addEventListener('load', () => {
       if (!iframeEl.contentDocument) {
@@ -138,9 +139,26 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     iframeEl.srcdoc = iframeHtml;
   }
 
+  public override onload(): void {
+    super.onload();
+    // Obsidian's base color scheme (Settings → Appearance) is independent of the OS color scheme, and
+    // Emits `css-change` when it toggles. Re-apply so an already-rendered embed follows the switch.
+    this.registerEvent(this.app.workspace.on('css-change', () => {
+      this.applyColorScheme();
+    }));
+  }
+
   public setSubpath(subpath: string): void {
     this.subpath = subpath;
     this.loadFile();
+  }
+
+  private applyColorScheme(): void {
+    // Setting `color-scheme` on the iframe element propagates into the embedded document, so its
+    // `prefers-color-scheme` media queries follow Obsidian's base color scheme rather than the OS one.
+    this.iframeEl?.setCssStyles({
+      colorScheme: this.app.isDarkMode() ? 'dark' : 'light'
+    });
   }
 
   private applySize(): void {
