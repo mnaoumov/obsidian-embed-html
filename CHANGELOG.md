@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.1.0
+
+- feat: propagate Obsidian color scheme to embedded HTML re #11
+
 ## 2.0.1
 
 - chore: spellcheck
