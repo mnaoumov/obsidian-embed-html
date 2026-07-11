@@ -6,6 +6,19 @@ import { SettingGroupEx } from 'obsidian-dev-utils/obsidian/setting-group-ex';
 
 import type { PluginSettings } from './plugin-settings.ts';
 
+interface AppendClampDescParams {
+  readonly axis: 'height' | 'width';
+  readonly bound: 'lower' | 'upper';
+  readonly f: DocumentFragment;
+}
+
+interface PluginSettingsTabBindSizeSettingParams {
+  descBuilder(this: void, f: DocumentFragment): void;
+  readonly name: string;
+  readonly propertyName: keyof PluginSettings;
+  readonly setting: SettingEx;
+}
+
 export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
   public override displayLegacy(): void {
     super.displayLegacy();
@@ -13,46 +26,72 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
     new SettingGroupEx(this.containerEl)
       .setHeading('Width')
       .addSettingEx((setting) => {
-        this.bindSizeSetting(setting, 'Default width', 'defaultWidth', (f) => {
-          appendDefaultDesc(f, 'width');
+        this.bindSizeSetting({
+          descBuilder: (f) => {
+            appendDefaultDesc(f, 'width');
+          },
+          name: 'Default width',
+          propertyName: 'defaultWidth',
+          setting
         });
       })
       .addSettingEx((setting) => {
-        this.bindSizeSetting(setting, 'Default min width', 'defaultMinWidth', (f) => {
-          appendClampDesc(f, 'lower', 'width');
+        this.bindSizeSetting({
+          descBuilder: (f) => {
+            appendClampDesc({ axis: 'width', bound: 'lower', f });
+          },
+          name: 'Default min width',
+          propertyName: 'defaultMinWidth',
+          setting
         });
       })
       .addSettingEx((setting) => {
-        this.bindSizeSetting(setting, 'Default max width', 'defaultMaxWidth', (f) => {
-          appendClampDesc(f, 'upper', 'width');
+        this.bindSizeSetting({
+          descBuilder: (f) => {
+            appendClampDesc({ axis: 'width', bound: 'upper', f });
+          },
+          name: 'Default max width',
+          propertyName: 'defaultMaxWidth',
+          setting
         });
       });
 
     new SettingGroupEx(this.containerEl)
       .setHeading('Height')
       .addSettingEx((setting) => {
-        this.bindSizeSetting(setting, 'Default height', 'defaultHeight', (f) => {
-          appendDefaultDesc(f, 'height');
+        this.bindSizeSetting({
+          descBuilder: (f) => {
+            appendDefaultDesc(f, 'height');
+          },
+          name: 'Default height',
+          propertyName: 'defaultHeight',
+          setting
         });
       })
       .addSettingEx((setting) => {
-        this.bindSizeSetting(setting, 'Default min height', 'defaultMinHeight', (f) => {
-          appendClampDesc(f, 'lower', 'height');
+        this.bindSizeSetting({
+          descBuilder: (f) => {
+            appendClampDesc({ axis: 'height', bound: 'lower', f });
+          },
+          name: 'Default min height',
+          propertyName: 'defaultMinHeight',
+          setting
         });
       })
       .addSettingEx((setting) => {
-        this.bindSizeSetting(setting, 'Default max height', 'defaultMaxHeight', (f) => {
-          appendClampDesc(f, 'upper', 'height');
+        this.bindSizeSetting({
+          descBuilder: (f) => {
+            appendClampDesc({ axis: 'height', bound: 'upper', f });
+          },
+          name: 'Default max height',
+          propertyName: 'defaultMaxHeight',
+          setting
         });
       });
   }
 
-  private bindSizeSetting(
-    setting: SettingEx,
-    name: string,
-    propertyName: keyof PluginSettings,
-    descBuilder: (f: DocumentFragment) => void
-  ): void {
+  private bindSizeSetting(params: PluginSettingsTabBindSizeSettingParams): void {
+    const { descBuilder, name, propertyName, setting } = params;
     setting
       .setName(name)
       .setDesc(createFragment(descBuilder))
@@ -62,7 +101,8 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
   }
 }
 
-function appendClampDesc(f: DocumentFragment, bound: 'lower' | 'upper', axis: 'height' | 'width'): void {
+function appendClampDesc(params: AppendClampDescParams): void {
+  const { axis, bound, f } = params;
   f.appendText(`Optional ${bound} bound for the embed ${axis}, if not specified per embed. Leave empty for none.`);
 }
 

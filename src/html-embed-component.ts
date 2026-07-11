@@ -42,6 +42,12 @@ interface Options {
   readonly mode: Mode;
 }
 
+interface ResolveAxisParams {
+  readonly fromAttribute: null | string;
+  readonly fromSettings: string;
+  readonly fromToken: null | string;
+}
+
 interface ResolvedSize {
   readonly height: string;
   readonly maxHeight: string;
@@ -352,17 +358,18 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     const heightAttr = this.containerEl.getAttr(HEIGHT_ATTRIBUTE);
 
     return {
-      height: toPx(resolveAxis(spec.height, heightAttr, settings.defaultHeight)),
+      height: toPx(resolveAxis({ fromAttribute: heightAttr, fromSettings: settings.defaultHeight, fromToken: spec.height })),
       maxHeight: toPx(spec.maxHeight ?? settings.defaultMaxHeight),
       maxWidth: toPx(spec.maxWidth ?? settings.defaultMaxWidth),
       minHeight: toPx(spec.minHeight ?? settings.defaultMinHeight),
       minWidth: toPx(spec.minWidth ?? settings.defaultMinWidth),
-      width: toPx(resolveAxis(spec.width, widthAttr, settings.defaultWidth))
+      width: toPx(resolveAxis({ fromAttribute: widthAttr, fromSettings: settings.defaultWidth, fromToken: spec.width }))
     };
   }
 }
 
-function resolveAxis(fromToken: null | string, fromAttribute: null | string, fromSettings: string): string {
+function resolveAxis(params: ResolveAxisParams): string {
+  const { fromAttribute, fromSettings, fromToken } = params;
   if (fromToken !== null) {
     return fromToken;
   }
