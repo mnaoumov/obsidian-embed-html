@@ -41,7 +41,3 @@ Embed HTML is an Obsidian plugin that adds support for embedding HTML files (`ht
   - `plugin-settings-component.ts` — `PluginSettingsComponent` extends `PluginSettingsComponentBase<PluginSettings>`
   - `plugin-settings-tab.ts` — `PluginSettingsTab` extends `PluginSettingsTabBase<PluginSettings>`; renders the six sizing settings in two `SettingGroupEx` groups (Width / Height). CSS keywords in descriptions use `appendCodeBlock` (dev-utils) so the `obsidianmd/ui/sentence-case` rule does not flag them
 - **`main` field** points to `src/main.ts` (Obsidian plugin source entry; built artifact is `dist/build/main.js`, not published to npm).
-
-## Known Issues
-
-None.
