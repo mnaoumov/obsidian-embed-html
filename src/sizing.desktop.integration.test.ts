@@ -9,7 +9,7 @@ import {
 describe('sizing token', () => {
   it('should route the token into the embed alt and auto-fit the height to the content', async () => {
     const result = await evalInObsidian({
-      fn: async ({ app, waitUntil }) => {
+      fn: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 15_000;
         const TALL_CONTENT_HEIGHT_IN_PIXELS = 1234;
         const AUTO_FIT_HEIGHT_THRESHOLD_IN_PIXELS = 1000;

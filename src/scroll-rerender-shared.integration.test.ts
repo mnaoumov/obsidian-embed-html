@@ -10,7 +10,7 @@ export function registerScrollRerenderSuite(platform: string): void {
   describe(`reading-view scroll re-render (${platform})`, () => {
     it('should not leave an embed blank after scrolling it out of view and back', async () => {
       const result = await evalInObsidian({
-        fn: async ({ app, waitUntil }) => {
+        fn: async ({ app, lib: { waitUntil } }) => {
           const TIMEOUT_IN_MILLISECONDS = 20_000;
           const RECOVER_TIMEOUT_IN_MILLISECONDS = 6000;
           const STEP_SETTLE_IN_MILLISECONDS = 150;
