@@ -18,7 +18,7 @@ export function registerColorSchemeSuite(platform: string): void {
   describe(`color-scheme propagation (${platform})`, () => {
     it('should propagate Obsidian base color scheme to the embed iframe', async () => {
       const result = await evalInObsidian({
-        fn: async ({ app, waitUntil }) => {
+        fn: async ({ app, lib: { waitUntil } }) => {
           const TIMEOUT_IN_MILLISECONDS = 20_000;
           const htmlPath = 'embed-html-color-scheme-probe.html';
           const notePath = 'embed-html-color-scheme-probe.md';
