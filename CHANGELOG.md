@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.2.0
+
+- feat: re #113
+
 ## 2.1.1
 
 - chore: update libs
