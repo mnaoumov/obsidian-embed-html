@@ -34,15 +34,16 @@ beforeEach(() => {
 });
 
 describe('PluginSettingsTab', () => {
-  it('should create a width group and a height group on display', () => {
+  it('should create a width group, a height group, and a behavior group on display', () => {
     const tab = createTab();
 
     tab.displayLegacy();
 
-    const EXPECTED_GROUP_COUNT = 2;
+    const EXPECTED_GROUP_COUNT = 3;
     expect(tab.containerEl.children).toHaveLength(EXPECTED_GROUP_COUNT);
     expect(tab.containerEl.textContent).toContain('Width');
     expect(tab.containerEl.textContent).toContain('Height');
+    expect(tab.containerEl.textContent).toContain('Behavior');
   });
 
   it('should set correct names for settings', () => {
@@ -56,9 +57,10 @@ describe('PluginSettingsTab', () => {
     expect(tab.containerEl.textContent).toContain('Default height');
     expect(tab.containerEl.textContent).toContain('Default min height');
     expect(tab.containerEl.textContent).toContain('Default max height');
+    expect(tab.containerEl.textContent).toContain('Open in new tab');
   });
 
-  it('should bind every sizing setting via addText callbacks', () => {
+  it('should bind every setting via its value component callback', () => {
     const tab = createTab();
 
     tab.displayLegacy();
@@ -70,6 +72,7 @@ describe('PluginSettingsTab', () => {
     expect(boundKeys).toContain('defaultHeight');
     expect(boundKeys).toContain('defaultMinHeight');
     expect(boundKeys).toContain('defaultMaxHeight');
+    expect(boundKeys).toContain('shouldOpenInNewTab');
   });
 });
 
@@ -112,6 +115,7 @@ function emptyStringRecord(): EmptyStringRecord {
     defaultMaxWidth: '',
     defaultMinHeight: '',
     defaultMinWidth: '',
-    defaultWidth: ''
+    defaultWidth: '',
+    shouldOpenInNewTab: ''
   };
 }

@@ -5,4 +5,5 @@ export class PluginSettings {
   public defaultMinHeight = '';
   public defaultMinWidth = '';
   public defaultWidth = '100%';
+  public shouldOpenInNewTab = false;
 }
