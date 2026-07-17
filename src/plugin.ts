@@ -8,6 +8,7 @@ import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar'
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
 import { HtmlExtensions } from './html-extensions.ts';
 import { HtmlFileViewComponent } from './html-file-view-component.ts';
+import { OpenInNewTabComponent } from './open-in-new-tab-component.ts';
 import { PluginSettingsComponent } from './plugin-settings-component.ts';
 import { PluginSettingsTab } from './plugin-settings-tab.ts';
 
@@ -42,6 +43,13 @@ export class Plugin extends PluginBase {
         htmlExtensions,
         pluginSettingsComponent,
         viewRegistrar: new PluginViewRegistrar(this)
+      })
+    );
+    this.addChild(
+      new OpenInNewTabComponent({
+        app: this.app,
+        htmlExtensions,
+        pluginSettingsComponent
       })
     );
   }

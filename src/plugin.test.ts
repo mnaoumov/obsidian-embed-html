@@ -75,6 +75,16 @@ vi.mock('./html-file-view-component.ts', async () => {
   };
 });
 
+vi.mock('./open-in-new-tab-component.ts', async () => {
+  const { Component } = await vi.importActual<ComponentModule>('obsidian');
+  return {
+    // eslint-disable-next-line prefer-arrow-callback -- mock must be constructable with `new` and return a loadable Component.
+    OpenInNewTabComponent: vi.fn(function OpenInNewTabComponentStub(): object {
+      return new Component();
+    })
+  };
+});
+
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
@@ -88,6 +98,8 @@ import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
 import { HtmlExtensions } from './html-extensions.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { HtmlFileViewComponent } from './html-file-view-component.ts';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { OpenInNewTabComponent } from './open-in-new-tab-component.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { PluginSettingsComponent } from './plugin-settings-component.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
@@ -148,6 +160,18 @@ describe('Plugin', () => {
     expect(fileViewParams?.htmlExtensions).toBe(htmlExtensions);
     expect(fileViewParams?.extensionsRegistrar).toBeInstanceOf(PluginExtensionsRegistrar);
     expect(fileViewParams?.viewRegistrar).toBeInstanceOf(PluginViewRegistrar);
+  });
+
+  it('should register the open-in-new-tab component with the app, extensions, and settings component', async () => {
+    await createLoadedPlugin();
+
+    const settingsComponent: unknown = vi.mocked(PluginSettingsComponent).mock.results[0]?.value;
+    const htmlExtensions: unknown = vi.mocked(HtmlExtensions).mock.results[0]?.value;
+
+    const openInNewTabParams = vi.mocked(OpenInNewTabComponent).mock.calls[0]?.[0];
+    expect(openInNewTabParams?.app).toBe(app);
+    expect(openInNewTabParams?.htmlExtensions).toBe(htmlExtensions);
+    expect(openInNewTabParams?.pluginSettingsComponent).toBe(settingsComponent);
   });
 });
 

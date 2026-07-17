@@ -18,4 +18,10 @@ describe('PluginSettings', () => {
 
     expect(settings.defaultWidth).toBe('100%');
   });
+
+  it('should not open in a new tab by default', () => {
+    const settings = new PluginSettings();
+
+    expect(settings.shouldOpenInNewTab).toBe(false);
+  });
 });

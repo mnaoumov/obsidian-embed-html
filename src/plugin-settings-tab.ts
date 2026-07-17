@@ -15,9 +15,15 @@ interface AppendClampDescParams {
 interface PluginSettingsTabBindSizeSettingParams {
   descBuilder(this: void, f: DocumentFragment): void;
   readonly name: string;
-  readonly propertyName: keyof PluginSettings;
+  readonly propertyName: SizeSettingKey;
   readonly setting: SettingEx;
 }
+
+type SizeSettingKey = StringValuedKeys[keyof PluginSettings];
+
+type StringValuedKeys = {
+  [Key in keyof PluginSettings]: PluginSettings[Key] extends string ? Key : never;
+};
 
 export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
   public override displayLegacy(): void {
@@ -87,6 +93,19 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
           propertyName: 'defaultMaxHeight',
           setting
         });
+      });
+
+    new SettingGroupEx(this.containerEl)
+      .setHeading('Behavior')
+      .addSettingEx((setting) => {
+        setting
+          .setName('Open in new tab')
+          .setDesc(createFragment((f) => {
+            f.appendText('When enabled, opening an HTML file puts it in a new tab instead of replacing the current one.');
+          }))
+          .addToggle((toggle) => {
+            this.bind({ propertyName: 'shouldOpenInNewTab', valueComponent: toggle });
+          });
       });
   }
 
