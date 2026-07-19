@@ -190,6 +190,12 @@ describe('Plugin', () => {
     );
     expect(openDemoVaultCall?.[0]).toHaveLength(EXPECTED_COMMAND_HANDLER_COUNT);
   });
+
+  it('should expose the settings component', async () => {
+    const plugin = await createLoadedPlugin();
+
+    expect(plugin.settingsComponent).toBe(vi.mocked(PluginSettingsComponent).mock.results[0]?.value);
+  });
 });
 
 beforeEach(() => {
