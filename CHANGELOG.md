@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.2.2
+
+- fix: demo vault
+
 ## 2.2.1
 
 - docs: demo vault
