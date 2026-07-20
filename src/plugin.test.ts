@@ -86,6 +86,10 @@ vi.mock('./open-in-new-tab-component.ts', async () => {
 });
 
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { CommandHandlerComponent } from 'obsidian-dev-utils/obsidian/command-handlers/command-handler-component';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { OpenDemoVaultCommandHandler } from 'obsidian-dev-utils/obsidian/command-handlers/open-demo-vault-command-handler';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
@@ -109,7 +113,8 @@ import { Plugin } from './plugin.ts';
 
 const manifest = strictProxy<PluginManifest>({
   id: 'embed-html',
-  name: 'Embed HTML'
+  name: 'Embed HTML',
+  version: '2.2.0'
 });
 
 let app: AppOriginal;
@@ -172,6 +177,22 @@ describe('Plugin', () => {
     expect(openInNewTabParams?.app).toBe(app);
     expect(openInNewTabParams?.htmlExtensions).toBe(htmlExtensions);
     expect(openInNewTabParams?.pluginSettingsComponent).toBe(settingsComponent);
+  });
+
+  it('should register the open demo vault command handler', async () => {
+    const registerCommandHandlersSpy = vi.spyOn(CommandHandlerComponent.prototype, 'registerCommandHandlers');
+
+    await createLoadedPlugin();
+
+    const EXPECTED_COMMAND_HANDLER_COUNT = 1;
+    const openDemoVaultCall = registerCommandHandlersSpy.mock.calls.find((call) => call[0].some((commandHandler) => commandHandler instanceof OpenDemoVaultCommandHandler));
+    expect(openDemoVaultCall?.[0]).toHaveLength(EXPECTED_COMMAND_HANDLER_COUNT);
+  });
+
+  it('should expose the settings component', async () => {
+    const plugin = await createLoadedPlugin();
+
+    expect(plugin.settingsComponent).toBe(vi.mocked(PluginSettingsComponent).mock.results[0]?.value);
   });
 });
 

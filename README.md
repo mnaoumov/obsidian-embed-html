@@ -11,7 +11,7 @@ This is a plugin for [Obsidian](https://obsidian.md/) that adds support for embe
 
 ## Usage
 
-You can download [demo vault](https://github.com/mnaoumov/obsidian-embed-html-demo-vault/) to see usage examples.
+A demo vault with usage examples ships with every release. Run the **Embed HTML: Open demo vault** command from the Command Palette to download and open it, or browse its source in [`demo-vault/`](./demo-vault/README.md) in this repository.
 
 ### Supported extensions
 
