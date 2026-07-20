@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.2.4
+
+- chore: update libs
+- fix: apply numeric embed width when Obsidian resets alt to the file name
+
 ## 2.2.3
 
 - chore(demo-vault): drop committed Invocables placeholder
