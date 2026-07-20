@@ -141,6 +141,16 @@ function createMockContainerEl(): MockContainerEl {
   };
 }
 
+function createMockFile(name = 'file.html'): TFile {
+  // `resolveSize` compares `alt` against the file's `name`/`basename`/`path` to detect the file-name
+  // Fallback Obsidian writes into `alt` for a numeric-aliased embed, so the mock must expose all three.
+  return strictProxy<TFile>({
+    basename: name.replace(/\.[^.]+$/, ''),
+    name,
+    path: name
+  });
+}
+
 function createMockPluginSettingsComponent(): PluginSettingsComponent {
   return strictProxy<PluginSettingsComponent>({
     settings: {
@@ -195,7 +205,7 @@ describe('HtmlEmbedComponent', () => {
       new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -213,7 +223,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -236,7 +246,7 @@ describe('HtmlEmbedComponent', () => {
       new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -270,7 +280,7 @@ describe('HtmlEmbedComponent', () => {
       new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -301,7 +311,7 @@ describe('HtmlEmbedComponent', () => {
       new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -327,7 +337,7 @@ describe('HtmlEmbedComponent', () => {
       new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -336,6 +346,96 @@ describe('HtmlEmbedComponent', () => {
 
       expect(containerEl.setCssProps).toHaveBeenCalledWith(
         expect.objectContaining({ width: '50%' })
+      );
+    });
+
+    // Regression: for a numeric alias (`![[basic.html|400]]`) Obsidian routes `400` into the `width`
+    // Attribute and resets `alt` to the file name `basic.html`. Parsing that file name as a size token
+    // Mis-read it as `width: basic.html` (invalid CSS the browser drops), silently clobbering the real
+    // `width` attribute so the embed fell back to the default 100% width instead of 400px.
+    it('should ignore an alt that is only the file name so the numeric width attribute wins', () => {
+      const containerEl = createMockContainerEl();
+      containerEl.getAttr.mockImplementation((attr: string) => {
+        if (attr === 'alt') {
+          return 'basic.html';
+        }
+        if (attr === 'width') {
+          return '400';
+        }
+        return null;
+      });
+      const pluginSettingsComponent = createMockPluginSettingsComponent();
+      const mockApp = createMockApp();
+
+      new HtmlEmbedComponent({
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: createMockFile('basic.html'),
+        pluginSettingsComponent,
+        subpath: ''
+      });
+
+      mockMutationObserverCallback([], {} as MutationObserver);
+
+      expect(containerEl.setCssProps).toHaveBeenCalledWith(
+        // Width from the attribute (not the bogus file-name token); height falls back to the default.
+        expect.objectContaining({ height: '400px', width: '400px' })
+      );
+    });
+
+    // Regression: same file-name fallback for a `WxH` alias (`![[basic.html|600x200]]`) — both numeric
+    // Attributes must survive the file name being present in `alt`.
+    it('should keep both numeric attributes when alt is the file name', () => {
+      const containerEl = createMockContainerEl();
+      containerEl.getAttr.mockImplementation((attr: string) => {
+        if (attr === 'alt') {
+          return 'basic.html';
+        }
+        if (attr === 'width') {
+          return '600';
+        }
+        if (attr === 'height') {
+          return '200';
+        }
+        return null;
+      });
+      const pluginSettingsComponent = createMockPluginSettingsComponent();
+      const mockApp = createMockApp();
+
+      new HtmlEmbedComponent({
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: createMockFile('basic.html'),
+        pluginSettingsComponent,
+        subpath: ''
+      });
+
+      mockMutationObserverCallback([], {} as MutationObserver);
+
+      expect(containerEl.setCssProps).toHaveBeenCalledWith(
+        expect.objectContaining({ height: '200px', width: '600px' })
+      );
+    });
+
+    // The guard is narrow: a genuine non-numeric token never equals the file name, so it is still parsed.
+    it('should still parse a non-numeric alt token that is not the file name', () => {
+      const containerEl = createMockContainerEl();
+      containerEl.getAttr.mockImplementation((attr: string) => (attr === 'alt' ? 'width: 50%; min-width: 300px' : null));
+      const pluginSettingsComponent = createMockPluginSettingsComponent();
+      const mockApp = createMockApp();
+
+      new HtmlEmbedComponent({
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: createMockFile('basic.html'),
+        pluginSettingsComponent,
+        subpath: ''
+      });
+
+      mockMutationObserverCallback([], {} as MutationObserver);
+
+      expect(containerEl.setCssProps).toHaveBeenCalledWith(
+        expect.objectContaining({ 'min-width': '300px', 'width': '50%' })
       );
     });
   });
@@ -371,7 +471,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -428,7 +528,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -480,7 +580,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -528,7 +628,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -587,7 +687,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -637,7 +737,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -683,7 +783,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -760,7 +860,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -824,7 +924,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -884,7 +984,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -950,7 +1050,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -1038,7 +1138,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: '#myId&mode=extract'
       });
@@ -1118,7 +1218,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: '#myId'
       });
@@ -1193,7 +1293,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: '#scrollTarget'
       });
@@ -1253,7 +1353,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: '#nonexistent'
       });
@@ -1325,7 +1425,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: '#myId&mode=invalid'
       });
@@ -1383,7 +1483,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -1413,7 +1513,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -1440,7 +1540,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -1466,7 +1566,7 @@ describe('HtmlEmbedComponent', () => {
       const component = new HtmlEmbedComponent({
         app: mockApp,
         containerEl: asContainerEl(containerEl),
-        file: strictProxy<TFile>({}),
+        file: createMockFile(),
         pluginSettingsComponent,
         subpath: ''
       });
@@ -1690,7 +1790,7 @@ describe('auto-fit sizing', () => {
     const component = new HtmlEmbedComponent({
       app: createMockApp(),
       containerEl: asContainerEl(containerEl),
-      file: strictProxy<TFile>({}),
+      file: createMockFile(),
       pluginSettingsComponent: createMockPluginSettingsComponent(),
       subpath: ''
     });

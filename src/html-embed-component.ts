@@ -220,6 +220,20 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     this.resizeObserver = null;
   }
 
+  // Obsidian routes a pure-digit size token (`|400`, `|600x200`) into the container's `width`/`height`
+  // Attributes and resets `alt` to the embed's own file name. Parsing that file name as a size token would
+  // Mis-read it as a width (`basic.html` -> `width: basic.html`) — invalid CSS the browser silently drops,
+  // Clobbering the real numeric `width` attribute and falling back to the default width. So an `alt` that is
+  // Only the file-name fallback is treated as "no token", letting the numeric attributes (or the defaults)
+  // Win; a genuine non-numeric token (`50%`, `width: max-content`) never equals the file name and is kept.
+  private getSizeToken(): string {
+    const altValue = this.containerEl.getAttr(ALT_ATTRIBUTE) ?? '';
+    if (altValue === this.file.name || altValue === this.file.basename || altValue === this.file.path) {
+      return '';
+    }
+    return altValue;
+  }
+
   private initIframe(iframeDoc: HTMLDocument): void {
     this.registerDomEvent(iframeDoc, 'click', (evt) => {
       const iframeWin = iframeDoc.defaultView;
@@ -353,7 +367,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
 
   private resolveSize(): ResolvedSize {
     const settings = this.pluginSettingsComponent.settings;
-    const spec = parseSizeSpec(this.containerEl.getAttr(ALT_ATTRIBUTE) ?? '');
+    const spec = parseSizeSpec(this.getSizeToken());
     const widthAttr = this.containerEl.getAttr(WIDTH_ATTRIBUTE);
     const heightAttr = this.containerEl.getAttr(HEIGHT_ATTRIBUTE);
 

@@ -7,6 +7,11 @@
  * `width: max-content`, ...) is left verbatim in the `alt` attribute. This
  * module turns that verbatim token into a {@link SizeSpec}.
  *
+ * NOTE: when Obsidian consumes a pure-digit token it also resets `alt` to the
+ * embed's file name (e.g. `basic.html`), which is NOT a size token. Callers must
+ * strip that file-name fallback before calling this parser — otherwise the bare
+ * file name is mis-parsed as a `width` and clobbers the numeric attribute.
+ *
  * The parser is intentionally small and deterministic: it only splits the token
  * into the six known box properties and normalizes the short-form sugar. It does
  * NOT validate CSS values — invalid values are dropped later by the real browser
