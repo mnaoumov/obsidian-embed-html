@@ -15,8 +15,6 @@ import { PluginSettingsComponent } from './plugin-settings-component.ts';
 import { PluginSettingsTab } from './plugin-settings-tab.ts';
 
 export class Plugin extends PluginBase {
-  private settingsComponentInstance?: PluginSettingsComponent;
-
   /**
    * The plugin's settings component — the public-facing API for reading and editing settings
    * programmatically (e.g. `settingsComponent.settings`, `settingsComponent.editAndSave(...)`).
@@ -24,6 +22,8 @@ export class Plugin extends PluginBase {
   public get settingsComponent(): PluginSettingsComponent {
     return ensureNonNullable(this.settingsComponentInstance);
   }
+
+  private settingsComponentInstance?: PluginSettingsComponent;
 
   protected override onloadImpl(): void {
     const pluginSettingsComponent = this.addChild(

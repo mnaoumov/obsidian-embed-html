@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Sections Demo</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 20px;
+      background: #1e1e2e;
+      color: #cdd6f4;
+    }
+    h1 { color: #89b4fa; }
+    h2 { color: #cba6f7; }
+    section {
+      margin: 40px 0;
+      padding: 20px;
+      border: 1px solid #45475a;
+      border-radius: 8px;
+    }
+    .red { border-color: #f38ba8; }
+    .green { border-color: #a6e3a1; }
+    .blue { border-color: #89b4fa; }
+    .yellow { border-color: #f9e2af; }
+    p { line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <h1>Sections Demo</h1>
+  <p>This page has multiple sections. Use <code>#id</code> to scroll to a section, or <code>#id&amp;mode=extract</code> to show only that section.</p>
+
+  <section id="alpha" class="red">
+    <h2>Section Alpha</h2>
+    <p>This is the first section. It has a red border. You can target it with <code>#alpha</code>.</p>
+  </section>
+
+  <section id="beta" class="green">
+    <h2>Section Beta</h2>
+    <p>This is the second section. It has a green border. You can target it with <code>#beta</code>.</p>
+  </section>
+
+  <section id="gamma" class="blue">
+    <h2>Section Gamma</h2>
+    <p>This is the third section. It has a blue border. You can target it with <code>#gamma</code>.</p>
+  </section>
+
+  <section id="delta" class="yellow">
+    <h2>Section Delta</h2>
+    <p>This is the fourth section. It has a yellow border. You can target it with <code>#delta</code>.</p>
+  </section>
+</body>
+</html>

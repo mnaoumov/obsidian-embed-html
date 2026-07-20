@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Auto-fit Demo</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 20px;
+      background: #1e1e2e;
+      color: #cdd6f4;
+    }
+    h1 { color: #a6e3a1; }
+    p { line-height: 1.6; }
+    .card {
+      margin: 16px 0;
+      padding: 16px;
+      border: 1px solid #45475a;
+      border-radius: 8px;
+      background: #313244;
+    }
+  </style>
+</head>
+<body>
+  <h1>Auto-fit to content</h1>
+  <p>This page is taller than the default 400px embed height. With auto-fit the
+    embed grows to fit exactly — no inner scrollbar, no trailing whitespace.</p>
+  <div class="card">
+    <h2>Section 1</h2>
+    <p>Self-contained HTML whose height is not known in advance (dashboards,
+      reports, generated charts) is a good fit for content-based sizing.</p>
+  </div>
+  <div class="card">
+    <h2>Section 2</h2>
+    <p>Each card adds height. A fixed-height embed would either clip this content
+      behind an inner scrollbar or leave a large empty gap for short content.</p>
+  </div>
+  <div class="card">
+    <h2>Section 3</h2>
+    <p>The embed reacts to content-size changes (images finishing loading,
+      expandable sections) via a <code>ResizeObserver</code>.</p>
+  </div>
+  <div class="card">
+    <h2>Section 4</h2>
+    <p>Resize the note pane and the width follows; the height stays fit to the
+      content it renders.</p>
+  </div>
+  <div class="card">
+    <h2>Section 5</h2>
+    <p>This last card pushes the total content height well past 400px so the
+      auto-fit behavior is easy to see.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>JavaScript Demo</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      padding: 20px;
+      background: #1e1e2e;
+      color: #cdd6f4;
+    }
+    h1 { color: #a6e3a1; }
+    #counter {
+      font-size: 48px;
+      font-weight: bold;
+      color: #f9e2af;
+      margin: 20px 0;
+    }
+    button {
+      padding: 8px 16px;
+      margin: 4px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      background: #89b4fa;
+      color: #1e1e2e;
+    }
+    button:hover { background: #74c7ec; }
+    #timestamp { color: #a6adc8; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <h1>JavaScript Demo</h1>
+  <div id="counter">0</div>
+  <button onclick="increment()">+1</button>
+  <button onclick="decrement()">-1</button>
+  <button onclick="reset()">Reset</button>
+  <div id="timestamp"></div>
+  <script>
+    let count = 0;
+    const counterEl = document.getElementById('counter');
+    const timestampEl = document.getElementById('timestamp');
+
+    function increment() {
+      count++;
+      counterEl.textContent = count;
+    }
+
+    function decrement() {
+      count--;
+      counterEl.textContent = count;
+    }
+
+    function reset() {
+      count = 0;
+      counterEl.textContent = count;
+    }
+
+    timestampEl.textContent = 'Page loaded at: ' + new Date().toLocaleTimeString();
+  </script>
+</body>
+</html>

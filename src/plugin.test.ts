@@ -185,9 +185,7 @@ describe('Plugin', () => {
     await createLoadedPlugin();
 
     const EXPECTED_COMMAND_HANDLER_COUNT = 1;
-    const openDemoVaultCall = registerCommandHandlersSpy.mock.calls.find((call) =>
-      call[0].some((commandHandler) => commandHandler instanceof OpenDemoVaultCommandHandler)
-    );
+    const openDemoVaultCall = registerCommandHandlersSpy.mock.calls.find((call) => call[0].some((commandHandler) => commandHandler instanceof OpenDemoVaultCommandHandler));
     expect(openDemoVaultCall?.[0]).toHaveLength(EXPECTED_COMMAND_HANDLER_COUNT);
   });
 
