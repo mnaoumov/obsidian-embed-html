@@ -2,6 +2,7 @@
   "version": "0.2",
   "ignorePaths": [
     "coverage",
+    "demo-vault-execution-report.json",
     "dist",
     "node_modules",
     "tsconfig.tsbuildinfo"
@@ -11,12 +12,15 @@
   "words": [
     "CSSOM",
     "dblclick",
+    "evals",
     "Excalidraw",
+    "Invocables",
     "mnaoumov",
     "Naumov",
     "obsidianmd",
     "offref",
     "sandboxed",
+    "scroller",
     "srcdoc",
     "tsbuildinfo",
     "virtualizes"

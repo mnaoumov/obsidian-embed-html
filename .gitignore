@@ -31,3 +31,4 @@ dist
 # not committed: the built embed-html plugin from dist/build/ and the ODU-owned
 # demo-vault-helper.
 /demo-vault/.obsidian/plugins
+demo-vault-execution-report.json
