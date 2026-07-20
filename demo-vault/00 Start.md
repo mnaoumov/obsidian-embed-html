@@ -1,6 +1,6 @@
 # Embed HTML — Demo Vault
 
-This vault demonstrates the [Embed HTML](https://github.com/mnaoumov/obsidian-embed-html) plugin, which embeds HTML files inside your notes and opens them directly in Obsidian.
+This vault demonstrates the [Embed HTML](https://community.obsidian.md/plugins/embed-html) plugin, which embeds HTML files inside your notes and opens them directly in Obsidian.
 
 ## Features
 

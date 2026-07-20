@@ -1,4 +1,4 @@
-This is an [Obsidian](https://obsidian.md/) vault demonstrating features of the [Embed HTML](https://github.com/mnaoumov/obsidian-embed-html/) plugin.
+This is an [Obsidian](https://obsidian.md/) vault demonstrating features of the [Embed HTML](https://community.obsidian.md/plugins/embed-html) plugin.
 
 ## Opening this vault
 
