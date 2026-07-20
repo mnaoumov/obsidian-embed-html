@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2.2.3
+
+- chore(demo-vault): drop committed Invocables placeholder
+- chore(demo-vault): add Invocables folder for consistency
+- test: validate rendered embed sizes in the demo vault
+
 ## 2.2.2
 
 - fix: demo vault
