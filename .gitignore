@@ -26,3 +26,8 @@ dist
 .env
 /tsconfig.tsbuildinfo
 .claude/settings.local.json
+
+# The demo vault's plugins are injected at release time (archivePluginDemoVault),
+# not committed: the built embed-html plugin from dist/build/ and the ODU-owned
+# demo-vault-helper.
+/demo-vault/.obsidian/plugins
