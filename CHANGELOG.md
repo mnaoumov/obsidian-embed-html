@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.2.1
+
+- docs: demo vault
+- feat: ship the demo vault in-repo
+
 ## 2.2.0
 
 - feat: re #113
