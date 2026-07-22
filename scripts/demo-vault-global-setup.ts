@@ -7,7 +7,7 @@ import {
 import { join } from 'node:path';
 import process from 'node:process';
 import { getRootFolder } from 'obsidian-dev-utils/script-utils/root';
-import { createSetup } from 'obsidian-integration-testing/vitest-global-setup';
+import { createSetup } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 
 import { readDemoVaultTree } from './helpers/read-demo-vault-tree.ts';
 
