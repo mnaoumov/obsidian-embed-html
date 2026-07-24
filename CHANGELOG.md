@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.2.6
+
+- fix: re #9
+- chore: update libs
+
 ## 2.2.5
 
 - chore: update libs
