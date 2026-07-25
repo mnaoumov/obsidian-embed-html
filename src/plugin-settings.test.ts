@@ -24,4 +24,12 @@ describe('PluginSettings', () => {
 
     expect(settings.shouldOpenInNewTab).toBe(false);
   });
+
+  it('should have no border, border radius or background by default', () => {
+    const settings = new PluginSettings();
+
+    expect(settings.border).toBe('');
+    expect(settings.borderRadius).toBe('');
+    expect(settings.background).toBe('');
+  });
 });

@@ -34,6 +34,12 @@ interface ComponentWithIframeEl {
   iframeEl: unknown;
 }
 
+interface DecorationOverrides {
+  background?: string;
+  border?: string;
+  borderRadius?: string;
+}
+
 interface LoadedContentComponent {
   component: HtmlEmbedComponent;
   fireLoad(): void;
@@ -154,6 +160,9 @@ function createMockFile(name = 'file.html'): TFile {
 function createMockPluginSettingsComponent(): PluginSettingsComponent {
   return strictProxy<PluginSettingsComponent>({
     settings: {
+      background: '',
+      border: '',
+      borderRadius: '',
       defaultHeight: '400px',
       defaultMaxHeight: '',
       defaultMaxWidth: '',
@@ -254,11 +263,15 @@ describe('HtmlEmbedComponent', () => {
       mockMutationObserverCallback([], {} as MutationObserver);
 
       expect(containerEl.setCssProps).toHaveBeenCalledWith({
+        'background': '',
+        'border': '',
+        'border-radius': '',
         'height': '400px',
         'max-height': '',
         'max-width': '',
         'min-height': '',
         'min-width': '',
+        'overflow': '',
         'width': '100%'
       });
     });
@@ -288,11 +301,15 @@ describe('HtmlEmbedComponent', () => {
       mockMutationObserverCallback([], {} as MutationObserver);
 
       expect(containerEl.setCssProps).toHaveBeenCalledWith({
+        'background': '',
+        'border': '',
+        'border-radius': '',
         'height': '300px',
         'max-height': '',
         'max-width': '',
         'min-height': '',
         'min-width': '',
+        'overflow': '',
         'width': '500px'
       });
     });
@@ -1632,11 +1649,15 @@ describe('auto-fit sizing', () => {
     castTo<ComponentWithApplySize>(component).applySize();
 
     expect(containerEl.setCssProps).toHaveBeenLastCalledWith({
+      'background': '',
+      'border': '',
+      'border-radius': '',
       'height': '400px',
       'max-height': '800px',
       'max-width': '',
       'min-height': '',
       'min-width': '100px',
+      'overflow': '',
       'width': '100%'
     });
   });
@@ -1841,6 +1862,66 @@ describe('auto-fit sizing', () => {
       fireLoad: () => loadHandler?.()
     };
   }
+});
+
+describe('decoration (border/background)', () => {
+  function createDecorationSettingsComponent(overrides: DecorationOverrides): PluginSettingsComponent {
+    return strictProxy<PluginSettingsComponent>({
+      settings: {
+        background: overrides.background ?? '',
+        border: overrides.border ?? '',
+        borderRadius: overrides.borderRadius ?? '',
+        defaultHeight: '400px',
+        defaultMaxHeight: '',
+        defaultMaxWidth: '',
+        defaultMinHeight: '',
+        defaultMinWidth: '',
+        defaultWidth: '100%'
+      }
+    });
+  }
+
+  function applySizeWithDecoration(overrides: DecorationOverrides): MockContainerEl {
+    const containerEl = createMockContainerEl();
+    const component = new HtmlEmbedComponent({
+      app: createMockApp(),
+      containerEl: asContainerEl(containerEl),
+      file: createMockFile(),
+      pluginSettingsComponent: createDecorationSettingsComponent(overrides),
+      subpath: ''
+    });
+    castTo<ComponentWithApplySize>(component).applySize();
+    return containerEl;
+  }
+
+  it('should apply border, background and border-radius from settings', () => {
+    const containerEl = applySizeWithDecoration({ background: 'var(--background-primary)', border: '1px solid blue', borderRadius: '8px' });
+
+    expect(containerEl.setCssProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        'background': 'var(--background-primary)',
+        'border': '1px solid blue',
+        'border-radius': '8px',
+        'overflow': 'hidden'
+      })
+    );
+  });
+
+  it('should treat a bare numeric border radius as pixels', () => {
+    const containerEl = applySizeWithDecoration({ borderRadius: '12' });
+
+    expect(containerEl.setCssProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({ 'border-radius': '12px', 'overflow': 'hidden' })
+    );
+  });
+
+  it('should not clip (overflow) when no border radius is configured', () => {
+    const containerEl = applySizeWithDecoration({ background: 'white', border: '2px dashed red' });
+
+    expect(containerEl.setCssProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({ 'border-radius': '', 'overflow': '' })
+    );
+  });
 });
 
 function findClickHandler(

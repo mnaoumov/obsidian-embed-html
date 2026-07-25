@@ -79,6 +79,14 @@ Unknown properties and invalid values are ignored, falling back to the defaults 
 
 The plugin settings provide global defaults for all six properties (`Default width`, `Default height`, `Default min/max width`, `Default min/max height`), grouped by axis. `Default width` and `Default height` also accept a content keyword to make auto-fit the default. Any per-embed token overrides these defaults.
 
+### Border and background
+
+The plugin settings provide global appearance defaults applied to every embed box, under `Settings → Embed HTML → Appearance`:
+
+- `Border` — any CSS `border` shorthand (e.g. `1px solid var(--background-modifier-border)`). Empty for none.
+- `Border radius` — any CSS `border-radius` value (e.g. `8px`); a bare number is treated as pixels. When set, the embed's corners are rounded and its content is clipped to the rounded box. Empty for square corners.
+- `Background` — any CSS `background` value (e.g. `var(--background-primary)`), painted behind the HTML content. Empty for none.
+
 ### Open in new tab
 
 Enable `Settings → Embed HTML → Behavior → Open in new tab` to make opening an HTML file put it in a new tab instead of replacing the content of the current one, without holding a modifier key. When enabled, the first HTML file still reuses an empty tab (so you do not get a blank leftover tab); each subsequent HTML file opens in its own tab. The setting is off by default, preserving Obsidian's standard behavior.

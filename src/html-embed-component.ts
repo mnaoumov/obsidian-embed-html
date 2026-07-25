@@ -48,6 +48,12 @@ interface ResolveAxisParams {
   readonly fromToken: null | string;
 }
 
+interface ResolvedDecoration {
+  readonly background: string;
+  readonly border: string;
+  readonly borderRadius: string;
+}
+
 interface ResolvedSize {
   readonly height: string;
   readonly maxHeight: string;
@@ -169,14 +175,21 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
 
   private applySize(): void {
     const spec = this.resolveSize();
+    const decoration = this.resolveDecoration();
     this.widthContentKeyword = getContentKeyword(spec.width);
     this.heightContentKeyword = getContentKeyword(spec.height);
 
     const props: Record<string, string> = {
+      'background': decoration.background,
+      'border': decoration.border,
+      'border-radius': decoration.borderRadius,
       'max-height': spec.maxHeight,
       'max-width': spec.maxWidth,
       'min-height': spec.minHeight,
-      'min-width': spec.minWidth
+      'min-width': spec.minWidth,
+      // Clip the iframe's square corners to the rounded box, but only when a radius is set so the
+      // Default (no radius) keeps the container's natural overflow behavior.
+      'overflow': decoration.borderRadius === '' ? '' : 'hidden'
     };
     // Content axes are driven by measure(); apply only the literal axes here.
     if (!this.widthContentKeyword) {
@@ -362,6 +375,15 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       id: searchParams.get('id') ?? '',
       /* v8 ignore stop */
       mode: (searchParams.get('mode') ?? 'scroll') as Mode
+    };
+  }
+
+  private resolveDecoration(): ResolvedDecoration {
+    const settings = this.pluginSettingsComponent.settings;
+    return {
+      background: settings.background,
+      border: settings.border,
+      borderRadius: toPx(settings.borderRadius)
     };
   }
 
