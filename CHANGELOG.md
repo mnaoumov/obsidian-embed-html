@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2.3.0
+
+- docs: demo embed appearance settings in the demo vault (re #5)
+- test: add behavioral integration test for embed appearance settings (re #5)
+- feat: re #5
+
 ## 2.2.6
 
 - fix: re #9
