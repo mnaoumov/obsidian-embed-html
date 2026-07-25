@@ -12,6 +12,7 @@ This vault demonstrates the [Embed HTML](https://community.obsidian.md/plugins/e
 6. [[06 Links]] — Links inside embeds open externally
 7. [[07 File Extensions]] — Supported file extensions
 8. [[08 Direct View]] — Open HTML files directly, plus the open-in-new-tab setting (with a live button)
+9. [[09 Appearance]] — Border, rounded corners, and background settings (with live buttons)
 
 ## Interactive buttons
 

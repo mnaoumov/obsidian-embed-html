@@ -10,6 +10,9 @@ import {
  * read as `settings.<name>`. The real definition lives in the plugin's `src/plugin-settings.ts`.
  */
 interface EmbedHtmlSettings {
+  background: string;
+  border: string;
+  borderRadius: string;
   defaultHeight: string;
   defaultMaxHeight: string;
   defaultMaxWidth: string;
@@ -22,6 +25,9 @@ interface EmbedHtmlSettings {
 type SettingsEditor = (settings: EmbedHtmlSettings) => void;
 
 const DEFAULT_SETTINGS: EmbedHtmlSettings = {
+  background: '',
+  border: '',
+  borderRadius: '',
   defaultHeight: '400px',
   defaultMaxHeight: '',
   defaultMaxWidth: '',
@@ -33,6 +39,9 @@ const DEFAULT_SETTINGS: EmbedHtmlSettings = {
 
 /** Human-readable labels for each setting, used in the change toast. */
 const SETTING_LABELS: Record<keyof EmbedHtmlSettings, string> = {
+  background: 'Background',
+  border: 'Border',
+  borderRadius: 'Border radius',
   defaultHeight: 'Default height',
   defaultMaxHeight: 'Default max height',
   defaultMaxWidth: 'Default max width',
