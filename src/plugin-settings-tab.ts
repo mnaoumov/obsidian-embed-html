@@ -96,6 +96,33 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
       });
 
     new SettingGroupEx(this.containerEl)
+      .setHeading('Appearance')
+      .addSettingEx((setting) => {
+        this.bindSizeSetting({
+          descBuilder: appendBorderDesc,
+          name: 'Border',
+          propertyName: 'border',
+          setting
+        });
+      })
+      .addSettingEx((setting) => {
+        this.bindSizeSetting({
+          descBuilder: appendBorderRadiusDesc,
+          name: 'Border radius',
+          propertyName: 'borderRadius',
+          setting
+        });
+      })
+      .addSettingEx((setting) => {
+        this.bindSizeSetting({
+          descBuilder: appendBackgroundDesc,
+          name: 'Background',
+          propertyName: 'background',
+          setting
+        });
+      });
+
+    new SettingGroupEx(this.containerEl)
       .setHeading('Behavior')
       .addSettingEx((setting) => {
         setting
@@ -118,6 +145,30 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
         this.bind({ propertyName, valueComponent: text });
       });
   }
+}
+
+function appendBackgroundDesc(f: DocumentFragment): void {
+  f.appendText('Optional background for the embed box, applied behind the HTML content. Accepts any CSS ');
+  appendCodeBlock(f, 'background');
+  f.appendText(' value (e.g. ');
+  appendCodeBlock(f, 'var(--background-primary)');
+  f.appendText('). Leave empty for none.');
+}
+
+function appendBorderDesc(f: DocumentFragment): void {
+  f.appendText('Optional border drawn around the embed. Accepts any CSS ');
+  appendCodeBlock(f, 'border');
+  f.appendText(' shorthand (e.g. ');
+  appendCodeBlock(f, '1px solid var(--background-modifier-border)');
+  f.appendText('). Leave empty for none.');
+}
+
+function appendBorderRadiusDesc(f: DocumentFragment): void {
+  f.appendText('Optional corner rounding for the embed. Accepts any CSS ');
+  appendCodeBlock(f, 'border-radius');
+  f.appendText(' value (e.g. ');
+  appendCodeBlock(f, '8px');
+  f.appendText('); a bare number is treated as pixels. Leave empty for square corners.');
 }
 
 function appendClampDesc(params: AppendClampDescParams): void {

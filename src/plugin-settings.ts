@@ -1,4 +1,7 @@
 export class PluginSettings {
+  public background = '';
+  public border = '';
+  public borderRadius = '';
   public defaultHeight = '400px';
   public defaultMaxHeight = '';
   public defaultMaxWidth = '';
