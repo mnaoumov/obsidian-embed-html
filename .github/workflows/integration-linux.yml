@@ -1,0 +1,109 @@
+# Linux integration test for GitHub issue #4 (relative & absolute-path HTML embeds).
+#
+# The `integration-tests:linux` vitest project (see `scripts/vitest-config.ts`) drives a REAL
+# Obsidian on the host OS via the obsidian-integration-testing (OIT) desktop CDP transport. It
+# reproduces issue #4 only on Linux (case-sensitive ext4), so it cannot be validated on the
+# Windows/macOS dev machines where it was authored — hence this dedicated `ubuntu-latest` job.
+# The actual Linux verification happens HERE, in GitHub CI, after a push (it cannot be run locally
+# on a non-Linux host).
+#
+# How it runs a real Obsidian on a headless runner:
+#   * The runner has no installed Obsidian, so the linux vitest project pins
+#     `obsidianInstallerVersion: 'public-latest'` — OIT downloads + extracts the portable Linux
+#     `.tar.gz` shell into a temp cache and launches it (owned-instance mode). `GITHUB_TOKEN` is
+#     passed so OIT's GitHub release-asset lookup uses the authenticated rate limit (anonymous
+#     requests get HTTP 403 on shared CI IPs).
+#   * The linux project also pins `shouldDisableSandbox: true` → `--no-sandbox`: an extracted
+#     portable Electron shell has no root-owned setuid `chrome-sandbox` helper and CI runs as a
+#     non-root user, so the renderer would otherwise refuse to start.
+#   * Electron/Obsidian is a GUI app and needs an X server even when its window is moved
+#     off-screen, so the test step runs under `xvfb-run`, and the Electron runtime shared
+#     libraries are installed via apt.
+#
+# ASSUMPTIONS / UNCERTAINTIES (this is best-effort infra authored on Windows and NOT runnable
+# locally — expect to iterate on the first real CI run):
+#   * The apt package set below is the usual Electron-on-Linux dependency list. Ubuntu 24.04
+#     (current `ubuntu-latest`) renamed several libs with a `t64` suffix, so each package is
+#     installed tolerantly (both the classic and `t64` names are attempted; a miss is skipped)
+#     to survive the runner image floating between Ubuntu releases.
+#   * `public-latest` resolution + shell download needs network egress to GitHub; the download is
+#     ~150 MB and boot can be slow, hence the generous `timeout-minutes`.
+#   * If the owned instance still fails to boot, the likely levers are additional missing
+#     Electron libs (see the boot error) or bumping the OIT dead-boot grace.
+
+name: Linux integration (path-resolution embeds)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/integration-linux.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-linux-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build plugin bundle
+        # Integration tests run the built `dist/build` bundle, not `node_modules`, so build first.
+        run: npm run build
+
+      - name: Install Electron/Obsidian runtime libraries + Xvfb
+        # Install tolerantly: Ubuntu 24.04's `t64` transition renamed some libs, so try each
+        # package and skip any that this runner image does not provide (both name variants listed).
+        run: |
+          sudo apt-get update
+          for pkg in \
+            xvfb \
+            libnss3 \
+            libgbm1 \
+            libdrm2 \
+            libxkbcommon0 \
+            libxcomposite1 \
+            libxdamage1 \
+            libxfixes3 \
+            libxrandr2 \
+            libxext6 \
+            libx11-xcb1 \
+            libxshmfence1 \
+            libpango-1.0-0 \
+            libcairo2 \
+            libasound2 libasound2t64 \
+            libgtk-3-0 libgtk-3-0t64 \
+            libatk1.0-0 libatk1.0-0t64 \
+            libatk-bridge2.0-0 libatk-bridge2.0-0t64 \
+            libcups2 libcups2t64 \
+            libsecret-1-0 ; do
+            sudo apt-get install -y --no-install-recommends "$pkg" || echo "skip: $pkg not available on this runner image"
+          done
+
+      - name: Run Linux integration test under Xvfb
+        # `GITHUB_TOKEN`: authenticates OIT's release-asset lookup so the installer download is not
+        # rate-limited (HTTP 403) on the shared CI runner IP.
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: xvfb-run -a npm run test:integration:linux

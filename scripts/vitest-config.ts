@@ -88,13 +88,29 @@ export const config = defineConfig({
       {
         test: {
           environment: 'node',
+          // CI-only knobs (this project runs ONLY on a Linux CI runner — see the `include` comment).
+          // A runner has no installed Obsidian, so pin the public-latest installer shell for OIT to
+          // Download + extract the portable Linux `.tar.gz`; and disable the Chromium setuid sandbox
+          // Because the extracted shell has no root-owned `chrome-sandbox` helper and CI runs as a
+          // Non-root user (the renderer otherwise refuses to start). Both are no-ops on the download
+          // Path OIT built for CI (`resolveInstalledShellOrNull`). Needs a `GITHUB_TOKEN` in the env
+          // To lift the anonymous rate limit when resolving/downloading the release asset.
+          environmentOptions: {
+            obsidianTransport: {
+              obsidianInstallerVersion: 'public-latest',
+              shouldDisableSandbox: true,
+              type: 'obsidian-cdp'
+            }
+          },
           fileParallelism: false,
           globalSetup: ['obsidian-integration-testing/vitest-global-setup-plugin'],
           hookTimeout: BIG_TIMEOUT_IN_MILLISECONDS * HOOK_TIMEOUT_MULTIPLIER,
           // Linux-specific entry for GitHub issue #4. Identical to `integration-tests:desktop` except the
-          // Glob, because OIT's desktop transport runs the HOST OS's Obsidian — so this reproduces the
-          // Linux path-resolution behavior only when invoked (`npm run test:integration:linux`) ON a Linux
-          // Host. It is intentionally excluded from the default `test:integration` sweep.
+          // Glob (and the CI knobs above), because OIT's desktop transport runs the HOST OS's Obsidian —
+          // So this reproduces the Linux path-resolution behavior only when invoked
+          // (`npm run test:integration:linux`) ON a Linux host (the `.github/workflows/integration-linux.yml`
+          // Workflow runs it on `ubuntu-latest`). It is intentionally excluded from the default
+          // `test:integration` sweep.
           include: ['src/**/*.linux.integration.test.ts'],
           name: 'integration-tests:linux',
           setupFiles: ['obsidian-integration-testing/vitest-setup'],
