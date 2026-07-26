@@ -34,6 +34,7 @@
     "test:integration:desktop": "jiti scripts/test-integration-desktop.ts",
     "test:integration:demo-vault": "jiti scripts/test-integration-demo-vault.ts",
     "test:integration:desktop:performance": "jiti scripts/test-integration-desktop-performance.ts",
+    "test:integration:linux": "jiti scripts/test-integration-linux.ts",
     "test:integration:no-app": "jiti scripts/test-integration-no-app.ts",
     "test:watch": "jiti scripts/test-watch.ts",
     "version": "jiti scripts/version.ts"

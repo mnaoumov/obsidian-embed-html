@@ -90,6 +90,22 @@ export const config = defineConfig({
           environment: 'node',
           fileParallelism: false,
           globalSetup: ['obsidian-integration-testing/vitest-global-setup-plugin'],
+          hookTimeout: BIG_TIMEOUT_IN_MILLISECONDS * HOOK_TIMEOUT_MULTIPLIER,
+          // Linux-specific entry for GitHub issue #4. Identical to `integration-tests:desktop` except the
+          // Glob, because OIT's desktop transport runs the HOST OS's Obsidian — so this reproduces the
+          // Linux path-resolution behavior only when invoked (`npm run test:integration:linux`) ON a Linux
+          // Host. It is intentionally excluded from the default `test:integration` sweep.
+          include: ['src/**/*.linux.integration.test.ts'],
+          name: 'integration-tests:linux',
+          setupFiles: ['obsidian-integration-testing/vitest-setup'],
+          testTimeout: BIG_TIMEOUT_IN_MILLISECONDS
+        }
+      },
+      {
+        test: {
+          environment: 'node',
+          fileParallelism: false,
+          globalSetup: ['obsidian-integration-testing/vitest-global-setup-plugin'],
           hookTimeout: PERFORMANCE_TIMEOUT_IN_MILLISECONDS,
           include: ['src/**/*.desktop-performance.integration.test.ts'],
           name: 'integration-tests:desktop-performance',

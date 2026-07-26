@@ -23,8 +23,10 @@
     "sandboxed",
     "scroller",
     "srcdoc",
+    "srcs",
     "tsbuildinfo",
-    "virtualizes"
+    "virtualizes",
+    "wikilink"
   ],
   "ignoreWords": [],
   "import": [],
