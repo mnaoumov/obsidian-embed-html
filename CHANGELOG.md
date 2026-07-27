@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2.4.0
+
+- ci: add Linux integration workflow for path-resolution embeds (re #4)
+- docs: demo embedding HTML by relative and full path (re #4)
+- test: verify embedding HTML by relative and full vault path (re #4)
+
 ## 2.3.0
 
 - docs: demo embed appearance settings in the demo vault (re #5)
