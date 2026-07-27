@@ -57,12 +57,15 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        # Node 24 (ships npm 11.x) — NOT Node 22 (npm 10.x): `package-lock.json` is authored by
+        # npm 11, whose nested-dependency placement npm 10 rejects with
+        # `Missing: picomatch@4.0.5 from lock file` (reproducible on any OS with `npm@10 ci`).
+        uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: '24'
           cache: npm
 
       - name: Install dependencies
