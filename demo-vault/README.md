@@ -3,7 +3,7 @@ This is an [Obsidian](https://obsidian.md/) vault demonstrating features of the 
 ## Opening this vault
 
 - **If you already have the plugin installed**, run the **Embed HTML: Open demo vault** command — it downloads and opens the latest demo vault automatically.
-- **Otherwise**, download `embed-html.demo-vault.zip` from the [plugin releases](https://github.com/mnaoumov/obsidian-embed-html/releases), unzip it, and in Obsidian choose `Manage vaults...` → `Open folder as vault` → select the unzipped folder.
+- **Otherwise**, download `embed-html-demo-vault-<version>.zip` (`<version>` is the release version) from the [plugin releases](https://github.com/mnaoumov/obsidian-embed-html/releases), unzip it, and in Obsidian choose `Manage vaults...` → `Open folder as vault` → select the unzipped folder.
 
 When plugins prompt on first open, enable them using one of these methods:
 
