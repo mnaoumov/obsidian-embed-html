@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2.5.0
+
+- refactor(settings): move the settings tab onto the declarative settings API
+- chore: update libs and clear the npm audit
+- docs: fix the demo vault download instructions
+- ci: run Linux integration on Node 24 (npm 11) and bump actions (re #4)
+
 ## 2.4.0
 
 - ci: add Linux integration workflow for path-resolution embeds (re #4)
