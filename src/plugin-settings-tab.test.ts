@@ -1,6 +1,8 @@
 import type {
   App as AppOriginal,
-  Plugin
+  Plugin,
+  SettingDefinition,
+  SettingGroup
 } from 'obsidian';
 import type { GenericVoidFunction } from 'obsidian-dev-utils/function';
 import type { PluginSettingsComponentBase } from 'obsidian-dev-utils/obsidian/components/plugin-settings-component';
@@ -8,6 +10,7 @@ import type { PluginSettingsComponentBase } from 'obsidian-dev-utils/obsidian/co
 import { noopAsync } from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/plugin/plugin-settings-tab';
+import { SettingEx } from 'obsidian-dev-utils/obsidian/setting-ex';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import { App } from 'obsidian-test-mocks/obsidian';
 import {
@@ -34,40 +37,40 @@ beforeEach(() => {
 });
 
 describe('PluginSettingsTab', () => {
-  it('should create a width group, a height group, an appearance group, and a behavior group on display', () => {
+  it('should declare a width group, a height group, an appearance group, and a behavior group', () => {
     const tab = createTab();
 
-    tab.displayLegacy();
+    const headings = tab.getSettingDefinitions().map((item) => 'heading' in item ? item.heading : '');
 
     const EXPECTED_GROUP_COUNT = 4;
-    expect(tab.containerEl.children).toHaveLength(EXPECTED_GROUP_COUNT);
-    expect(tab.containerEl.textContent).toContain('Width');
-    expect(tab.containerEl.textContent).toContain('Height');
-    expect(tab.containerEl.textContent).toContain('Appearance');
-    expect(tab.containerEl.textContent).toContain('Behavior');
+    expect(headings).toHaveLength(EXPECTED_GROUP_COUNT);
+    expect(headings).toContain('Width');
+    expect(headings).toContain('Height');
+    expect(headings).toContain('Appearance');
+    expect(headings).toContain('Behavior');
   });
 
   it('should set correct names for settings', () => {
     const tab = createTab();
 
-    tab.displayLegacy();
+    const names = collectRows(tab).map((row) => 'name' in row ? row.name : '');
 
-    expect(tab.containerEl.textContent).toContain('Default width');
-    expect(tab.containerEl.textContent).toContain('Default min width');
-    expect(tab.containerEl.textContent).toContain('Default max width');
-    expect(tab.containerEl.textContent).toContain('Default height');
-    expect(tab.containerEl.textContent).toContain('Default min height');
-    expect(tab.containerEl.textContent).toContain('Default max height');
-    expect(tab.containerEl.textContent).toContain('Border');
-    expect(tab.containerEl.textContent).toContain('Border radius');
-    expect(tab.containerEl.textContent).toContain('Background');
-    expect(tab.containerEl.textContent).toContain('Open in new tab');
+    expect(names).toContain('Default width');
+    expect(names).toContain('Default min width');
+    expect(names).toContain('Default max width');
+    expect(names).toContain('Default height');
+    expect(names).toContain('Default min height');
+    expect(names).toContain('Default max height');
+    expect(names).toContain('Border');
+    expect(names).toContain('Border radius');
+    expect(names).toContain('Background');
+    expect(names).toContain('Open in new tab');
   });
 
   it('should bind every setting via its value component callback', () => {
     const tab = createTab();
 
-    tab.displayLegacy();
+    renderRows(tab);
 
     const boundKeys = vi.mocked(PluginSettingsTabBase.prototype.bind).mock.calls.map((call) => call[0].propertyName);
     expect(boundKeys).toContain('defaultWidth');
@@ -86,6 +89,25 @@ describe('PluginSettingsTab', () => {
 type EmptyStringRecord = {
   [Key in keyof PluginSettings]: string;
 };
+
+/**
+ * Flattens the declared items into the rows they contain, unwrapping the groups.
+ *
+ * @param tab - The settings tab.
+ * @returns The declared rows.
+ */
+function collectRows(tab: PluginSettingsTab): SettingDefinition[] {
+  const rows: SettingDefinition[] = [];
+  for (const item of tab.getSettingDefinitions()) {
+    if ('items' in item) {
+      rows.push(...castTo<SettingDefinition[]>(item.items ?? []));
+    } else {
+      rows.push(castTo<SettingDefinition>(item));
+    }
+  }
+
+  return rows;
+}
 
 function createMockSettingsComponent(): PluginSettingsComponentBase<PluginSettings> {
   return strictProxy<PluginSettingsComponentBase<PluginSettings>>({
@@ -128,4 +150,18 @@ function emptyStringRecord(): EmptyStringRecord {
     defaultWidth: '',
     shouldOpenInNewTab: ''
   };
+}
+
+/**
+ * Invokes every declared row's `render` callback the way Obsidian does when the tab is opened, so the
+ * bindings are still exercised now that the rows are declarative.
+ *
+ * @param tab - The settings tab.
+ */
+function renderRows(tab: PluginSettingsTab): void {
+  for (const row of collectRows(tab)) {
+    if ('render' in row) {
+      row.render(new SettingEx(tab.containerEl), castTo<SettingGroup>(null));
+    }
+  }
 }

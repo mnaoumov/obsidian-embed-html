@@ -1,8 +1,10 @@
-import type { SettingEx } from 'obsidian-dev-utils/obsidian/setting-ex';
+import type {
+  SettingDefinitionItem,
+  SettingDefinitionRender
+} from 'obsidian';
 
 import { appendCodeBlock } from 'obsidian-dev-utils/obsidian/html-element';
 import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/plugin/plugin-settings-tab';
-import { SettingGroupEx } from 'obsidian-dev-utils/obsidian/setting-group-ex';
 
 import type { PluginSettings } from './plugin-settings.ts';
 
@@ -12,11 +14,10 @@ interface AppendClampDescParams {
   readonly f: DocumentFragment;
 }
 
-interface PluginSettingsTabBindSizeSettingParams {
+interface PluginSettingsTabSizeSettingExParams {
   descBuilder(this: void, f: DocumentFragment): void;
   readonly name: string;
   readonly propertyName: SizeSettingKey;
-  readonly setting: SettingEx;
 }
 
 type SizeSettingKey = StringValuedKeys[keyof PluginSettings];
@@ -26,124 +27,110 @@ type StringValuedKeys = {
 };
 
 export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
-  public override displayLegacy(): void {
-    super.displayLegacy();
-
-    new SettingGroupEx(this.containerEl)
-      .setHeading('Width')
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: (f) => {
-            appendDefaultDesc(f, 'width');
-          },
-          name: 'Default width',
-          propertyName: 'defaultWidth',
-          setting
-        });
+  protected override getSettingDefinitionItems(): SettingDefinitionItem[] {
+    return [
+      this.settingGroupEx({
+        heading: 'Width',
+        items: [
+          this.sizeSettingEx({
+            descBuilder: (f) => {
+              appendDefaultDesc(f, 'width');
+            },
+            name: 'Default width',
+            propertyName: 'defaultWidth'
+          }),
+          this.sizeSettingEx({
+            descBuilder: (f) => {
+              appendClampDesc({ axis: 'width', bound: 'lower', f });
+            },
+            name: 'Default min width',
+            propertyName: 'defaultMinWidth'
+          }),
+          this.sizeSettingEx({
+            descBuilder: (f) => {
+              appendClampDesc({ axis: 'width', bound: 'upper', f });
+            },
+            name: 'Default max width',
+            propertyName: 'defaultMaxWidth'
+          })
+        ]
+      }),
+      this.settingGroupEx({
+        heading: 'Height',
+        items: [
+          this.sizeSettingEx({
+            descBuilder: (f) => {
+              appendDefaultDesc(f, 'height');
+            },
+            name: 'Default height',
+            propertyName: 'defaultHeight'
+          }),
+          this.sizeSettingEx({
+            descBuilder: (f) => {
+              appendClampDesc({ axis: 'height', bound: 'lower', f });
+            },
+            name: 'Default min height',
+            propertyName: 'defaultMinHeight'
+          }),
+          this.sizeSettingEx({
+            descBuilder: (f) => {
+              appendClampDesc({ axis: 'height', bound: 'upper', f });
+            },
+            name: 'Default max height',
+            propertyName: 'defaultMaxHeight'
+          })
+        ]
+      }),
+      this.settingGroupEx({
+        heading: 'Appearance',
+        items: [
+          this.sizeSettingEx({
+            descBuilder: appendBorderDesc,
+            name: 'Border',
+            propertyName: 'border'
+          }),
+          this.sizeSettingEx({
+            descBuilder: appendBorderRadiusDesc,
+            name: 'Border radius',
+            propertyName: 'borderRadius'
+          }),
+          this.sizeSettingEx({
+            descBuilder: appendBackgroundDesc,
+            name: 'Background',
+            propertyName: 'background'
+          })
+        ]
+      }),
+      this.settingGroupEx({
+        heading: 'Behavior',
+        items: [
+          this.settingEx({
+            desc: createFragment((f) => {
+              f.appendText('When enabled, opening an HTML file puts it in a new tab instead of replacing the current one.');
+            }),
+            name: 'Open in new tab',
+            render: (setting) => {
+              setting.addToggle((toggle) => {
+                this.bind({ propertyName: 'shouldOpenInNewTab', valueComponent: toggle });
+              });
+            }
+          })
+        ]
       })
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: (f) => {
-            appendClampDesc({ axis: 'width', bound: 'lower', f });
-          },
-          name: 'Default min width',
-          propertyName: 'defaultMinWidth',
-          setting
-        });
-      })
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: (f) => {
-            appendClampDesc({ axis: 'width', bound: 'upper', f });
-          },
-          name: 'Default max width',
-          propertyName: 'defaultMaxWidth',
-          setting
-        });
-      });
-
-    new SettingGroupEx(this.containerEl)
-      .setHeading('Height')
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: (f) => {
-            appendDefaultDesc(f, 'height');
-          },
-          name: 'Default height',
-          propertyName: 'defaultHeight',
-          setting
-        });
-      })
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: (f) => {
-            appendClampDesc({ axis: 'height', bound: 'lower', f });
-          },
-          name: 'Default min height',
-          propertyName: 'defaultMinHeight',
-          setting
-        });
-      })
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: (f) => {
-            appendClampDesc({ axis: 'height', bound: 'upper', f });
-          },
-          name: 'Default max height',
-          propertyName: 'defaultMaxHeight',
-          setting
-        });
-      });
-
-    new SettingGroupEx(this.containerEl)
-      .setHeading('Appearance')
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: appendBorderDesc,
-          name: 'Border',
-          propertyName: 'border',
-          setting
-        });
-      })
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: appendBorderRadiusDesc,
-          name: 'Border radius',
-          propertyName: 'borderRadius',
-          setting
-        });
-      })
-      .addSettingEx((setting) => {
-        this.bindSizeSetting({
-          descBuilder: appendBackgroundDesc,
-          name: 'Background',
-          propertyName: 'background',
-          setting
-        });
-      });
-
-    new SettingGroupEx(this.containerEl)
-      .setHeading('Behavior')
-      .addSettingEx((setting) => {
-        setting
-          .setName('Open in new tab')
-          .setDesc(createFragment((f) => {
-            f.appendText('When enabled, opening an HTML file puts it in a new tab instead of replacing the current one.');
-          }))
-          .addToggle((toggle) => {
-            this.bind({ propertyName: 'shouldOpenInNewTab', valueComponent: toggle });
-          });
-      });
+    ];
   }
 
-  private bindSizeSetting(params: PluginSettingsTabBindSizeSettingParams): void {
-    const { descBuilder, name, propertyName, setting } = params;
-    setting
-      .setName(name)
-      .setDesc(createFragment(descBuilder))
-      .addText((text) => {
-        this.bind({ propertyName, valueComponent: text });
-      });
+  private sizeSettingEx(params: PluginSettingsTabSizeSettingExParams): SettingDefinitionRender {
+    const { descBuilder, name, propertyName } = params;
+    return this.settingEx({
+      desc: createFragment(descBuilder),
+      name,
+      render: (setting) => {
+        setting.addText((text) => {
+          this.bind({ propertyName, valueComponent: text });
+        });
+      }
+    });
   }
 }
 
