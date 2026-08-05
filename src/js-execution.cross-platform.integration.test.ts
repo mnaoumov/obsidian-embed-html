@@ -9,6 +9,7 @@ import {
 describe('embed JavaScript execution', () => {
   it('should execute inline JavaScript inside the embed iframe', async () => {
     const result = await evalInObsidian({
+      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
       fn: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         // The script rewrites the pending marker to the executed marker.
@@ -33,7 +34,7 @@ describe('embed JavaScript execution', () => {
         const leaf = app.workspace.getLeaf(true);
         await leaf.openFile(noteFile, { state: { mode: 'preview' } });
 
-        let timedOut = false;
+        let isTimedOut = false;
         try {
           await waitUntil({
             message: 'embed iframe did not execute its inline script',
@@ -41,7 +42,7 @@ describe('embed JavaScript execution', () => {
             timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS
           });
         } catch {
-          timedOut = true;
+          isTimedOut = true;
         }
 
         const bodyText = iframeBodyText();
@@ -52,11 +53,11 @@ describe('embed JavaScript execution', () => {
 
         return {
           bodyText,
-          timedOut
+          timedOut: isTimedOut
         };
 
         function iframeBodyText(): string {
-          const iframe = leaf.view.containerEl.querySelector<HTMLIFrameElement>('.internal-embed iframe');
+          const iframe = leaf.view.containerEl.querySelector<HTMLIFrameElement>(':scope .internal-embed iframe');
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Obsidian mobile's webview exposes a null `document.body` on a blank/still-loading embed iframe, despite the lib.dom non-null type.
           return iframe?.contentDocument?.body?.textContent ?? '';
         }

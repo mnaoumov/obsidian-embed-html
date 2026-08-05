@@ -24,7 +24,7 @@ interface ClickEvent {
   target: unknown;
 }
 
-type ClickHandler = (evt: ClickEvent) => void;
+type ClickHandler = ($event: ClickEvent) => void;
 
 interface ComponentWithApplySize {
   applySize(): void;
@@ -1148,8 +1148,8 @@ describe('HtmlEmbedComponent', () => {
 
       vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
-      const mockDateNow = 1234567890;
-      const mockDateNowStr = String(mockDateNow);
+      const mockDateNow = 1_234_567_890;
+      const mockDateNowString = String(mockDateNow);
       vi.spyOn(Date, 'now').mockReturnValue(mockDateNow);
 
       const component = new HtmlEmbedComponent({
@@ -1163,9 +1163,9 @@ describe('HtmlEmbedComponent', () => {
       await component.loadFileAsync();
       loadHandler?.();
 
-      expect(targetEl.addClass).toHaveBeenCalledWith(`extracted-${mockDateNowStr}`);
-      expect(parentEl.addClass).toHaveBeenCalledWith(`extracted-parent-${mockDateNowStr}`);
-      expect(grandParentEl.addClass).toHaveBeenCalledWith(`extracted-parent-${mockDateNowStr}`);
+      expect(targetEl.addClass).toHaveBeenCalledWith(`extracted-${mockDateNowString}`);
+      expect(parentEl.addClass).toHaveBeenCalledWith(`extracted-parent-${mockDateNowString}`);
+      expect(grandParentEl.addClass).toHaveBeenCalledWith(`extracted-parent-${mockDateNowString}`);
       expect(mockContentDocument.head.createEl).toHaveBeenCalledWith(
         'style',
         expect.objectContaining({

@@ -38,9 +38,9 @@ export class OpenInNewTabComponent extends MonkeyAroundComponent {
     super.onload();
 
     this.registerMethodPatch<WorkspaceLeaf, 'openFile'>({
+      $object: WorkspaceLeaf.prototype,
       methodName: 'openFile',
-      obj: WorkspaceLeaf.prototype,
-      patchHandler: ({ fallback, originalArgs: [file, openState], originalThis: leaf }) => {
+      patchHandler: ({ fallback, originalArguments: [file, openState], originalThis: leaf }) => {
         if (this.shouldRedirect(file, leaf)) {
           this.isRedirecting = true;
           try {

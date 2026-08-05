@@ -9,6 +9,7 @@ import {
 describe('reading-view scroll re-render', () => {
   it('should not leave an embed blank after scrolling it out of view and back', async () => {
     const result = await evalInObsidian({
+      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
       fn: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         const RECOVER_TIMEOUT_IN_MILLISECONDS = 6000;
@@ -43,11 +44,11 @@ describe('reading-view scroll re-render', () => {
 
         await waitUntil({
           message: 'first embed did not render initially',
-          predicate: () => firstEmbedHasMarker(),
+          predicate: () => hasFirstEmbedMarker(),
           timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS
         });
 
-        const scroller = leaf.view.containerEl.querySelector<HTMLElement>('.markdown-preview-view');
+        const scroller = leaf.view.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view');
         if (!scroller) {
           throw new Error('no reading-view scroller');
         }
@@ -73,7 +74,7 @@ describe('reading-view scroll re-render', () => {
         } catch {
           brokenEmbedCount = countBrokenEmbeds();
         }
-        const renderedEmbedCount = leaf.view.containerEl.querySelectorAll('.internal-embed iframe').length;
+        const renderedEmbedCount = leaf.view.containerEl.querySelectorAll(':scope .internal-embed iframe').length;
 
         leaf.detach();
         await deleteIfExists(htmlPath);
@@ -84,7 +85,7 @@ describe('reading-view scroll re-render', () => {
           renderedEmbedCount
         };
 
-        function firstEmbedHasMarker(): boolean {
+        function hasFirstEmbedMarker(): boolean {
           const iframe = leaf.view.containerEl.querySelector('iframe');
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Obsidian mobile's webview exposes a null `document.body` on a blank/still-loading embed iframe, despite the lib.dom non-null type.
           return (iframe?.contentDocument?.body?.textContent ?? '').includes(MARKER_TEXT);
@@ -92,7 +93,7 @@ describe('reading-view scroll re-render', () => {
 
         function countBrokenEmbeds(): number {
           let broken = 0;
-          const iframes = leaf.view.containerEl.querySelectorAll<HTMLIFrameElement>('.internal-embed iframe');
+          const iframes = leaf.view.containerEl.querySelectorAll<HTMLIFrameElement>(':scope .internal-embed iframe');
           iframes.forEach((iframe) => {
             const doc = iframe.contentDocument;
             const url = doc?.URL ?? '';

@@ -40,6 +40,7 @@ interface RgbChannels {
 describe('embed appearance settings', () => {
   it('should apply the border, border-radius and background settings to the embed container', async () => {
     const result = await evalInObsidian({
+      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
       fn: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         const BORDER = '2px solid rgb(255, 0, 0)';
@@ -87,7 +88,7 @@ describe('embed appearance settings', () => {
           await waitUntil({
             message: 'embed container never reflected the appearance settings',
             predicate: () => {
-              embedEl = leaf.view.containerEl.querySelector<HTMLElement>('.markdown-preview-view .internal-embed');
+              embedEl = leaf.view.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view .internal-embed');
               if (!embedEl?.offsetParent) {
                 return false;
               }

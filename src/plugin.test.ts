@@ -185,8 +185,11 @@ describe('Plugin', () => {
     await createLoadedPlugin();
 
     const EXPECTED_COMMAND_HANDLER_COUNT = 1;
-    const openDemoVaultCall = registerCommandHandlersSpy.mock.calls.find((call) => call[0].some((commandHandler) => commandHandler instanceof OpenDemoVaultCommandHandler));
-    expect(openDemoVaultCall?.[0]).toHaveLength(EXPECTED_COMMAND_HANDLER_COUNT);
+    // Since obsidian-dev-utils 89.0.0 the handlers are built lazily by a factory, so build them here.
+    const openDemoVaultHandlers = registerCommandHandlersSpy.mock.calls
+      .map(([commandHandlerFactory]) => commandHandlerFactory())
+      .find((commandHandlers) => commandHandlers.some((commandHandler) => commandHandler instanceof OpenDemoVaultCommandHandler));
+    expect(openDemoVaultHandlers).toHaveLength(EXPECTED_COMMAND_HANDLER_COUNT);
   });
 
   it('should expose the settings component', async () => {
@@ -200,8 +203,8 @@ beforeEach(() => {
   vi.clearAllMocks();
 
   const appMock = App.createConfigured__();
-  appMock.workspace.onLayoutReady = vi.fn((cb: () => void) => {
-    cb();
+  appMock.workspace.onLayoutReady = vi.fn((callback: () => void) => {
+    callback();
   });
   app = appMock.asOriginalType__();
 });

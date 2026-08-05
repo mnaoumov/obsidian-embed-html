@@ -34,23 +34,24 @@ export function registerPathResolutionSuite(platform: string): void {
   describe(`embed by relative and full vault path (${platform})`, () => {
     it('should render an HTML embed from another folder by BOTH a relative path and a full vault path', async () => {
       const result = await evalInObsidian({
+        // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
         fn: async ({ app, lib: { waitUntil } }) => {
           const TIMEOUT_IN_MILLISECONDS = 20_000;
           const MARKER = 'PATH_RESOLUTION_PROBE';
-          const baseDir = 'embed-html-path-probe';
-          const assetsDir = `${baseDir}/assets`;
-          const notesDir = `${baseDir}/notes`;
-          const htmlPath = `${assetsDir}/probe.html`;
-          const notePath = `${notesDir}/note.md`;
+          const baseDirectory = 'embed-html-path-probe';
+          const assetsDirectory = `${baseDirectory}/assets`;
+          const notesDirectory = `${baseDirectory}/notes`;
+          const htmlPath = `${assetsDirectory}/probe.html`;
+          const notePath = `${notesDirectory}/note.md`;
           // The note lives in `notes/`, the HTML file in the sibling `assets/`, so the two link forms are
           // Genuinely distinct: `../assets/probe.html` is note-relative; the wikilink is the full path.
           const relativeLink = '../assets/probe.html';
           const fullLink = htmlPath;
 
           await cleanup();
-          await ensureFolder(baseDir);
-          await ensureFolder(assetsDir);
-          await ensureFolder(notesDir);
+          await ensureFolder(baseDirectory);
+          await ensureFolder(assetsDirectory);
+          await ensureFolder(notesDirectory);
 
           await app.vault.create(
             htmlPath,
@@ -64,7 +65,7 @@ export function registerPathResolutionSuite(platform: string): void {
           const leaf = app.workspace.getLeaf(true);
           await leaf.openFile(noteFile, { state: { mode: 'preview' } });
 
-          let timedOut = false;
+          let isTimedOut = false;
           try {
             await waitUntil({
               message: 'both embeds (relative + full vault path) never rendered iframes with the probe content',
@@ -75,7 +76,7 @@ export function registerPathResolutionSuite(platform: string): void {
               timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS
             });
           } catch {
-            timedOut = true;
+            isTimedOut = true;
           }
 
           const observations = collect();
@@ -87,11 +88,11 @@ export function registerPathResolutionSuite(platform: string): void {
             fullLink,
             observations,
             relativeLink,
-            timedOut
+            timedOut: isTimedOut
           };
 
           function collect(): EmbedObservation[] {
-            const els = [...leaf.view.containerEl.querySelectorAll<HTMLElement>('.markdown-preview-view .internal-embed')];
+            const els = [...leaf.view.containerEl.querySelectorAll<HTMLElement>(':scope .markdown-preview-view .internal-embed')];
             return els.map((el) => {
               const iframe = el.querySelector<HTMLIFrameElement>('iframe');
               return {
@@ -112,7 +113,7 @@ export function registerPathResolutionSuite(platform: string): void {
           }
 
           async function cleanup(): Promise<void> {
-            const existing = app.vault.getAbstractFileByPath(baseDir);
+            const existing = app.vault.getAbstractFileByPath(baseDirectory);
             if (existing) {
               await app.fileManager.trashFile(existing);
             }

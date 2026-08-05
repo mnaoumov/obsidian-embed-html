@@ -9,6 +9,7 @@ import {
 describe('sizing token', () => {
   it('should route the token into the embed alt and auto-fit the height to the content', async () => {
     const result = await evalInObsidian({
+      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
       fn: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 15_000;
         const TALL_CONTENT_HEIGHT_IN_PIXELS = 1234;
@@ -33,7 +34,7 @@ describe('sizing token', () => {
         await waitUntil({
           message: 'embed element was not rendered in the reading view',
           predicate: () => {
-            embedEl = leaf.view.containerEl.querySelector<HTMLElement>('.markdown-preview-view .internal-embed');
+            embedEl = leaf.view.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view .internal-embed');
             return embedEl !== null && embedEl.offsetParent !== null;
           },
           timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS
