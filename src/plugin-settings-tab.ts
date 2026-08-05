@@ -114,6 +114,22 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
                 this.bind({ propertyName: 'shouldOpenInNewTab', valueComponent: toggle });
               });
             }
+          }),
+          this.settingEx({
+            desc: createFragment((f) => {
+              f.appendText(
+                'When enabled, an embedded HTML file is not rendered in the note. The embed shows a link instead, and'
+                  + ' clicking it opens the file in your default browser, jumping to the embedded fragment. Useful for large'
+                  + ' documents, where a browser brings tabs, zoom, find and print. Desktop only: on mobile there is no file'
+                  + ' path to hand to a browser, so the embed still renders in the note.'
+              );
+            }),
+            name: 'Open in default browser',
+            render: (setting) => {
+              setting.addToggle((toggle) => {
+                this.bind({ propertyName: 'shouldOpenInSystemBrowser', valueComponent: toggle });
+              });
+            }
           })
         ]
       })

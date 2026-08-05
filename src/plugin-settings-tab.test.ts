@@ -148,7 +148,8 @@ function emptyStringRecord(): EmptyStringRecord {
     defaultMinHeight: '',
     defaultMinWidth: '',
     defaultWidth: '',
-    shouldOpenInNewTab: ''
+    shouldOpenInNewTab: '',
+    shouldOpenInSystemBrowser: ''
   };
 }
 

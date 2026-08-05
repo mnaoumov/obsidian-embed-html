@@ -2,6 +2,7 @@ import type { EmbedComponent } from '@obsidian-typings/obsidian-public-latest';
 
 import {
   App,
+  FileSystemAdapter,
   TFile
 } from 'obsidian';
 import { invokeAsyncSafely } from 'obsidian-dev-utils/async';
@@ -11,6 +12,7 @@ import { trimStart } from 'obsidian-dev-utils/string';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 import type { ContentKeyword } from './size-spec.ts';
 
+import { buildFileUrl } from './file-url.ts';
 import {
   getContentKeyword,
   parseSizeSpec
@@ -113,6 +115,18 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     this.containerEl.empty();
 
     this.applySize();
+
+    // Open-in-browser mode short-circuits BEFORE the file is read. That is the point for the documents
+    // This was asked for (issue #14): 10-15 MB of HTML is never loaded, parsed or held in the note.
+    //
+    // `getAbsolutePath()` is null when the vault has no filesystem behind it (mobile), and then there is
+    // Nothing to hand to a browser — so the embed falls through to the iframe and the setting is inert
+    // Rather than broken.
+    const absolutePath = this.pluginSettingsComponent.settings.shouldOpenInSystemBrowser ? this.getAbsolutePath() : null;
+    if (absolutePath !== null) {
+      this.renderOpenInSystemBrowserLink(absolutePath);
+      return;
+    }
 
     const html = await this.app.vault.read(this.file);
     const parsedDoc = new DOMParser().parseFromString(html, 'text/html');
@@ -231,6 +245,22 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   private disconnectResizeObserver(): void {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
+  }
+
+  /**
+   * The embed's absolute filesystem path, or `null` when the vault has no filesystem behind it.
+   *
+   * Only a `FileSystemAdapter` (desktop) exposes one. On mobile there is no path to hand to a browser,
+   * so this returns `null` and the caller falls back to the iframe rather than rendering an affordance
+   * that could not work.
+   */
+  private getAbsolutePath(): null | string {
+    const adapter = this.app.vault.adapter;
+    if (!(adapter instanceof FileSystemAdapter)) {
+      return null;
+    }
+
+    return adapter.getFullPath(this.file.path);
   }
 
   // Obsidian routes a pure-digit size token (`|400`, `|600x200`) into the container's `width`/`height`
@@ -378,6 +408,32 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       /* v8 ignore stop */
       mode: (searchParams.get('mode') ?? 'scroll') as Mode
     };
+  }
+
+  /**
+   * Renders the click-to-open affordance shown in place of the iframe when the embed opens externally.
+   *
+   * An empty iframe would be wrong here — the note must still say WHAT is embedded, and the fragment is
+   * part of that, since the same document is usually embedded at several anchors.
+   */
+  private renderOpenInSystemBrowserLink(absolutePath: string): void {
+    const fragment = trimStart({ $string: this.subpath, prefix: '#' }).trim();
+    const label = fragment === '' ? this.file.name : `${this.file.name}#${fragment}`;
+
+    const linkEl = this.containerEl.createEl('a', {
+      cls: 'embed-html-open-in-system-browser',
+      href: '#',
+      text: label
+    });
+    linkEl.setAttribute('aria-label', `Open ${label} in the default browser`);
+
+    this.registerDomEvent(linkEl, 'click', ($event) => {
+      $event.preventDefault();
+      // `window.open` rather than an Electron `shell` import: Obsidian already routes an external URL
+      // Opened this way to the system browser, so this stays free of a desktop-only import and of the
+      // Conditional-import dance that would come with it.
+      window.open(buildFileUrl(absolutePath, this.subpath), '_blank');
+    });
   }
 
   private resolveDecoration(): ResolvedDecoration {

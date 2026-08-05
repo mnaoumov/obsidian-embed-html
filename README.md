@@ -91,6 +91,22 @@ The plugin settings provide global appearance defaults applied to every embed bo
 
 Enable `Settings → Embed HTML → Behavior → Open in new tab` to make opening an HTML file put it in a new tab instead of replacing the content of the current one, without holding a modifier key. When enabled, the first HTML file still reuses an empty tab (so you do not get a blank leftover tab); each subsequent HTML file opens in its own tab. The setting is off by default, preserving Obsidian's standard behavior.
 
+### Open in default browser
+
+Enable `Settings → Embed HTML → Behavior → Open in default browser` to stop rendering embedded HTML in the note. Each embed becomes a link instead, and clicking it opens the file in your system's default browser, jumping to the embedded fragment:
+
+````markdown
+![[MyDocument.html#section-3]]
+````
+
+opens `file:///…/MyDocument.html#section-3`.
+
+The embed syntax does not change — this is a second output mode, not a new syntax. It suits large reference documents, where a browser brings tabs, zoom, find, print and extensions that an embedded view cannot, and where not loading the document into the note at all is the point: in this mode the file is never read.
+
+The link is labelled with the file name, plus the fragment when the embed names one, so a note embedding the same document at several anchors still says which part each link points at.
+
+The setting is off by default. It is **desktop only**: opening a file in a browser needs the file's location on disk, which only the desktop app has, so on mobile embeds keep rendering in the note.
+
 ### Color scheme
 
 The embedded HTML follows Obsidian's base color scheme (`Settings → Appearance → Base color scheme`), independent of your operating system's theme. The active scheme is propagated into the embed, so `prefers-color-scheme` media queries in your HTML resolve to Obsidian's `Dark`/`Light` setting (and to the OS when set to `Adapt to system`). Switching the base color scheme updates already-rendered embeds live.
