@@ -7,6 +7,7 @@ import type {
 import { noop } from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { FileSystemAdapter } from 'obsidian-test-mocks/obsidian';
 import {
   afterEach,
   beforeEach,
@@ -117,6 +118,7 @@ function createMockApp(): App {
   const app = strictProxy<App>({
     isDarkMode: vi.fn().mockReturnValue(false),
     vault: strictProxy<App['vault']>({
+      adapter: strictProxy<App['vault']['adapter']>({}),
       getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
       read: vi.fn().mockResolvedValue('<html><head></head><body>Hello</body></html>')
     }),
@@ -168,7 +170,8 @@ function createMockPluginSettingsComponent(): PluginSettingsComponent {
       defaultMaxWidth: '',
       defaultMinHeight: '',
       defaultMinWidth: '',
-      defaultWidth: '100%'
+      defaultWidth: '100%',
+      shouldOpenInSystemBrowser: false
     }
   });
 }
@@ -1876,7 +1879,8 @@ describe('decoration (border/background)', () => {
         defaultMaxWidth: '',
         defaultMinHeight: '',
         defaultMinWidth: '',
-        defaultWidth: '100%'
+        defaultWidth: '100%',
+        shouldOpenInSystemBrowser: false
       }
     });
   }
@@ -1924,9 +1928,123 @@ describe('decoration (border/background)', () => {
   });
 });
 
+/*
+ * Issue #14: an optional mode that opens the embedded file in the system's default browser instead of
+ * rendering it in the note, with the fragment identifier preserved.
+ */
+interface MutableExternalSetting {
+  shouldOpenInSystemBrowser: boolean;
+}
+
 function findClickHandler(
   addEventListenerMock: ReturnType<typeof vi.fn>
 ): ClickHandler | undefined {
   const clickCall = addEventListenerMock.mock.calls.find((call) => call[0] === 'click');
   return clickCall?.[1] as ClickHandler | undefined;
 }
+
+describe('open in the system browser', () => {
+  beforeEach(() => {
+    // This block is top-level, so it installs its own MutationObserver stub rather than relying on the
+    // Main describe's beforeEach having run first.
+    window.MutationObserver = castTo<typeof MutationObserver>(
+      class MockMutationObserver {
+        public disconnect = vi.fn();
+
+        public observe(): void {
+          noop();
+        }
+      }
+    );
+  });
+
+  function createFileSystemApp(): App {
+    const app = createMockApp();
+    const adapter = FileSystemAdapter.create__(String.raw`C:\Vault`);
+    seedOnRawTarget(app.vault, 'adapter', adapter.asOriginalType__());
+    return app;
+  }
+
+  function createExternalSettings(): PluginSettingsComponent {
+    const pluginSettingsComponent = createMockPluginSettingsComponent();
+    castTo<MutableExternalSetting>(pluginSettingsComponent.settings).shouldOpenInSystemBrowser = true;
+    return pluginSettingsComponent;
+  }
+
+  it('should render a link instead of an iframe, and never read the file', async () => {
+    const app = createFileSystemApp();
+    const containerEl = createMockContainerEl();
+    const linkEl = createEl('a');
+    containerEl.createEl.mockReturnValue(linkEl);
+
+    const component = new HtmlEmbedComponent({
+      app,
+      containerEl: asContainerEl(containerEl),
+      file: createMockFile('Doc.html'),
+      pluginSettingsComponent: createExternalSettings(),
+      subpath: '#section-3'
+    });
+    await component.loadFileAsync();
+
+    expect(containerEl.createEl).toHaveBeenCalledWith('a', expect.objectContaining({ text: 'Doc.html#section-3' }));
+    // The whole point for a 10-15 MB document: it is never loaded or parsed.
+    expect(app.vault.read).not.toHaveBeenCalled();
+  });
+
+  it('should label the link with the file name alone when the embed names no fragment', async () => {
+    const app = createFileSystemApp();
+    const containerEl = createMockContainerEl();
+    containerEl.createEl.mockReturnValue(createEl('a'));
+
+    const component = new HtmlEmbedComponent({
+      app,
+      containerEl: asContainerEl(containerEl),
+      file: createMockFile('Doc.html'),
+      pluginSettingsComponent: createExternalSettings(),
+      subpath: ''
+    });
+    await component.loadFileAsync();
+
+    expect(containerEl.createEl).toHaveBeenCalledWith('a', expect.objectContaining({ text: 'Doc.html' }));
+  });
+
+  it('should open the file URL with its fragment when the link is clicked', async () => {
+    const app = createFileSystemApp();
+    const containerEl = createMockContainerEl();
+    const linkEl = createEl('a');
+    containerEl.createEl.mockReturnValue(linkEl);
+    const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
+
+    const component = new HtmlEmbedComponent({
+      app,
+      containerEl: asContainerEl(containerEl),
+      file: createMockFile('Doc.html'),
+      pluginSettingsComponent: createExternalSettings(),
+      subpath: '#section-3'
+    });
+    component.load();
+    await component.loadFileAsync();
+    linkEl.dispatchEvent(new MouseEvent('click', { cancelable: true }));
+
+    expect(openSpy).toHaveBeenCalledWith('file:///C:/Vault/Doc.html#section-3', '_blank');
+  });
+
+  it('should fall back to the iframe when the vault has no filesystem behind it (mobile)', async () => {
+    // `createMockApp`'s adapter is not a `FileSystemAdapter`, so there is no path to hand to a browser.
+    const app = createMockApp();
+    const containerEl = createMockContainerEl();
+    containerEl.createEl.mockReturnValue(createEl('iframe'));
+
+    const component = new HtmlEmbedComponent({
+      app,
+      containerEl: asContainerEl(containerEl),
+      file: createMockFile('Doc.html'),
+      pluginSettingsComponent: createExternalSettings(),
+      subpath: '#section-3'
+    });
+    await component.loadFileAsync();
+
+    expect(app.vault.read).toHaveBeenCalled();
+    expect(containerEl.createEl).toHaveBeenCalledWith('iframe', expect.anything());
+  });
+});
