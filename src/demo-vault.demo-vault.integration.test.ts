@@ -95,7 +95,7 @@ const report: NoteReport[] = [];
 // First so only real embeds count. Deliberately narrow: `x200`, `500x-`, `50%`, `width: …` stay in the
 // Embed's `alt` and are validated by the size-spec unit tests and the sizing integration test, not here.
 function extractExpectedSizeKeys(source: string): string[] {
-  const withoutFences = source.replace(/```[\s\S]*?```/g, '');
+  const withoutFences = source.replaceAll(/```[\s\S]*?```/g, '');
   const keys = new Set<string>();
   const embedRegex = /!\[\[(?<src>[^\]|#]+\.html)(?:#[^\]|]*)?\|(?<token>[^\]]*)\]\]/g;
   let match: null | RegExpExecArray;
@@ -146,16 +146,18 @@ const NOTES = listSelfContainedNotes();
 // Under the 30s CDP cap and starts from a settled view.
 async function clickButton(noteName: string, index: number): Promise<ButtonResult> {
   return evalInObsidian({
+    // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
     args: { buttonRenderTimeoutMs: BUTTON_RENDER_TIMEOUT_MS, buttonResultTimeoutMs: BUTTON_RESULT_TIMEOUT_MS, index, intervalMs: POLL_INTERVAL_MS, notePath: noteName },
+    // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
     async fn({ app, buttonRenderTimeoutMs, buttonResultTimeoutMs, index: buttonIndex, intervalMs, lib: { waitUntil }, obsidianModule }): Promise<ButtonResult> {
       function view(): InstanceType<typeof obsidianModule.MarkdownView> | null {
         return app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
       }
       function previewEl(): HTMLElement | null {
-        return view()?.containerEl.querySelector<HTMLElement>('.markdown-preview-view') ?? null;
+        return view()?.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view') ?? null;
       }
       function runButtons(): HTMLButtonElement[] {
-        return [...view()?.containerEl.querySelectorAll<HTMLButtonElement>('.block-language-code-button button.mod-cta') ?? []];
+        return [...view()?.containerEl.querySelectorAll<HTMLButtonElement>(':scope .block-language-code-button button.mod-cta') ?? []];
       }
 
       try {
@@ -217,7 +219,9 @@ async function clickButton(noteName: string, index: number): Promise<ButtonResul
 // Before any note opens, so the buttons render. In real use demo-vault-helper does this on launch.
 async function enableCodeScriptToolkit(): Promise<CstEnableResult> {
   return evalInObsidian({
+    // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
     args: { intervalMs: POLL_INTERVAL_MS, timeoutMs: SETTLE_TIMEOUT_MS },
+    // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
     async fn({ app, intervalMs, lib: { waitUntil }, timeoutMs }): Promise<CstEnableResult> {
       if (typeof app.plugins.isEnabled === 'function' && !app.plugins.isEnabled()) {
         await app.plugins.setEnable(true);
@@ -247,19 +251,21 @@ async function enableCodeScriptToolkit(): Promise<CstEnableResult> {
 // Mounted — and the walk never resets to the top (that would unmount the buttons at the note's end).
 async function openAndSettle(noteName: string, expectedButtons: number, expectedEmbeds: number, expectedSizeKeys: string[]): Promise<SettleResult> {
   return evalInObsidian({
+    // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
     args: { expectedButtons, expectedEmbeds, expectedSizeKeys, intervalMs: POLL_INTERVAL_MS, notePath: noteName, settleTimeoutMs: SETTLE_TIMEOUT_MS },
+    // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
     async fn({ app, expectedButtons: wantButtons, expectedEmbeds: wantEmbeds, expectedSizeKeys: wantSizeKeys, intervalMs, lib: { waitUntil }, notePath, obsidianModule, settleTimeoutMs }): Promise<SettleResult> {
       function view(): InstanceType<typeof obsidianModule.MarkdownView> | null {
         return app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
       }
       function previewEl(): HTMLElement | null {
-        return view()?.containerEl.querySelector<HTMLElement>('.markdown-preview-view') ?? null;
+        return view()?.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view') ?? null;
       }
       function buttons(): number {
-        return view()?.containerEl.querySelectorAll('.block-language-code-button button.mod-cta').length ?? 0;
+        return view()?.containerEl.querySelectorAll(':scope .block-language-code-button button.mod-cta').length ?? 0;
       }
       function unresolved(): HTMLElement[] {
-        return [...view()?.containerEl.querySelectorAll<HTMLElement>('.internal-embed.is-unresolved, .internal-embed.mod-empty') ?? []];
+        return [...view()?.containerEl.querySelectorAll<HTMLElement>(':scope .internal-embed.is-unresolved, .internal-embed.mod-empty') ?? []];
       }
       // Records the settled computed pixel size of every mounted embed that carries a numeric
       // `width`/`height` attribute — the pure-digit tokens (`|400`, `|600x200`) that Obsidian itself
@@ -277,7 +283,7 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
       const sizeReadings = new Map<string, SizeReading>();
       function recordEmbedSizes(): void {
         const win = view()?.containerEl.ownerDocument.defaultView ?? window;
-        for (const embedEl of view()?.containerEl.querySelectorAll<HTMLElement>('.internal-embed') ?? []) {
+        for (const embedEl of view()?.containerEl.querySelectorAll<HTMLElement>(':scope .internal-embed') ?? []) {
           const iframeEl = embedEl.querySelector<HTMLIFrameElement>('iframe');
           if (!iframeEl || iframeEl.contentDocument?.readyState !== 'complete') {
             continue;
@@ -305,7 +311,7 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
       // Scrolled out of view and its iframe torn down. Returns the running total of embeds seen rendered.
       function markRenderedEmbeds(): number {
         let count = 0;
-        for (const embedEl of view()?.containerEl.querySelectorAll<HTMLElement>('.internal-embed') ?? []) {
+        for (const embedEl of view()?.containerEl.querySelectorAll<HTMLElement>(':scope .internal-embed') ?? []) {
           if (embedEl.querySelector('iframe')) {
             embedEl.dataset['testHtmlRendered'] = '1';
           }
@@ -333,15 +339,15 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
       let maxRenderedEmbeds = 0;
       let maxButtons = 0;
       let maxUnresolved = 0;
-      let atBottomOnce = false;
+      let isAtBottomOnce = false;
       for (let elapsed = 0; elapsed < settleTimeoutMs; elapsed += intervalMs) {
         const scroller = previewEl();
         if (scroller) {
           // Advance gradually so each embed enters the viewport and mounts — a single jump to the
           // Bottom skips the middle ones, whose collapsed height keeps the document short.
-          const atBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
-          atBottomOnce ||= atBottom;
-          scroller.scrollTop = atBottom ? 0 : scroller.scrollTop + Math.floor(scroller.clientHeight * 0.8);
+          const isAtBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
+          isAtBottomOnce ||= isAtBottom;
+          scroller.scrollTop = isAtBottom ? 0 : scroller.scrollTop + Math.floor(scroller.clientHeight * 0.8);
         }
         await sleep(intervalMs);
         recordEmbedSizes();
@@ -355,14 +361,14 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
         // On the first scan (so `atBottom` fires immediately) — requiring an iframe first stops the walk
         // From exiting before anything rendered, and requiring settled sizes stops a mid-transition
         // Reading from slipping through. Both were sources of flaky passes.
-        const allEmbedsRendered = wantEmbeds === 0 || maxRenderedEmbeds > 0;
-        const allSizesSettled = wantSizeKeys.every((key) => measuredSizes.has(key));
-        if (atBottomOnce && maxButtons >= wantButtons && allEmbedsRendered && allSizesSettled) {
+        const isAllEmbedsRendered = wantEmbeds === 0 || maxRenderedEmbeds > 0;
+        const isAllSizesSettled = wantSizeKeys.every((key) => measuredSizes.has(key));
+        if (isAtBottomOnce && maxButtons >= wantButtons && isAllEmbedsRendered && isAllSizesSettled) {
           break;
         }
       }
 
-      const embeds = [...view()?.containerEl.querySelectorAll<HTMLElement>('.internal-embed') ?? []];
+      const embeds = [...view()?.containerEl.querySelectorAll<HTMLElement>(':scope .internal-embed') ?? []];
       const scroller = previewEl();
       // A single subpixel of rounding is tolerated; anything larger means the declared size was ignored.
       const SIZE_TOLERANCE_PX = 1;
@@ -373,7 +379,7 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
       });
       return {
         debug: {
-          codeButtonBlocks: view()?.containerEl.querySelectorAll('.block-language-code-button').length ?? -1,
+          codeButtonBlocks: view()?.containerEl.querySelectorAll(':scope .block-language-code-button').length ?? -1,
           cstLoaded: app.plugins.getPlugin('fix-require-modules') !== null,
           embedSample: embeds.slice(0, 3).map((embedEl) => ({
             className: embedEl.className,

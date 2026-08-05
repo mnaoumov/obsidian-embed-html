@@ -35,12 +35,12 @@ const CODE_SCRIPT_TOOLKIT_SETTINGS = {
 const COMMUNITY_PLUGINS = ['embed-html', CODE_SCRIPT_TOOLKIT_PLUGIN_ID];
 
 function populate(): PopulateFilesParams {
-  const demoObsidianDir = join(getRootFolder() ?? process.cwd(), 'demo-vault', '.obsidian');
+  const demoObsidianDirectory = join(getRootFolder() ?? process.cwd(), 'demo-vault', '.obsidian');
   const tree = readDemoVaultTree();
 
   // Carry over the committed vault config (preview-mode default, core plugins, appearance).
   for (const configFile of ['app.json', 'appearance.json', 'core-plugins.json']) {
-    const configPath = join(demoObsidianDir, configFile);
+    const configPath = join(demoObsidianDirectory, configFile);
     if (existsSync(configPath)) {
       tree[`.obsidian/${configFile}`] = readFileSync(configPath);
     }
@@ -50,9 +50,9 @@ function populate(): PopulateFilesParams {
   // Seed the CST binary from the demo vault's local install (gitignored, placed there by
   // Demo-vault-helper). If it is missing, fail loudly with how to produce it rather than launching a
   // Half-configured vault whose buttons silently never execute.
-  const cstDir = join(demoObsidianDir, 'plugins', CODE_SCRIPT_TOOLKIT_PLUGIN_ID);
+  const cstDirectory = join(demoObsidianDirectory, 'plugins', CODE_SCRIPT_TOOLKIT_PLUGIN_ID);
   for (const binaryFile of CODE_SCRIPT_TOOLKIT_BINARY_FILES) {
-    const binaryPath = join(cstDir, binaryFile);
+    const binaryPath = join(cstDirectory, binaryFile);
     if (!existsSync(binaryPath)) {
       throw new Error(
         `CodeScript Toolkit is not installed in the demo vault (${binaryPath} missing). `

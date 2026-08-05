@@ -9,6 +9,7 @@ import {
 describe('open-in-new-tab (desktop)', () => {
   it('should open a second html file in a new tab only when the setting is enabled', async () => {
     const result = await evalInObsidian({
+      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
       fn: async ({ app, lib: { waitUntil } }) => {
         const SAVE_DELAY_IN_MILLISECONDS = 800;
         const TIMEOUT_IN_MILLISECONDS = 20_000;
@@ -50,10 +51,10 @@ describe('open-in-new-tab (desktop)', () => {
           enabledLeafCount
         };
 
-        async function waitFor(predicate: () => boolean, message: string): Promise<void> {
+        async function waitFor(checkCondition: () => boolean, message: string): Promise<void> {
           await waitUntil({
             message,
-            predicate,
+            predicate: checkCondition,
             timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS
           });
         }
@@ -70,7 +71,7 @@ describe('open-in-new-tab (desktop)', () => {
             throw new Error('embed-html settings tab not found');
           }
 
-          const items = Array.from(tab.containerEl.querySelectorAll<HTMLElement>('.setting-item'));
+          const items = [...tab.containerEl.querySelectorAll<HTMLElement>('.setting-item')];
           const item = items.find((el) => el.querySelector('.setting-item-name')?.textContent === SETTING_NAME);
           if (!item) {
             throw new Error('open-in-new-tab setting item not found');

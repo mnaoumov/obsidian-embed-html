@@ -27,7 +27,7 @@ describe('parseSizeSpec', () => {
     });
 
     it('should return an all-null spec for a whitespace-only token', () => {
-      expect(parseSizeSpec('   ')).toEqual(EMPTY);
+      expect(parseSizeSpec(' '.repeat(3))).toEqual(EMPTY);
     });
   });
 

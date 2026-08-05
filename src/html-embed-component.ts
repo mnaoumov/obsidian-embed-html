@@ -241,20 +241,20 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   // Win; a genuine non-numeric token (`50%`, `width: max-content`) never equals the file name and is kept.
   private getSizeToken(): string {
     const altValue = this.containerEl.getAttr(ALT_ATTRIBUTE) ?? '';
-    if (altValue === this.file.name || altValue === this.file.basename || altValue === this.file.path) {
+    if ([this.file.basename, this.file.name, this.file.path].includes(altValue)) {
       return '';
     }
     return altValue;
   }
 
   private initIframe(iframeDoc: HTMLDocument): void {
-    this.registerDomEvent(iframeDoc, 'click', (evt) => {
+    this.registerDomEvent(iframeDoc, 'click', ($event) => {
       const iframeWin = iframeDoc.defaultView;
       if (!iframeWin) {
         return;
       }
-      if (evt.target instanceof iframeWin.Element) {
-        const aEl = evt.target.closest('a');
+      if ($event.target instanceof iframeWin.Element) {
+        const aEl = $event.target.closest('a');
         if (aEl) {
           aEl.target = '_blank';
         }
@@ -266,6 +266,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       return;
     }
 
+    // eslint-disable-next-line unicorn/prefer-query-selector -- The id comes from user-authored embed syntax; `querySelector` would throw on one that is not a valid CSS identifier.
     const el = iframeDoc.getElementById(options.id);
     if (!el) {
       return;
@@ -308,8 +309,9 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
         });
         break;
       }
-      default:
+      default: {
         break;
+      }
     }
   }
 
@@ -369,7 +371,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   }
 
   private parseOptions(): Options {
-    const searchParams = new URLSearchParams(`id=${trimStart({ prefix: '#', str: this.subpath })}`);
+    const searchParams = new URLSearchParams(`id=${trimStart({ $string: this.subpath, prefix: '#' })}`);
     return {
       /* v8 ignore start -- The `id` key is always present in the constructed URLSearchParams string, so `get('id')` never returns `null`. */
       id: searchParams.get('id') ?? '',

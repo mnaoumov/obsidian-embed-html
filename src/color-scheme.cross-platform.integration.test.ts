@@ -17,6 +17,7 @@ interface SchemeObservation {
 describe('color-scheme propagation', () => {
   it('should propagate Obsidian base color scheme to the embed iframe', async () => {
     const result = await evalInObsidian({
+      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
       fn: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         const htmlPath = 'embed-html-color-scheme-probe.html';
@@ -79,7 +80,7 @@ describe('color-scheme propagation', () => {
           // Reading-view virtualization can momentarily keep a detached/off-layout iframe alongside
           // The live one; only the laid-out (offsetParent non-null) iframe evaluates media queries,
           // So the assertions target that one.
-          const iframes = Array.from(leaf.view.containerEl.querySelectorAll<HTMLIFrameElement>('.internal-embed iframe'));
+          const iframes = [...leaf.view.containerEl.querySelectorAll<HTMLIFrameElement>(':scope .internal-embed iframe')];
           return iframes.find((iframe) => iframe.offsetParent !== null) ?? null;
         }
 
