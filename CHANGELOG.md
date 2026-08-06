@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 2.5.3
+
+- chore: find underexposed
+- feat!: swap the open-in-default-browser mode for an external-browser button
+- feat: load local css
+
 ## 2.5.2
 
 - chore: teach cspell the word screenful
