@@ -21,23 +21,6 @@ import {
   getOptionalNamedGroup
 } from 'obsidian-dev-utils/reg-exp';
 
-export interface InlineCssAsyncParams {
-  /**
-   * The stylesheet's text.
-   */
-  readonly css: string;
-
-  /**
-   * The absolute URL the text came from. Relative `url()` / `@import` targets resolve against it.
-   */
-  readonly cssUrl: string;
-
-  /**
-   * Reads an imported stylesheet's text.
-   */
-  readonly readTextAsync: ReadTextAsyncFunction;
-}
-
 /**
  * Reads the text of a stylesheet at an absolute URL.
  *
@@ -61,6 +44,23 @@ interface ImportCondition {
    * The `supports(…)` condition, or `''` when the import carries none.
    */
   readonly supports: string;
+}
+
+interface InlineCssAsyncParams {
+  /**
+   * The stylesheet's text.
+   */
+  readonly css: string;
+
+  /**
+   * The absolute URL the text came from. Relative `url()` / `@import` targets resolve against it.
+   */
+  readonly cssUrl: string;
+
+  /**
+   * Reads an imported stylesheet's text.
+   */
+  readonly readTextAsync: ReadTextAsyncFunction;
 }
 
 interface InlineImportParams {

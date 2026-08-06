@@ -16,7 +16,7 @@ import type { ReadTextAsyncFunction } from './css-inliner.ts';
 
 import { inlineCssAsync } from './css-inliner.ts';
 
-export interface InlineDocumentStylesheetsAsyncParams {
+interface InlineDocumentStylesheetsAsyncParams {
   /**
    * The URL relative `href`s in the document resolve against — the embedded file's own resource URL.
    */
