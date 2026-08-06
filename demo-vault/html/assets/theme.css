@@ -1,0 +1,24 @@
+/* Imported by `card.css`, to show that `@import` is followed too. */
+@import "typography.css";
+
+.card {
+  background: #313244;
+  border: 1px solid #585b70;
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+
+.card h1 {
+  color: #a6e3a1;
+  margin: 0 0 8px;
+}
+
+/* Relative to THIS file (`html/assets/`), not to the embedded `external-assets.html` in `html/`. */
+.badge {
+  background-image: url("badge.svg");
+  background-repeat: no-repeat;
+  display: inline-block;
+  height: 24px;
+  width: 24px;
+  vertical-align: middle;
+}

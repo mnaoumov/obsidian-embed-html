@@ -93,12 +93,28 @@ interface MockStyle {
   height: string;
 }
 
+interface MockStylesheetIframeDoc {
+  addEventListener: ReturnType<typeof vi.fn>;
+  defaultView: unknown;
+  getElementById: ReturnType<typeof vi.fn>;
+  querySelectorAll: ReturnType<typeof vi.fn>;
+  removeEventListener: ReturnType<typeof vi.fn>;
+}
+
 interface SizingIframeDoc {
   [key: string]: unknown;
   body: MockScrollWidth;
   defaultView: unknown;
   documentElement: MockScrollHeight;
   head: MockHead;
+}
+
+interface StylesheetObserverHarness {
+  component: HtmlEmbedComponent;
+  disconnect: ReturnType<typeof vi.fn>;
+  fireMutations(mutations: MutationRecord[]): void;
+  iframeDoc: MockStylesheetIframeDoc;
+  observe: ReturnType<typeof vi.fn>;
 }
 
 interface WindowWithApp {
@@ -480,7 +496,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -536,7 +553,8 @@ describe('HtmlEmbedComponent', () => {
         head: {
           createEl: vi.fn().mockReturnValue(mockScriptEl)
         },
-        querySelector: vi.fn().mockReturnValue(mockBaseEl)
+        querySelector: vi.fn().mockReturnValue(mockBaseEl),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -588,7 +606,8 @@ describe('HtmlEmbedComponent', () => {
         head: {
           createEl: vi.fn().mockReturnValue(mockScriptEl)
         },
-        querySelector: vi.fn().mockReturnValue(mockBaseEl)
+        querySelector: vi.fn().mockReturnValue(mockBaseEl),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -637,7 +656,8 @@ describe('HtmlEmbedComponent', () => {
         head: {
           createEl: vi.fn().mockReturnValue(mockCreatedBaseEl)
         },
-        querySelector: vi.fn().mockReturnValue(null)
+        querySelector: vi.fn().mockReturnValue(null),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -660,7 +680,9 @@ describe('HtmlEmbedComponent', () => {
 
       await component.loadFileAsync();
 
-      expect(mockParsedDoc.head.createEl).toHaveBeenCalledWith('base');
+      // PREPENDED, not appended: a `<base>` only governs the elements that FOLLOW it, so appending it left
+      // Every preceding relative `<link>` / `<script>` / `<img>` resolving against Obsidian's own origin.
+      expect(mockParsedDoc.head.createEl).toHaveBeenCalledWith('base', { prepend: true });
       expect(mockCreatedBaseEl.href).toBe('app://vault/file.html');
     });
 
@@ -675,6 +697,7 @@ describe('HtmlEmbedComponent', () => {
         }),
         defaultView: null,
         getElementById: vi.fn().mockReturnValue(null),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn(),
         scrollingElement: null
       };
@@ -696,7 +719,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -746,7 +770,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -792,7 +817,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -846,6 +872,7 @@ describe('HtmlEmbedComponent', () => {
         addEventListener: vi.fn(),
         defaultView: mockIframeWin,
         getElementById: vi.fn().mockReturnValue(null),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn()
       };
 
@@ -869,7 +896,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -910,6 +938,7 @@ describe('HtmlEmbedComponent', () => {
         addEventListener: vi.fn(),
         defaultView: mockIframeWin,
         getElementById: vi.fn().mockReturnValue(null),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn()
       };
 
@@ -933,7 +962,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -970,6 +1000,7 @@ describe('HtmlEmbedComponent', () => {
         addEventListener: vi.fn(),
         defaultView: null,
         getElementById: vi.fn().mockReturnValue(null),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn()
       };
 
@@ -993,7 +1024,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1036,6 +1068,7 @@ describe('HtmlEmbedComponent', () => {
         addEventListener: vi.fn(),
         defaultView: mockIframeWin,
         getElementById: vi.fn().mockReturnValue(null),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn()
       };
 
@@ -1059,7 +1092,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1120,6 +1154,7 @@ describe('HtmlEmbedComponent', () => {
         head: {
           createEl: vi.fn().mockReturnValue(createdStyleEl)
         },
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn()
       };
 
@@ -1143,7 +1178,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1199,7 +1235,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
       window.DOMParser = castTo<typeof DOMParser>(
         class MockDOMParser {
@@ -1254,6 +1291,7 @@ describe('HtmlEmbedComponent', () => {
         defaultView: { Element: MockIframeElement },
         documentElement: {},
         getElementById: vi.fn().mockReturnValue(targetEl),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn(),
         scrollingElement: mockScrollingEl
       };
@@ -1278,7 +1316,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1344,6 +1383,7 @@ describe('HtmlEmbedComponent', () => {
         documentElement: {},
         elementsFromPoint: vi.fn().mockReturnValue([stickyHeaderEl]),
         getElementById: vi.fn().mockReturnValue(targetEl),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn(),
         scrollingElement: mockScrollingEl
       };
@@ -1371,7 +1411,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1419,6 +1460,7 @@ describe('HtmlEmbedComponent', () => {
         defaultView: { Element: MockIframeElement },
         documentElement: mockDocumentElement,
         getElementById: vi.fn().mockReturnValue(targetEl),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn(),
         scrollingElement: null
       };
@@ -1443,7 +1485,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1479,6 +1522,7 @@ describe('HtmlEmbedComponent', () => {
         addEventListener: vi.fn(),
         defaultView: { Element: MockIframeElement },
         getElementById: vi.fn().mockReturnValue(null),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn(),
         scrollingElement: { scrollBy: vi.fn() }
       };
@@ -1503,7 +1547,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1551,6 +1596,7 @@ describe('HtmlEmbedComponent', () => {
         documentElement: {},
         getElementById: vi.fn().mockReturnValue(targetEl),
         head: { createEl: vi.fn() },
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn(),
         scrollingElement: mockScrollingEl
       };
@@ -1575,7 +1621,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1610,6 +1657,7 @@ describe('HtmlEmbedComponent', () => {
         addEventListener: vi.fn(),
         defaultView: { Element: MockIframeElement },
         getElementById: vi.fn(),
+        querySelectorAll: vi.fn().mockReturnValue([]),
         removeEventListener: vi.fn()
       };
 
@@ -1633,7 +1681,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1760,7 +1809,8 @@ describe('HtmlEmbedComponent', () => {
       const mockParsedDoc = {
         documentElement: { outerHTML: '<html></html>' },
         head: { createEl: vi.fn().mockReturnValue({}) },
-        querySelector: vi.fn().mockReturnValue({ href: '' })
+        querySelector: vi.fn().mockReturnValue({ href: '' }),
+        querySelectorAll: vi.fn().mockReturnValue([])
       };
 
       window.DOMParser = castTo<typeof DOMParser>(
@@ -1952,6 +2002,7 @@ describe('auto-fit sizing', () => {
       documentElement: { scrollHeight: MEASURED_HEIGHT },
       getElementById: vi.fn().mockReturnValue(null),
       head: { createEl: vi.fn().mockReturnValue({}) },
+      querySelectorAll: vi.fn().mockReturnValue([]),
       removeEventListener: vi.fn()
     };
   }
@@ -1991,7 +2042,8 @@ describe('auto-fit sizing', () => {
     const mockParsedDoc = {
       documentElement: { outerHTML: '<html></html>' },
       head: { createEl: vi.fn().mockReturnValue({}) },
-      querySelector: vi.fn().mockReturnValue({ href: '' })
+      querySelector: vi.fn().mockReturnValue({ href: '' }),
+      querySelectorAll: vi.fn().mockReturnValue([])
     };
     window.DOMParser = castTo<typeof DOMParser>(
       class MockDOMParser {
@@ -2194,3 +2246,168 @@ describe('open in the system browser', () => {
     expect(containerEl.createEl).toHaveBeenCalledWith('iframe', expect.anything());
   });
 });
+
+/*
+ * Obsidian's page CSP follows the embed into its `srcdoc` iframe and blocks every external stylesheet, so
+ * the plugin inlines them. A script in the embedded document can add a `<link rel="stylesheet">` at any
+ * time, which is blocked exactly the same way — hence a `MutationObserver` on the LOADED document, narrowed
+ * to `<link>` so the `<style>` elements the pass inserts cannot retrigger it.
+ */
+describe('stylesheet observer on the loaded document', () => {
+  beforeEach(() => {
+    // This block is top-level, so it installs its own MutationObserver stub for the CONTAINER observer
+    // Rather than relying on the main describe's beforeEach having run first.
+    window.MutationObserver = castTo<typeof MutationObserver>(
+      class MockMutationObserver {
+        public disconnect = vi.fn();
+
+        public observe(): void {
+          noop();
+        }
+      }
+    );
+  });
+
+  it('should re-inline when a link is added, and ignore every other insertion', async () => {
+    const harness = await loadWithStylesheetObserverAsync();
+    const passesAfterLoad = harness.iframeDoc.querySelectorAll.mock.calls.length;
+
+    // Inserting a `<style>` is what the pass itself does, so it must not retrigger the pass.
+    harness.fireMutations([createAddedNodeMutation('STYLE')]);
+    await waitForAllAsyncOperations();
+
+    expect(harness.iframeDoc.querySelectorAll.mock.calls.length).toBe(passesAfterLoad);
+
+    harness.fireMutations([createAddedNodeMutation('LINK')]);
+    await waitForAllAsyncOperations();
+
+    expect(harness.iframeDoc.querySelectorAll.mock.calls.length).toBeGreaterThan(passesAfterLoad);
+  });
+
+  it('should re-inline when a link changes its href or rel, and ignore other elements', async () => {
+    const harness = await loadWithStylesheetObserverAsync();
+    const passesAfterLoad = harness.iframeDoc.querySelectorAll.mock.calls.length;
+
+    harness.fireMutations([createAttributeMutation('DIV')]);
+    await waitForAllAsyncOperations();
+
+    expect(harness.iframeDoc.querySelectorAll.mock.calls.length).toBe(passesAfterLoad);
+
+    harness.fireMutations([createAttributeMutation('LINK')]);
+    await waitForAllAsyncOperations();
+
+    expect(harness.iframeDoc.querySelectorAll.mock.calls.length).toBeGreaterThan(passesAfterLoad);
+  });
+
+  it('should watch link additions and href/rel changes anywhere in the document', async () => {
+    const harness = await loadWithStylesheetObserverAsync();
+
+    expect(harness.observe).toHaveBeenCalledWith(harness.iframeDoc, {
+      attributeFilter: ['href', 'rel'],
+      attributes: true,
+      childList: true,
+      subtree: true
+    });
+  });
+
+  it('should disconnect the stylesheet observer on unload', async () => {
+    const harness = await loadWithStylesheetObserverAsync();
+
+    harness.component.unload();
+
+    expect(harness.disconnect).toHaveBeenCalled();
+  });
+});
+
+function createAddedNodeMutation(nodeName: string): MutationRecord {
+  return castTo<MutationRecord>({
+    addedNodes: [{ nodeName }],
+    type: 'childList'
+  });
+}
+
+function createAttributeMutation(nodeName: string): MutationRecord {
+  return castTo<MutationRecord>({
+    target: { nodeName },
+    type: 'attributes'
+  });
+}
+
+async function loadWithStylesheetObserverAsync(): Promise<StylesheetObserverHarness> {
+  const disconnect = vi.fn();
+  const observe = vi.fn();
+  let fireMutations: (mutations: MutationRecord[]) => void = noop;
+
+  const iframeDoc: MockStylesheetIframeDoc = {
+    addEventListener: vi.fn(),
+    defaultView: {
+      MutationObserver: class MockIframeMutationObserver {
+        public disconnect = disconnect;
+        public observe = observe;
+
+        public constructor(callback: MutationCallback) {
+          fireMutations = (mutations): void => {
+            callback(mutations, castTo<MutationObserver>({}));
+          };
+        }
+      }
+    },
+    getElementById: vi.fn().mockReturnValue(null),
+    querySelectorAll: vi.fn().mockReturnValue([]),
+    removeEventListener: vi.fn()
+  };
+
+  let loadHandler: (() => void) | undefined;
+  const mockIframeEl = {
+    addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
+      if (event === 'load') {
+        loadHandler = handler;
+      }
+    }),
+    contentDocument: iframeDoc,
+    setCssStyles: vi.fn(),
+    srcdoc: ''
+  };
+
+  const containerEl = createMockContainerEl();
+  containerEl.createEl.mockReturnValue(mockIframeEl);
+
+  const mockParsedDoc = {
+    documentElement: { outerHTML: '<html></html>' },
+    head: { createEl: vi.fn().mockReturnValue({}) },
+    querySelector: vi.fn().mockReturnValue({ href: '' }),
+    querySelectorAll: vi.fn().mockReturnValue([])
+  };
+
+  window.DOMParser = castTo<typeof DOMParser>(
+    class MockDOMParser {
+      public parseFromString(): unknown {
+        return mockParsedDoc;
+      }
+    }
+  );
+
+  vi.stubGlobal('location', { origin: 'app://obsidian.md' });
+
+  const component = new HtmlEmbedComponent({
+    app: createMockApp(),
+    containerEl: asContainerEl(containerEl),
+    file: createMockFile(),
+    pluginSettingsComponent: createMockPluginSettingsComponent(),
+    subpath: ''
+  });
+  component.load();
+  await component.loadFileAsync();
+  loadHandler?.();
+  await waitForAllAsyncOperations();
+
+  return {
+    component,
+    disconnect,
+    fireMutations: (mutations): void => {
+      fireMutations(mutations);
+    },
+    iframeDoc,
+    observe
+  };
+}

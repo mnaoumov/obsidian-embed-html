@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>External assets</title>
+  <!-- A stylesheet in a SUBFOLDER. It `@import`s another one, and its `url()` targets resolve next to
+       itself rather than next to this file. -->
+  <link rel="stylesheet" href="assets/theme.css">
+  <script src="assets/counter.js"></script>
+</head>
+<body style="background: #1e1e2e">
+  <div class="card">
+    <h1><span class="badge"></span> Styled from a separate file</h1>
+    <p>
+      The colors, the layout and the check-mark badge all come from
+      <code>html/assets/theme.css</code> — which itself <code>@import</code>s
+      <code>html/assets/typography.css</code>.
+    </p>
+    <p><button id="count" type="button">Clicked 0 times</button> — from <code>html/assets/counter.js</code>.</p>
+  </div>
+</body>
+</html>

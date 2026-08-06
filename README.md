@@ -124,6 +124,31 @@ The flag accepts `true`/`yes`/`on`/`1` and `false`/`no`/`off`/`0`, and combines 
 
 An embed that does not name the flag follows the global setting, so turning the setting on or off still changes every embed that has not opted out.
 
+### Stylesheets, scripts, images and fonts
+
+An embedded document keeps working with the files next to it. Relative paths resolve against the **HTML file's own location**, so a document that opens correctly in a browser renders the same way in a note:
+
+```html
+<html>
+  <head>
+    <link rel="stylesheet" href="styles/main.css" />
+    <script src="scripts/app.js"></script>
+  </head>
+  <body>
+    <img src="images/diagram.svg" />
+  </body>
+</html>
+```
+
+Stylesheets get special treatment. Obsidian's Content-Security-Policy reaches into the embed and blocks every *external* stylesheet — a `<link rel="stylesheet">` is fetched and then silently ignored, leaving the document unstyled. The plugin therefore reads each stylesheet and inlines it as a `<style>` element, which the policy does allow. This covers:
+
+- stylesheets in the vault, wherever they sit relative to the HTML file;
+- stylesheets on the web (`https://…`), read through Obsidian's own request API so they are not blocked by CORS;
+- `@import`ed stylesheets, followed recursively;
+- stylesheets a script in the document adds while it runs.
+
+Relative `url()` targets inside a stylesheet — background images, `@font-face` sources — keep resolving against **that stylesheet's** location, not the note's or the HTML file's, so fonts and images referenced from CSS in a subfolder still load. Scripts, images, fonts and media are not restricted by the policy and load on their own.
+
 ### Color scheme
 
 The embedded HTML follows Obsidian's base color scheme (`Settings → Appearance → Base color scheme`), independent of your operating system's theme. The active scheme is propagated into the embed, so `prefers-color-scheme` media queries in your HTML resolve to Obsidian's `Dark`/`Light` setting (and to the OS when set to `Adapt to system`). Switching the base color scheme updates already-rendered embeds live.
