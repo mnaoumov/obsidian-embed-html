@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2.5.2
+
+- chore: teach cspell the word screenful
+- fix: re-render the embed when a late alt token changes the output mode
+- test: make the sticky-header case actually reproduce, and measure the laid-out embed
+- fix: land an anchor jump below a sticky header instead of underneath it
+- feat: let a single embed override the open-in-default-browser mode
+
 ## 2.5.1
 
 - chore: update libs
