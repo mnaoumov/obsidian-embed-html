@@ -35,6 +35,10 @@ interface ComponentWithIframeEl {
   iframeEl: unknown;
 }
 
+interface ContainsCheck {
+  contains: ReturnType<typeof vi.fn>;
+}
+
 interface DecorationOverrides {
   background?: string;
   border?: string;
@@ -1252,6 +1256,96 @@ describe('HtmlEmbedComponent', () => {
         behavior: 'instant',
         left: EXPECTED_LEFT,
         top: EXPECTED_TOP
+      });
+    });
+
+    it('should back off by the height of a sticky header covering the target', async () => {
+      const TARGET_TOP = 200;
+      const HEADER_BOTTOM = 240;
+      const EXPECTED_OVERLAP = HEADER_BOTTOM - TARGET_TOP;
+
+      const targetEl: MockElement = {
+        addClass: vi.fn(),
+        closest: vi.fn(),
+        getBoundingClientRect: vi.fn().mockReturnValue({ left: 100, top: TARGET_TOP, width: 0 }),
+        parentElement: null
+      };
+
+      // The header sits over the target's top edge once the scroll has pinned it there.
+      const stickyHeaderEl = {
+        contains: vi.fn().mockReturnValue(false),
+        getBoundingClientRect: vi.fn().mockReturnValue({ bottom: HEADER_BOTTOM })
+      };
+
+      const mockScrollingEl = {
+        getBoundingClientRect: vi.fn().mockReturnValue({ left: 10, top: 20 }),
+        scrollBy: vi.fn()
+      };
+
+      const mockContentDocument = {
+        addEventListener: vi.fn(),
+        defaultView: {
+          Element: MockIframeElement,
+          getComputedStyle: vi.fn().mockReturnValue({ position: 'sticky' }),
+          innerWidth: 800
+        },
+        documentElement: {},
+        elementsFromPoint: vi.fn().mockReturnValue([stickyHeaderEl]),
+        getElementById: vi.fn().mockReturnValue(targetEl),
+        removeEventListener: vi.fn(),
+        scrollingElement: mockScrollingEl
+      };
+
+      // The target is not an ancestor or descendant of the header.
+      castTo<ContainsCheck>(targetEl).contains = vi.fn().mockReturnValue(false);
+
+      let loadHandler: (() => void) | undefined;
+      const mockIframeEl = {
+        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
+          if (event === 'load') {
+            loadHandler = handler;
+          }
+        }),
+        contentDocument: mockContentDocument,
+        setCssStyles: vi.fn(),
+        srcdoc: ''
+      };
+
+      const containerEl = createMockContainerEl();
+      containerEl.createEl.mockReturnValue(mockIframeEl);
+      const pluginSettingsComponent = createMockPluginSettingsComponent();
+      const mockApp = createMockApp();
+
+      const mockParsedDoc = {
+        documentElement: { outerHTML: '<html></html>' },
+        head: { createEl: vi.fn().mockReturnValue({}) },
+        querySelector: vi.fn().mockReturnValue({ href: '' })
+      };
+
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
+        }
+      );
+
+      vi.stubGlobal('location', { origin: 'app://obsidian.md' });
+
+      const component = new HtmlEmbedComponent({
+        app: mockApp,
+        containerEl: asContainerEl(containerEl),
+        file: createMockFile(),
+        pluginSettingsComponent,
+        subpath: '#myId'
+      });
+
+      await component.loadFileAsync();
+      loadHandler?.();
+
+      expect(mockScrollingEl.scrollBy).toHaveBeenLastCalledWith({
+        behavior: 'instant',
+        top: -EXPECTED_OVERLAP
       });
     });
 

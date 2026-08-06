@@ -18,6 +18,7 @@ import {
   getContentKeyword,
   parseSizeSpec
 } from './size-spec.ts';
+import { measureStickyOverlap } from './sticky-overlap.ts';
 
 const WIDTH_ATTRIBUTE = 'width';
 const HEIGHT_ATTRIBUTE = 'height';
@@ -338,6 +339,18 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
           left: rect.left - scrollingRect.left,
           top: rect.top - scrollingRect.top
         });
+
+        // The scroll above lands the target flush against the top of the scroll container, which is
+        // Exactly where a `position: sticky` header stays pinned — so the target ends up underneath it
+        // (issue #14). The overlap can only be measured once the header is in its stuck position, hence
+        // The second pass here rather than an offset folded into the scroll above.
+        const stickyOverlap = measureStickyOverlap(iframeDoc, el);
+        if (stickyOverlap > 0) {
+          scrollingEl.scrollBy({
+            behavior: 'instant',
+            top: -stickyOverlap
+          });
+        }
         break;
       }
       default: {
