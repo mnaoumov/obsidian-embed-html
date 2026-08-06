@@ -91,38 +91,24 @@ The plugin settings provide global appearance defaults applied to every embed bo
 
 Enable `Settings → Embed HTML → Behavior → Open in new tab` to make opening an HTML file put it in a new tab instead of replacing the content of the current one, without holding a modifier key. When enabled, the first HTML file still reuses an empty tab (so you do not get a blank leftover tab); each subsequent HTML file opens in its own tab. The setting is off by default, preserving Obsidian's standard behavior.
 
-### Open in default browser
+### Open in external browser
 
-Enable `Settings → Embed HTML → Behavior → Open in default browser` to stop rendering embedded HTML in the note. Each embed becomes a link instead, and clicking it opens the file in your system's default browser, jumping to the embedded fragment:
+Every embed carries an `Open in external browser` button, which hands the file to your system's default browser — useful for a document you would rather read with the tabs, zoom, find and print a real browser brings. The embed itself still renders in the note; the button is an addition, not a replacement.
 
-````markdown
-![[MyDocument.html#section-3]]
-````
+Turn it off under `Settings → Embed HTML → Behavior → Show "Open in external browser" button (Desktop only)`. The setting is on by default.
 
-opens `file:///…/MyDocument.html#section-3`.
+> [!WARNING]
+>
+> **Scroll-to-element and extract-element do not apply in the browser.** The button hands over the file and nothing else, so the embed's `#id` subpath is left behind:
+>
+> ````markdown
+> ![[MyDocument.html#section-3]]
+> ![[MyDocument.html#section-3&mode=extract]]
+> ````
+>
+> Both still scroll and extract *in the note*, but the browser opens the whole document from the top. Those two modes are work the plugin does on the embedded document itself — a browser only ever receives the plain file.
 
-The embed syntax does not change — this is a second output mode, not a new syntax. It suits large reference documents, where a browser brings tabs, zoom, find, print and extensions that an embedded view cannot, and where not loading the document into the note at all is the point: in this mode the file is never read.
-
-The link is labelled with the file name, plus the fragment when the embed names one, so a note embedding the same document at several anchors still says which part each link points at.
-
-The setting is off by default. It is **desktop only**: opening a file in a browser needs the file's location on disk, which only the desktop app has, so on mobile embeds keep rendering in the note.
-
-#### Per-embed override
-
-A vault rarely wants *every* embed to open externally. A single embed can override the setting either way with an `open-in-default-browser` flag in the embed token:
-
-````markdown
-![[HugeReference.html#section-3|open-in-default-browser: true]]
-![[Small.html|open-in-default-browser: false]]
-````
-
-The flag accepts `true`/`yes`/`on`/`1` and `false`/`no`/`off`/`0`, and combines with the sizing declarations in the same token:
-
-````markdown
-![[MyDocument.html|width: 600px; open-in-default-browser: true]]
-````
-
-An embed that does not name the flag follows the global setting, so turning the setting on or off still changes every embed that has not opted out.
+It is **desktop only**: Obsidian exposes no way to hand a local file to a browser on mobile, so the button is never rendered there and the setting is inert rather than broken.
 
 ### Stylesheets, scripts, images and fonts
 

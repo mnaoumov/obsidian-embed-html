@@ -25,6 +25,12 @@ describe('PluginSettings', () => {
     expect(settings.shouldOpenInNewTab).toBe(false);
   });
 
+  it('should show the open-in-external-browser button by default', () => {
+    const settings = new PluginSettings();
+
+    expect(settings.shouldShowOpenInExternalBrowserButton).toBe(true);
+  });
+
   it('should have no border, border radius or background by default', () => {
     const settings = new PluginSettings();
 

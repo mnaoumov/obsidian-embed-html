@@ -14,7 +14,7 @@ This vault demonstrates the [Embed HTML](https://community.obsidian.md/plugins/e
 8. [[08 Direct View]] — Open HTML files directly, plus the open-in-new-tab setting (with a live button)
 9. [[09 Appearance]] — Border, rounded corners, and background settings (with live buttons)
 10. [[10 Relative and Full Path]] — Embed an HTML file from another folder by relative or full vault path
-11. [[11 Open in Default Browser]] — Open the embedded file in your default browser instead, fragment included
+11. [[11 Open in External Browser]] — Hand the embedded file to your system's default browser (with live buttons)
 12. [[12 Sticky Table Headers]] — Anchor jumps land below a sticky header instead of underneath it
 13. [[13 External Stylesheets and Assets]] — Stylesheets, scripts, images and fonts loaded from other files
 

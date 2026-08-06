@@ -10,39 +10,40 @@ import {
 } from 'vitest';
 
 /*
- * Issue #14: an optional mode that opens the embedded HTML file in the system's default browser instead
- * of rendering it in the note, with the fragment identifier preserved.
+ * The "Open in external browser" button: an affordance rendered ALONGSIDE the embed that hands the file's
+ * `file://` URL to the system's default browser, where a real browser brings tabs, zoom, find and print.
  *
- * `window.open` is intercepted rather than actually invoked — the assertion is on the URL the plugin
- * asks for, which is the plugin's whole contribution. Letting it through would launch a real browser on
- * the machine running the suite, which a test must not do.
+ * `window.open` is intercepted rather than actually invoked — the assertion is on the URL and target the
+ * plugin asks for, which is the plugin's whole contribution. Letting it through would launch a real browser
+ * on the machine running the suite, which a test must not do.
  *
- * Desktop-only: the mode needs the file's absolute path, which only a `FileSystemAdapter` exposes.
+ * Desktop-only: not because a full path is unavailable elsewhere (mobile's `CapacitorAdapter` supplies one
+ * too), but because Obsidian exposes no way to hand a local file to a browser on mobile.
  */
 
 const vault = getTempVault();
 
-const NOTE_PATH = 'system-browser-note.md';
-const HTML_PATH = 'system-browser-doc.html';
-const FRAGMENT = 'section-3';
-const SCENARIO_TIMEOUT_IN_MS = 120_000;
+const NOTE_PATH = 'external-browser-note.md';
+const HTML_PATH = 'external-browser-doc.html';
+const BUTTON_TEXT = 'Open in external browser';
+const SCENARIO_TIMEOUT_IN_MILLISECONDS = 120_000;
 
 beforeAll(() => {
   vault.populate({
-    [HTML_PATH]: `<html><body><h1 id="${FRAGMENT}">Section 3</h1><p>Body</p></body></html>`,
-    [NOTE_PATH]: `# Note\n\n![[${HTML_PATH}#${FRAGMENT}]]\n`
+    [HTML_PATH]: '<html><body><h1>Doc</h1><p>Body</p></body></html>',
+    [NOTE_PATH]: `# Note\n\n![[${HTML_PATH}]]\n`
   });
 });
 
-describe('open in default browser (issue #14)', () => {
-  it('should render a link and request the file URL with its fragment, without rendering an iframe', async () => {
+describe('open in external browser button', () => {
+  it('should render the button next to the embed and hand the file URL to the system browser', async () => {
     const result = await evalInObsidian({
       // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
-      args: { NOTE_PATH },
+      args: { BUTTON_TEXT, NOTE_PATH },
       // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-      async fn({ app, lib: { waitUntil }, NOTE_PATH: notePath }) {
+      async fn({ app, BUTTON_TEXT: buttonText, lib: { waitUntil }, NOTE_PATH: notePath }) {
         interface EmbedHtmlSettings {
-          shouldOpenInSystemBrowser: boolean;
+          shouldShowOpenInExternalBrowserButton: boolean;
         }
 
         interface SettingsCarrier {
@@ -52,7 +53,7 @@ describe('open in default browser (issue #14)', () => {
 
         function isEmbedHtmlSettings(value: unknown): value is EmbedHtmlSettings {
           return typeof value === 'object' && value !== null
-            && typeof (value as Record<string, unknown>)['shouldOpenInSystemBrowser'] === 'boolean';
+            && typeof (value as Record<string, unknown>)['shouldShowOpenInExternalBrowserButton'] === 'boolean';
         }
 
         // The plugin does not expose its settings publicly; walk its component tree, as the sibling
@@ -97,24 +98,37 @@ describe('open in default browser (issue #14)', () => {
           return null;
         }
 
-        const settingsComponent = findSettingsComponent();
-        if (!settingsComponent) {
-          return { error: 'settings component not found', hasIframe: null, linkText: null, openedUrl: null };
+        function findButton(viewEl: HTMLElement): HTMLButtonElement | null {
+          // The button carries no plugin-specific class, so it is found the way a user finds it: by its
+          // Label, inside the embed itself.
+          const buttonEls = viewEl.querySelectorAll<HTMLButtonElement>(':scope .markdown-preview-view .internal-embed button');
+          for (const buttonEl of buttonEls) {
+            if (buttonEl.textContent === buttonText) {
+              return buttonEl;
+            }
+          }
+          return null;
         }
 
-        const isOriginalShouldOpenInSystemBrowser = settingsComponent.settings.shouldOpenInSystemBrowser;
+        const settingsComponent = findSettingsComponent();
+        if (!settingsComponent) {
+          return { error: 'settings component not found', hasIframe: null, openedTarget: null, openedUrl: null };
+        }
+
+        const isOriginalShouldShowOpenInExternalBrowserButton = settingsComponent.settings.shouldShowOpenInExternalBrowserButton;
         const originalOpen = window.open.bind(window);
         let openedUrl: null | string = null;
+        let openedTarget: null | string = null;
         let openedLeaf: null | ReturnType<typeof app.workspace.getLeaf> = null;
 
         try {
           await settingsComponent.editAndSave((settings) => {
-            settings.shouldOpenInSystemBrowser = true;
+            settings.shouldShowOpenInExternalBrowserButton = true;
           });
 
           const noteFile = app.vault.getFileByPath(notePath);
           if (!noteFile) {
-            return { error: 'note not found', hasIframe: null, linkText: null, openedUrl: null };
+            return { error: 'note not found', hasIframe: null, openedTarget: null, openedUrl: null };
           }
 
           const leaf = app.workspace.getLeaf(true);
@@ -127,27 +141,27 @@ describe('open in default browser (issue #14)', () => {
           await markdownView.setState({ mode: 'preview' }, { history: false });
 
           await waitUntil({
-            message: 'the embed did not render as a link',
-            predicate: () => markdownView.containerEl.querySelector('.embed-html-open-in-system-browser') !== null
+            message: 'the open-in-external-browser button did not render',
+            predicate: () => findButton(markdownView.containerEl) !== null
           });
 
-          const linkEl = markdownView.containerEl.querySelector('.embed-html-open-in-system-browser');
+          const buttonEl = findButton(markdownView.containerEl);
+          // The button is an ADDITION, not a replacement: the document still renders in the note.
           const hasIframe = markdownView.containerEl.querySelector('iframe') !== null;
 
           // Intercept rather than let a real browser launch.
-          window.open = (url): null => {
+          window.open = (url, target): null => {
             openedUrl = typeof url === 'string' ? url : String(url);
+            openedTarget = target ?? null;
             return null;
           };
 
-          if (linkEl instanceof HTMLElement) {
-            linkEl.click();
-          }
+          buttonEl?.click();
 
           return {
             error: null,
             hasIframe,
-            linkText: linkEl?.textContent ?? null,
+            openedTarget,
             openedUrl
           };
         } finally {
@@ -156,7 +170,7 @@ describe('open in default browser (issue #14)', () => {
           // Leave the workspace as it was found: suites sharing this Obsidian can count leaves.
           openedLeaf?.detach();
           await settingsComponent.editAndSave((settings) => {
-            settings.shouldOpenInSystemBrowser = isOriginalShouldOpenInSystemBrowser;
+            settings.shouldShowOpenInExternalBrowserButton = isOriginalShouldShowOpenInExternalBrowserButton;
           });
         }
       },
@@ -164,11 +178,10 @@ describe('open in default browser (issue #14)', () => {
     });
 
     expect(result.error).toBeNull();
-    // The document is shown as a link, not rendered in the note.
-    expect(result.hasIframe).toBe(false);
-    expect(result.linkText).toBe(`${HTML_PATH}#${FRAGMENT}`);
-    // The fragment travels with it — the whole point of the request.
-    expect(result.openedUrl).toContain(`/${HTML_PATH}#${FRAGMENT}`);
+    expect(result.hasIframe).toBe(true);
     expect(result.openedUrl).toMatch(/^file:\/\/\//);
-  }, SCENARIO_TIMEOUT_IN_MS);
+    expect(result.openedUrl).toContain(`/${HTML_PATH}`);
+    // Without `_external` the URL would open in an in-app window instead of the system browser.
+    expect(result.openedTarget).toBe('_external');
+  }, SCENARIO_TIMEOUT_IN_MILLISECONDS);
 });

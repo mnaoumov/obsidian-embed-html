@@ -22,3 +22,9 @@ Use `#id&mode=extract` to show only the targeted element, hiding everything else
 
 - **Scroll mode** (default): shows the full page, scrolled to the element
 - **Extract mode**: hides all content except the targeted element and its parents
+
+> [!WARNING]
+>
+> Both are this plugin's own work on the embedded document, so they stay in the note. The
+> **Open in external browser** button ([[11 Open in External Browser]]) hands the browser the plain file,
+> which shows the whole document.

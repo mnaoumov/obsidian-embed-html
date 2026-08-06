@@ -2,6 +2,7 @@ import type { EmbedComponent } from '@obsidian-typings/obsidian-public-latest';
 
 import {
   App,
+  ButtonComponent,
   FileSystemAdapter,
   TFile
 } from 'obsidian';
@@ -13,7 +14,6 @@ import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 import type { ContentKeyword } from './size-spec.ts';
 
 import { inlineDocumentStylesheetsAsync } from './document-stylesheet-inliner.ts';
-import { parseEmbedToken } from './embed-options.ts';
 import { buildFileUrl } from './file-url.ts';
 import {
   getContentKeyword,
@@ -82,7 +82,6 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   private iframeEl: HTMLIFrameElement | null = null;
   private lastAppliedHeight: null | string = null;
   private lastAppliedWidth: null | string = null;
-  private lastResolvedShouldOpenInSystemBrowser: boolean | null = null;
   private readonly pluginSettingsComponent: PluginSettingsComponent;
   private resizeObserver: null | ResizeObserver = null;
   private stylesheetObserver: MutationObserver | null = null;
@@ -99,13 +98,6 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     this.pluginSettingsComponent = params.pluginSettingsComponent;
 
     const mo = new MutationObserver(() => {
-      // Obsidian can set `alt` AFTER calling `loadFile`, so the first render may have decided the output
-      // Mode before the token carrying `open-in-default-browser` existed. Re-render when that decision
-      // Would now come out differently; a size-only change still just re-applies the size.
-      if (this.lastResolvedShouldOpenInSystemBrowser !== null && this.lastResolvedShouldOpenInSystemBrowser !== this.resolveShouldOpenInSystemBrowser()) {
-        this.loadFile();
-        return;
-      }
       this.applySize();
     });
     mo.observe(this.containerEl, {
@@ -133,21 +125,22 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     this.lastAppliedHeight = null;
     this.containerEl.empty();
 
-    this.applySize();
-
-    // Open-in-browser mode short-circuits BEFORE the file is read. That is the point for the documents
-    // This was asked for (issue #14): 10-15 MB of HTML is never loaded, parsed or held in the note.
-    //
-    // `getAbsolutePath()` is null when the vault has no filesystem behind it (mobile), and then there is
-    // Nothing to hand to a browser — so the embed falls through to the iframe and the setting is inert
-    // Rather than broken.
-    const shouldOpenInSystemBrowser = this.resolveShouldOpenInSystemBrowser();
-    this.lastResolvedShouldOpenInSystemBrowser = shouldOpenInSystemBrowser;
-    const absolutePath = shouldOpenInSystemBrowser ? this.getAbsolutePath() : null;
-    if (absolutePath !== null) {
-      this.renderOpenInSystemBrowserLink(absolutePath);
-      return;
+    // The `FileSystemAdapter` check is a DESKTOP test, not a path-availability one: mobile's
+    // `CapacitorAdapter` hands out a full path just as well. What is missing on mobile is the LAUNCH
+    // Mechanism — Obsidian exposes no way to hand a local file to a browser there, so `window.open` on a
+    // `file://` URL does nothing. The button is therefore only offered where clicking it can act.
+    if (this.pluginSettingsComponent.settings.shouldShowOpenInExternalBrowserButton && this.app.vault.adapter instanceof FileSystemAdapter) {
+      const fullPath = this.app.vault.adapter.getFullPath(this.file.path);
+      const fileUrl = buildFileUrl(fullPath);
+      new ButtonComponent(this.containerEl).setButtonText('Open in external browser').onClick(() => {
+        // `window.open` rather than an Electron `shell` import: Obsidian routes a URL opened with the
+        // `_external` target to the SYSTEM browser, so this stays free of a desktop-only import. Without
+        // The target the URL would open in an in-app window instead, which is the opposite of the point.
+        window.open(fileUrl, '_external');
+      });
     }
+
+    this.applySize();
 
     const html = await this.app.vault.read(this.file);
     const parsedDoc = new DOMParser().parseFromString(html, 'text/html');
@@ -278,22 +271,6 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   private disconnectStylesheetObserver(): void {
     this.stylesheetObserver?.disconnect();
     this.stylesheetObserver = null;
-  }
-
-  /**
-   * The embed's absolute filesystem path, or `null` when the vault has no filesystem behind it.
-   *
-   * Only a `FileSystemAdapter` (desktop) exposes one. On mobile there is no path to hand to a browser,
-   * so this returns `null` and the caller falls back to the iframe rather than rendering an affordance
-   * that could not work.
-   */
-  private getAbsolutePath(): null | string {
-    const adapter = this.app.vault.adapter;
-    if (!(adapter instanceof FileSystemAdapter)) {
-      return null;
-    }
-
-    return adapter.getFullPath(this.file.path);
   }
 
   // Obsidian routes a pure-digit size token (`|400`, `|600x200`) into the container's `width`/`height`
@@ -508,32 +485,6 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     };
   }
 
-  /**
-   * Renders the click-to-open affordance shown in place of the iframe when the embed opens externally.
-   *
-   * An empty iframe would be wrong here — the note must still say WHAT is embedded, and the fragment is
-   * part of that, since the same document is usually embedded at several anchors.
-   */
-  private renderOpenInSystemBrowserLink(absolutePath: string): void {
-    const fragment = trimStart({ $string: this.subpath, prefix: '#' }).trim();
-    const label = fragment === '' ? this.file.name : `${this.file.name}#${fragment}`;
-
-    const linkEl = this.containerEl.createEl('a', {
-      cls: 'embed-html-open-in-system-browser',
-      href: '#',
-      text: label
-    });
-    linkEl.setAttribute('aria-label', `Open ${label} in the default browser`);
-
-    this.registerDomEvent(linkEl, 'click', ($event) => {
-      $event.preventDefault();
-      // `window.open` rather than an Electron `shell` import: Obsidian already routes an external URL
-      // Opened this way to the system browser, so this stays free of a desktop-only import and of the
-      // Conditional-import dance that would come with it.
-      window.open(buildFileUrl(absolutePath, this.subpath), '_external');
-    });
-  }
-
   private resolveDecoration(): ResolvedDecoration {
     const settings = this.pluginSettingsComponent.settings;
     return {
@@ -543,23 +494,9 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     };
   }
 
-  /**
-   * Resolves whether THIS embed opens in the default browser.
-   *
-   * The global setting is the default and a token flag overrides it, so a vault can send the two 15 MB
-   * reference documents to a browser while everything else keeps rendering in the note (issue #14).
-   *
-   * @returns Whether this embed should open in the default browser.
-   */
-  private resolveShouldOpenInSystemBrowser(): boolean {
-    const { options } = parseEmbedToken(this.getSizeToken());
-    return options.shouldOpenInSystemBrowser ?? this.pluginSettingsComponent.settings.shouldOpenInSystemBrowser;
-  }
-
   private resolveSize(): ResolvedSize {
     const settings = this.pluginSettingsComponent.settings;
-    const { sizeToken } = parseEmbedToken(this.getSizeToken());
-    const spec = parseSizeSpec(sizeToken);
+    const spec = parseSizeSpec(this.getSizeToken());
     const widthAttr = this.containerEl.getAttr(WIDTH_ATTRIBUTE);
     const heightAttr = this.containerEl.getAttr(HEIGHT_ATTRIBUTE);
 

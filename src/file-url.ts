@@ -14,11 +14,9 @@ const POSIX_PATH_SEPARATOR = '/';
  *
  * @param absolutePath - The file's absolute path, as `FileSystemAdapter.getFullPath` returns it. On
  *   Windows that is a drive-letter path with backslashes (`C:\Vault\Doc.html`).
- * @param subpath - Obsidian's embed subpath, with or without its leading `#` (`#section-3`). Empty when
- *   the embed names no fragment.
- * @returns The URL, e.g. `file:///C:/Vault/Doc.html#section-3`.
+ * @returns The URL, e.g. `file:///C:/Vault/Doc.html`.
  */
-export function buildFileUrl(absolutePath: string, subpath: string): string {
+export function buildFileUrl(absolutePath: string): string {
   const posixPath = absolutePath.split(WINDOWS_PATH_SEPARATOR).join(POSIX_PATH_SEPARATOR);
 
   // A Windows path starts at a drive letter, so it needs the extra root slash that a POSIX path
@@ -30,23 +28,5 @@ export function buildFileUrl(absolutePath: string, subpath: string): string {
   // Is escaped, which is what keeps a `#` in a FILE NAME from being read as the start of the fragment.
   const encodedPath = encodeURI(rootedPath).replaceAll('#', '%23');
 
-  return `file://${encodedPath}${encodeSubpath(subpath)}`;
-}
-
-/**
- * Normalizes an embed subpath into a URL fragment.
- *
- * The subpath is treated as LITERAL text, which is how Obsidian hands it over: `![[Doc.html#My Section]]`
- * arrives as `#My Section`, not as `#My%20Section`. So a `%` in it is a literal percent sign and is
- * escaped like any other character. An already-percent-encoded subpath would therefore be encoded again —
- * deliberately not special-cased, because guessing which of the two a caller meant is not decidable.
- */
-function encodeSubpath(subpath: string): string {
-  const trimmedSubpath = subpath.trim();
-  if (trimmedSubpath === '' || trimmedSubpath === '#') {
-    return '';
-  }
-
-  const fragment = trimmedSubpath.startsWith('#') ? trimmedSubpath.slice(1) : trimmedSubpath;
-  return `#${encodeURI(fragment)}`;
+  return `file://${encodedPath}`;
 }

@@ -117,17 +117,12 @@ export class PluginSettingsTab extends PluginSettingsTabBase<PluginSettings> {
           }),
           this.settingEx({
             desc: createFragment((f) => {
-              f.appendText(
-                'When enabled, an embedded HTML file is not rendered in the note. The embed shows a link instead, and'
-                  + ' clicking it opens the file in your default browser, jumping to the embedded fragment. Useful for large'
-                  + ' documents, where a browser brings tabs, zoom, find and print. Desktop only: on mobile there is no file'
-                  + ' path to hand to a browser, so the embed still renders in the note.'
-              );
+              f.appendText('When enabled, renders a button to open the HTML file in the system\'s default browser. This is only available on desktop platforms.');
             }),
-            name: 'Open in default browser',
+            name: 'Show "Open in external browser" button (Desktop only)',
             render: (setting) => {
               setting.addToggle((toggle) => {
-                this.bind({ propertyName: 'shouldOpenInSystemBrowser', valueComponent: toggle });
+                this.bind({ propertyName: 'shouldShowOpenInExternalBrowserButton', valueComponent: toggle });
               });
             }
           })

@@ -8,7 +8,10 @@ import { waitForAllAsyncOperations } from 'obsidian-dev-utils/async';
 import { noop } from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
-import { FileSystemAdapter } from 'obsidian-test-mocks/obsidian';
+import {
+  ButtonComponent,
+  FileSystemAdapter
+} from 'obsidian-test-mocks/obsidian';
 import {
   afterEach,
   beforeEach,
@@ -99,6 +102,20 @@ interface MockStylesheetIframeDoc {
   getElementById: ReturnType<typeof vi.fn>;
   querySelectorAll: ReturnType<typeof vi.fn>;
   removeEventListener: ReturnType<typeof vi.fn>;
+}
+
+interface MutableOpenInExternalBrowserSetting {
+  shouldShowOpenInExternalBrowserButton: boolean;
+}
+
+interface OpenInExternalBrowserHarness {
+  buttonEls: HTMLButtonElement[];
+  containerEl: MockContainerEl;
+}
+
+interface OpenInExternalBrowserHarnessParams {
+  readonly hasFileSystem: boolean;
+  readonly isSettingEnabled: boolean;
 }
 
 interface SizingIframeDoc {
@@ -192,7 +209,7 @@ function createMockPluginSettingsComponent(): PluginSettingsComponent {
       defaultMinHeight: '',
       defaultMinWidth: '',
       defaultWidth: '100%',
-      shouldOpenInSystemBrowser: false
+      shouldShowOpenInExternalBrowserButton: false
     }
   });
 }
@@ -1220,8 +1237,8 @@ describe('HtmlEmbedComponent', () => {
     });
   });
 
-  describe('output mode changed by a late alt token', () => {
-    it('should re-render when the token starts asking for the other output mode', async () => {
+  describe('alt token set after the first render', () => {
+    it('should re-apply the size without re-rendering the embed', async () => {
       let altValue: null | string = null;
 
       const containerEl = createMockContainerEl();
@@ -1255,20 +1272,18 @@ describe('HtmlEmbedComponent', () => {
         subpath: ''
       });
 
-      // Obsidian can set `alt` only after the first render, so that render decided the output mode
-      // Without ever seeing the flag.
+      // Obsidian can set `alt` only AFTER calling `loadFile`, so the first render never saw the token.
       await component.loadFileAsync();
       expect(containerEl.empty).toHaveBeenCalledOnce();
 
-      // A size-only change re-applies the size and does not re-render.
-      mockMutationObserverCallback([], {} as MutationObserver);
-      expect(containerEl.empty).toHaveBeenCalledOnce();
-
-      altValue = 'open-in-default-browser: true';
+      altValue = 'width: 600px';
       mockMutationObserverCallback([], {} as MutationObserver);
       await waitForAllAsyncOperations();
 
-      expect(containerEl.empty).toHaveBeenCalledTimes(2);
+      // The late token reaches the box, and re-reading it never costs a re-render (which would reload
+      // The document and throw away the iframe's scroll position).
+      expect(containerEl.setCssProps).toHaveBeenLastCalledWith(expect.objectContaining({ width: '600px' }));
+      expect(containerEl.empty).toHaveBeenCalledOnce();
     });
   });
 
@@ -2078,7 +2093,7 @@ describe('decoration (border/background)', () => {
         defaultMinHeight: '',
         defaultMinWidth: '',
         defaultWidth: '100%',
-        shouldOpenInSystemBrowser: false
+        shouldShowOpenInExternalBrowserButton: false
       }
     });
   }
@@ -2126,14 +2141,6 @@ describe('decoration (border/background)', () => {
   });
 });
 
-/*
- * Issue #14: an optional mode that opens the embedded file in the system's default browser instead of
- * rendering it in the note, with the fragment identifier preserved.
- */
-interface MutableExternalSetting {
-  shouldOpenInSystemBrowser: boolean;
-}
-
 function findClickHandler(
   addEventListenerMock: ReturnType<typeof vi.fn>
 ): ClickHandler | undefined {
@@ -2141,7 +2148,13 @@ function findClickHandler(
   return clickCall?.[1] as ClickHandler | undefined;
 }
 
-describe('open in the system browser', () => {
+/*
+ * The optional affordance that hands the embedded file to the system's default browser, where a real
+ * browser brings tabs, zoom, find and print. Gated on a `FileSystemAdapter` because that identifies the
+ * DESKTOP app — mobile can produce a full path too, but Obsidian exposes no way to hand a local file to a
+ * browser there.
+ */
+describe('open in external browser button', () => {
   beforeEach(() => {
     // This block is top-level, so it installs its own MutationObserver stub rather than relying on the
     // Main describe's beforeEach having run first.
@@ -2156,96 +2169,111 @@ describe('open in the system browser', () => {
     );
   });
 
-  function createFileSystemApp(): App {
-    const app = createMockApp();
-    const adapter = FileSystemAdapter.create__(String.raw`C:\Vault`);
-    seedOnRawTarget(app.vault, 'adapter', adapter.asOriginalType__());
-    return app;
-  }
-
-  function createExternalSettings(): PluginSettingsComponent {
-    const pluginSettingsComponent = createMockPluginSettingsComponent();
-    castTo<MutableExternalSetting>(pluginSettingsComponent.settings).shouldOpenInSystemBrowser = true;
-    return pluginSettingsComponent;
-  }
-
-  it('should render a link instead of an iframe, and never read the file', async () => {
-    const app = createFileSystemApp();
-    const containerEl = createMockContainerEl();
-    const linkEl = createEl('a');
-    containerEl.createEl.mockReturnValue(linkEl);
-
-    const component = new HtmlEmbedComponent({
-      app,
-      containerEl: asContainerEl(containerEl),
-      file: createMockFile('Doc.html'),
-      pluginSettingsComponent: createExternalSettings(),
-      subpath: '#section-3'
-    });
-    await component.loadFileAsync();
-
-    expect(containerEl.createEl).toHaveBeenCalledWith('a', expect.objectContaining({ text: 'Doc.html#section-3' }));
-    // The whole point for a 10-15 MB document: it is never loaded or parsed.
-    expect(app.vault.read).not.toHaveBeenCalled();
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
-  it('should label the link with the file name alone when the embed names no fragment', async () => {
-    const app = createFileSystemApp();
-    const containerEl = createMockContainerEl();
-    containerEl.createEl.mockReturnValue(createEl('a'));
-
-    const component = new HtmlEmbedComponent({
-      app,
-      containerEl: asContainerEl(containerEl),
-      file: createMockFile('Doc.html'),
-      pluginSettingsComponent: createExternalSettings(),
-      subpath: ''
-    });
-    await component.loadFileAsync();
-
-    expect(containerEl.createEl).toHaveBeenCalledWith('a', expect.objectContaining({ text: 'Doc.html' }));
-  });
-
-  it('should open the file URL with its fragment when the link is clicked', async () => {
-    const app = createFileSystemApp();
-    const containerEl = createMockContainerEl();
-    const linkEl = createEl('a');
-    containerEl.createEl.mockReturnValue(linkEl);
+  it('should render the button and hand the file URL to the browser when it is clicked', async () => {
+    const onClickSpy = vi.spyOn(ButtonComponent.prototype, 'onClick');
     const openSpy = vi.spyOn(window, 'open').mockReturnValue(null);
 
-    const component = new HtmlEmbedComponent({
-      app,
-      containerEl: asContainerEl(containerEl),
-      file: createMockFile('Doc.html'),
-      pluginSettingsComponent: createExternalSettings(),
-      subpath: '#section-3'
-    });
-    component.load();
-    await component.loadFileAsync();
-    linkEl.dispatchEvent(new MouseEvent('click', { cancelable: true }));
+    const harness = await loadWithExternalBrowserButtonAsync({ hasFileSystem: true, isSettingEnabled: true });
 
-    expect(openSpy).toHaveBeenCalledWith('file:///C:/Vault/Doc.html#section-3', '_blank');
+    expect(harness.buttonEls).toHaveLength(1);
+    expect(harness.buttonEls[0]?.textContent).toBe('Open in external browser');
+
+    // The mocked `ButtonComponent` stores the handler rather than wiring a DOM listener, so the click
+    // Is driven through the callback the component registered.
+    const clickHandler = onClickSpy.mock.calls[0]?.[0];
+    clickHandler?.(new MouseEvent('click'));
+
+    // The `_external` target is what sends the URL to the SYSTEM browser rather than an in-app window.
+    expect(openSpy).toHaveBeenCalledWith('file:///C:/Vault/Doc.html', '_external');
   });
 
-  it('should fall back to the iframe when the vault has no filesystem behind it (mobile)', async () => {
-    // `createMockApp`'s adapter is not a `FileSystemAdapter`, so there is no path to hand to a browser.
-    const app = createMockApp();
-    const containerEl = createMockContainerEl();
-    containerEl.createEl.mockReturnValue(createEl('iframe'));
+  it('should still render the embed itself, so the button is an addition rather than a replacement', async () => {
+    const harness = await loadWithExternalBrowserButtonAsync({ hasFileSystem: true, isSettingEnabled: true });
 
-    const component = new HtmlEmbedComponent({
-      app,
-      containerEl: asContainerEl(containerEl),
-      file: createMockFile('Doc.html'),
-      pluginSettingsComponent: createExternalSettings(),
-      subpath: '#section-3'
-    });
-    await component.loadFileAsync();
+    expect(harness.containerEl.createEl).toHaveBeenCalledWith('iframe', expect.anything());
+  });
 
-    expect(app.vault.read).toHaveBeenCalled();
-    expect(containerEl.createEl).toHaveBeenCalledWith('iframe', expect.anything());
+  it('should not render the button on mobile, where Obsidian cannot launch a browser for a local file', async () => {
+    // `createMockApp`'s adapter is not a `FileSystemAdapter`, which is how the component recognizes mobile.
+    const harness = await loadWithExternalBrowserButtonAsync({ hasFileSystem: false, isSettingEnabled: true });
+
+    expect(harness.buttonEls).toHaveLength(0);
+    expect(harness.containerEl.createEl).toHaveBeenCalledWith('iframe', expect.anything());
+  });
+
+  it('should not render the button when the setting is off', async () => {
+    const harness = await loadWithExternalBrowserButtonAsync({ hasFileSystem: true, isSettingEnabled: false });
+
+    expect(harness.buttonEls).toHaveLength(0);
   });
 });
+
+async function loadWithExternalBrowserButtonAsync(
+  params: OpenInExternalBrowserHarnessParams
+): Promise<OpenInExternalBrowserHarness> {
+  const app = createMockApp();
+  if (params.hasFileSystem) {
+    const adapter = FileSystemAdapter.create__(String.raw`C:\Vault`);
+    seedOnRawTarget(app.vault, 'adapter', adapter.asOriginalType__());
+  }
+
+  const pluginSettingsComponent = createMockPluginSettingsComponent();
+  castTo<MutableOpenInExternalBrowserSetting>(pluginSettingsComponent.settings).shouldShowOpenInExternalBrowserButton = params.isSettingEnabled;
+
+  // The button and the iframe are both created on the container, so the mock dispatches on the tag name
+  // Instead of answering every call with the same element.
+  const buttonEls: HTMLButtonElement[] = [];
+  const containerEl = createMockContainerEl();
+  containerEl.createEl.mockImplementation((tagName: string) => {
+    if (tagName === 'button') {
+      const buttonEl = createEl('button');
+      buttonEls.push(buttonEl);
+      return buttonEl;
+    }
+
+    return {
+      addEventListener: vi.fn(),
+      setCssStyles: vi.fn(),
+      srcdoc: ''
+    };
+  });
+
+  const mockParsedDoc = {
+    documentElement: { outerHTML: '<html></html>' },
+    head: { createEl: vi.fn().mockReturnValue({}) },
+    querySelector: vi.fn().mockReturnValue({ href: '' }),
+    querySelectorAll: vi.fn().mockReturnValue([])
+  };
+
+  window.DOMParser = castTo<typeof DOMParser>(
+    class MockDOMParser {
+      public parseFromString(): unknown {
+        return mockParsedDoc;
+      }
+    }
+  );
+
+  vi.stubGlobal('location', { origin: 'app://obsidian.md' });
+
+  const component = new HtmlEmbedComponent({
+    app,
+    containerEl: asContainerEl(containerEl),
+    file: createMockFile('Doc.html'),
+    pluginSettingsComponent,
+    subpath: ''
+  });
+  component.load();
+  await component.loadFileAsync();
+
+  return {
+    buttonEls,
+    containerEl
+  };
+}
 
 /*
  * Obsidian's page CSP follows the embed into its `srcdoc` iframe and blocks every external stylesheet, so

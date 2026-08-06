@@ -65,6 +65,7 @@ describe('PluginSettingsTab', () => {
     expect(names).toContain('Border radius');
     expect(names).toContain('Background');
     expect(names).toContain('Open in new tab');
+    expect(names).toContain('Show "Open in external browser" button (Desktop only)');
   });
 
   it('should bind every setting via its value component callback', () => {
@@ -83,6 +84,7 @@ describe('PluginSettingsTab', () => {
     expect(boundKeys).toContain('borderRadius');
     expect(boundKeys).toContain('background');
     expect(boundKeys).toContain('shouldOpenInNewTab');
+    expect(boundKeys).toContain('shouldShowOpenInExternalBrowserButton');
   });
 });
 
@@ -149,7 +151,7 @@ function emptyStringRecord(): EmptyStringRecord {
     defaultMinWidth: '',
     defaultWidth: '',
     shouldOpenInNewTab: '',
-    shouldOpenInSystemBrowser: ''
+    shouldShowOpenInExternalBrowserButton: ''
   };
 }
 
