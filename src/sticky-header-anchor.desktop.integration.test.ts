@@ -18,7 +18,10 @@ describe('anchor jump under a sticky table header', () => {
         }
 
         const TIMEOUT_IN_MILLISECONDS = 20_000;
-        const ROW_COUNT = 50;
+        // Far more rows than the target's position, so the scroll that lands it at the top is nowhere
+        // Near the end of the document. A target close to the bottom cannot reproduce this at all: the
+        // Browser clamps the scroll at the last screenful, leaving the row well below the pinned header.
+        const ROW_COUNT = 400;
         const TARGET_ROW = 42;
         const HEADER_HEIGHT_IN_PIXELS = 40;
         // Sub-pixel layout rounding, not a fudge for a partially covered row: a whole row is ~34px tall.
@@ -73,32 +76,43 @@ describe('anchor jump under a sticky table header', () => {
         };
 
         function measure(): Measurement | null {
-          const iframe = leaf.view.containerEl.querySelector<HTMLIFrameElement>(':scope .internal-embed iframe');
-          const doc = iframe?.contentDocument;
+          // Reading view renders the section more than once and only one copy is laid out, so take the
+          // Iframe that actually has a box rather than the first in document order — the other reports
+          // Zero-size rects for everything inside it and there is nothing to measure there.
+          const iframes = [...leaf.view.containerEl.querySelectorAll<HTMLIFrameElement>(':scope .internal-embed iframe')];
+          for (const iframe of iframes) {
+            if (iframe.getBoundingClientRect().height === 0) {
+              continue;
+            }
 
-          if (!doc?.body) {
-            return null;
+            const doc = iframe.contentDocument;
+
+            if (!doc?.body) {
+              continue;
+            }
+
+            // eslint-disable-next-line unicorn/prefer-query-selector -- Matches how the plugin resolves the anchor target.
+            const rowEl = doc.getElementById(targetId);
+            const headerEl = doc.querySelector(':scope thead th');
+            if (!rowEl || !headerEl) {
+              continue;
+            }
+
+            const rowRect = rowEl.getBoundingClientRect();
+            const headerRect = headerEl.getBoundingClientRect();
+            // The table is not laid out yet, so there is no pinned header to measure against.
+            if (rowRect.height === 0 || headerRect.height === 0) {
+              continue;
+            }
+
+            return {
+              headerBottom: headerRect.bottom,
+              rowTop: rowRect.top,
+              viewportHeight: doc.documentElement.clientHeight
+            };
           }
 
-          // eslint-disable-next-line unicorn/prefer-query-selector -- Matches how the plugin resolves the anchor target.
-          const rowEl = doc.getElementById(targetId);
-          const headerEl = doc.querySelector(':scope thead th');
-          if (!rowEl || !headerEl) {
-            return null;
-          }
-
-          const rowRect = rowEl.getBoundingClientRect();
-          const headerRect = headerEl.getBoundingClientRect();
-          // Nothing has been scrolled yet while the row still sits far down the document.
-          if (rowRect.height === 0 || headerRect.height === 0) {
-            return null;
-          }
-
-          return {
-            headerBottom: headerRect.bottom,
-            rowTop: rowRect.top,
-            viewportHeight: doc.documentElement.clientHeight
-          };
+          return null;
         }
 
         async function deleteIfExists(path: string): Promise<void> {
