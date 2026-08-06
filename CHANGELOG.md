@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2.5.1
+
+- chore: update libs
+- feat: re #14
+- chore: update libs
+- docs: point at the collapsed cross-platform test file names
+- chore(vitest): consume the shared vitest configuration and collapse the shared suites
+
 ## 2.5.0
 
 - refactor(settings): move the settings tab onto the declarative settings API
