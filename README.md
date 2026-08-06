@@ -107,6 +107,23 @@ The link is labelled with the file name, plus the fragment when the embed names 
 
 The setting is off by default. It is **desktop only**: opening a file in a browser needs the file's location on disk, which only the desktop app has, so on mobile embeds keep rendering in the note.
 
+#### Per-embed override
+
+A vault rarely wants *every* embed to open externally. A single embed can override the setting either way with an `open-in-default-browser` flag in the embed token:
+
+````markdown
+![[HugeReference.html#section-3|open-in-default-browser: true]]
+![[Small.html|open-in-default-browser: false]]
+````
+
+The flag accepts `true`/`yes`/`on`/`1` and `false`/`no`/`off`/`0`, and combines with the sizing declarations in the same token:
+
+````markdown
+![[MyDocument.html|width: 600px; open-in-default-browser: true]]
+````
+
+An embed that does not name the flag follows the global setting, so turning the setting on or off still changes every embed that has not opted out.
+
 ### Color scheme
 
 The embedded HTML follows Obsidian's base color scheme (`Settings → Appearance → Base color scheme`), independent of your operating system's theme. The active scheme is propagated into the embed, so `prefers-color-scheme` media queries in your HTML resolve to Obsidian's `Dark`/`Light` setting (and to the OS when set to `Adapt to system`). Switching the base color scheme updates already-rendered embeds live.

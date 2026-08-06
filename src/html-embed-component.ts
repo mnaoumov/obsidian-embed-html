@@ -12,6 +12,7 @@ import { trimStart } from 'obsidian-dev-utils/string';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 import type { ContentKeyword } from './size-spec.ts';
 
+import { parseEmbedToken } from './embed-options.ts';
 import { buildFileUrl } from './file-url.ts';
 import {
   getContentKeyword,
@@ -122,7 +123,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     // `getAbsolutePath()` is null when the vault has no filesystem behind it (mobile), and then there is
     // Nothing to hand to a browser — so the embed falls through to the iframe and the setting is inert
     // Rather than broken.
-    const absolutePath = this.pluginSettingsComponent.settings.shouldOpenInSystemBrowser ? this.getAbsolutePath() : null;
+    const absolutePath = this.resolveShouldOpenInSystemBrowser() ? this.getAbsolutePath() : null;
     if (absolutePath !== null) {
       this.renderOpenInSystemBrowserLink(absolutePath);
       return;
@@ -445,9 +446,23 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     };
   }
 
+  /**
+   * Resolves whether THIS embed opens in the default browser.
+   *
+   * The global setting is the default and a token flag overrides it, so a vault can send the two 15 MB
+   * reference documents to a browser while everything else keeps rendering in the note (issue #14).
+   *
+   * @returns Whether this embed should open in the default browser.
+   */
+  private resolveShouldOpenInSystemBrowser(): boolean {
+    const { options } = parseEmbedToken(this.getSizeToken());
+    return options.shouldOpenInSystemBrowser ?? this.pluginSettingsComponent.settings.shouldOpenInSystemBrowser;
+  }
+
   private resolveSize(): ResolvedSize {
     const settings = this.pluginSettingsComponent.settings;
-    const spec = parseSizeSpec(this.getSizeToken());
+    const { sizeToken } = parseEmbedToken(this.getSizeToken());
+    const spec = parseSizeSpec(sizeToken);
     const widthAttr = this.containerEl.getAttr(WIDTH_ATTRIBUTE);
     const heightAttr = this.containerEl.getAttr(HEIGHT_ATTRIBUTE);
 

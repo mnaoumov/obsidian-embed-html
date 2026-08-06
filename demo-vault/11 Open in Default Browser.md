@@ -35,6 +35,38 @@ await require('/demoSetup.ts').editSettings(app, (settings) => {
 });
 ```
 
+## Per-embed override
+
+A vault rarely wants *every* embed to open externally — the natural shape is "externally for the two 15 MB
+reference documents, in the note for everything else". Any single embed can override the setting either way
+with an `open-in-default-browser` flag in the embed token.
+
+The embed below always opens in the note, whatever the setting says:
+
+```md
+![[sections.html#alpha|open-in-default-browser: false]]
+```
+
+![[sections.html#alpha|open-in-default-browser: false]]
+
+And this one always opens in the browser:
+
+```md
+![[sections.html#beta|open-in-default-browser: true]]
+```
+
+![[sections.html#beta|open-in-default-browser: true]]
+
+The flag accepts `true`/`yes`/`on`/`1` and `false`/`no`/`off`/`0`, and shares the token with the sizing
+declarations from [[02 Custom Size]]:
+
+```md
+![[sections.html|width: 600px; open-in-default-browser: true]]
+```
+
+An embed that does not name the flag follows the setting, so the buttons above still move every embed that
+has not opted out.
+
 ## What the link shows
 
 The link is labelled with the file name, plus the fragment when the embed names one — so a note that embeds
