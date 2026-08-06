@@ -76,6 +76,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   private iframeEl: HTMLIFrameElement | null = null;
   private lastAppliedHeight: null | string = null;
   private lastAppliedWidth: null | string = null;
+  private lastResolvedShouldOpenInSystemBrowser: boolean | null = null;
   private readonly pluginSettingsComponent: PluginSettingsComponent;
   private resizeObserver: null | ResizeObserver = null;
   private subpath: string;
@@ -91,6 +92,13 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     this.pluginSettingsComponent = params.pluginSettingsComponent;
 
     const mo = new MutationObserver(() => {
+      // Obsidian can set `alt` AFTER calling `loadFile`, so the first render may have decided the output
+      // Mode before the token carrying `open-in-default-browser` existed. Re-render when that decision
+      // Would now come out differently; a size-only change still just re-applies the size.
+      if (this.lastResolvedShouldOpenInSystemBrowser !== null && this.lastResolvedShouldOpenInSystemBrowser !== this.resolveShouldOpenInSystemBrowser()) {
+        this.loadFile();
+        return;
+      }
       this.applySize();
     });
     mo.observe(this.containerEl, {
@@ -124,7 +132,9 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     // `getAbsolutePath()` is null when the vault has no filesystem behind it (mobile), and then there is
     // Nothing to hand to a browser — so the embed falls through to the iframe and the setting is inert
     // Rather than broken.
-    const absolutePath = this.resolveShouldOpenInSystemBrowser() ? this.getAbsolutePath() : null;
+    const shouldOpenInSystemBrowser = this.resolveShouldOpenInSystemBrowser();
+    this.lastResolvedShouldOpenInSystemBrowser = shouldOpenInSystemBrowser;
+    const absolutePath = shouldOpenInSystemBrowser ? this.getAbsolutePath() : null;
     if (absolutePath !== null) {
       this.renderOpenInSystemBrowserLink(absolutePath);
       return;

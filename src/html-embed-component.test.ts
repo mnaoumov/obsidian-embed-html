@@ -4,6 +4,7 @@ import type {
   TFile
 } from 'obsidian';
 
+import { waitForAllAsyncOperations } from 'obsidian-dev-utils/async';
 import { noop } from 'obsidian-dev-utils/function';
 import { castTo } from 'obsidian-dev-utils/object-utils';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
@@ -1180,6 +1181,57 @@ describe('HtmlEmbedComponent', () => {
           text: expect.stringContaining('display:none !important')
         })
       );
+    });
+  });
+
+  describe('output mode changed by a late alt token', () => {
+    it('should re-render when the token starts asking for the other output mode', async () => {
+      let altValue: null | string = null;
+
+      const containerEl = createMockContainerEl();
+      containerEl.getAttr.mockImplementation((attribute: string) => attribute === 'alt' ? altValue : null);
+      containerEl.createEl.mockReturnValue({
+        addEventListener: vi.fn(),
+        setCssStyles: vi.fn(),
+        srcdoc: ''
+      });
+
+      const mockParsedDoc = {
+        documentElement: { outerHTML: '<html></html>' },
+        head: { createEl: vi.fn().mockReturnValue({}) },
+        querySelector: vi.fn().mockReturnValue({ href: '' })
+      };
+      window.DOMParser = castTo<typeof DOMParser>(
+        class MockDOMParser {
+          public parseFromString(): unknown {
+            return mockParsedDoc;
+          }
+        }
+      );
+      vi.stubGlobal('location', { origin: 'app://obsidian.md' });
+
+      const component = new HtmlEmbedComponent({
+        app: createMockApp(),
+        containerEl: asContainerEl(containerEl),
+        file: createMockFile(),
+        pluginSettingsComponent: createMockPluginSettingsComponent(),
+        subpath: ''
+      });
+
+      // Obsidian can set `alt` only after the first render, so that render decided the output mode
+      // Without ever seeing the flag.
+      await component.loadFileAsync();
+      expect(containerEl.empty).toHaveBeenCalledOnce();
+
+      // A size-only change re-applies the size and does not re-render.
+      mockMutationObserverCallback([], {} as MutationObserver);
+      expect(containerEl.empty).toHaveBeenCalledOnce();
+
+      altValue = 'open-in-default-browser: true';
+      mockMutationObserverCallback([], {} as MutationObserver);
+      await waitForAllAsyncOperations();
+
+      expect(containerEl.empty).toHaveBeenCalledTimes(2);
     });
   });
 
