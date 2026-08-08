@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2.5.4
+
+- chore: update libs and adopt obsidian-integration-testing 10
+
 ## 2.5.3
 
 - chore: find underexposed
