@@ -1,7 +1,7 @@
 import type { MarkdownView } from 'obsidian';
 
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   beforeAll,
   describe,
@@ -21,7 +21,7 @@ import {
  * too), but because Obsidian exposes no way to hand a local file to a browser on mobile.
  */
 
-const vault = getTempVault();
+const vault = getTemporaryVault();
 
 const NOTE_PATH = 'external-browser-note.md';
 const HTML_PATH = 'external-browser-doc.html';
@@ -38,10 +38,7 @@ beforeAll(() => {
 describe('open in external browser button', () => {
   it('should render the button next to the embed and hand the file URL to the system browser', async () => {
     const result = await evalInObsidian({
-      // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
-      args: { BUTTON_TEXT, NOTE_PATH },
-      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-      async fn({ app, BUTTON_TEXT: buttonText, lib: { waitUntil }, NOTE_PATH: notePath }) {
+      async callback({ app, BUTTON_TEXT: buttonText, lib: { waitUntil }, NOTE_PATH: notePath }) {
         interface EmbedHtmlSettings {
           shouldShowOpenInExternalBrowserButton: boolean;
         }
@@ -174,6 +171,7 @@ describe('open in external browser button', () => {
           });
         }
       },
+      input: { BUTTON_TEXT, NOTE_PATH },
       vaultPath: vault.path
     });
 

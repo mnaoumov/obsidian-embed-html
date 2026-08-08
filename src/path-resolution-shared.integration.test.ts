@@ -1,5 +1,5 @@
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   describe,
   expect,
@@ -34,8 +34,7 @@ export function registerPathResolutionSuite(platform: string): void {
   describe(`embed by relative and full vault path (${platform})`, () => {
     it('should render an HTML embed from another folder by BOTH a relative path and a full vault path', async () => {
       const result = await evalInObsidian({
-        // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-        fn: async ({ app, lib: { waitUntil } }) => {
+        callback: async ({ app, lib: { waitUntil } }) => {
           const TIMEOUT_IN_MILLISECONDS = 20_000;
           const MARKER = 'PATH_RESOLUTION_PROBE';
           const baseDirectory = 'embed-html-path-probe';
@@ -119,7 +118,7 @@ export function registerPathResolutionSuite(platform: string): void {
             }
           }
         },
-        vaultPath: getTempVault().path
+        vaultPath: getTemporaryVault().path
       });
 
       expect(result.timedOut).toBe(false);

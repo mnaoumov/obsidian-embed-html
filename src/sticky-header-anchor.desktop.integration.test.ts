@@ -1,5 +1,5 @@
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   describe,
   expect,
@@ -9,8 +9,7 @@ import {
 describe('anchor jump under a sticky table header', () => {
   it('should land the target row below the sticky header rather than underneath it', async () => {
     const result = await evalInObsidian({
-      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-      fn: async ({ app, lib: { waitUntil } }) => {
+      callback: async ({ app, lib: { waitUntil } }) => {
         interface Measurement {
           headerBottom: number;
           rowTop: number;
@@ -122,7 +121,7 @@ describe('anchor jump under a sticky table header', () => {
           }
         }
       },
-      vaultPath: getTempVault().path
+      vaultPath: getTemporaryVault().path
     });
 
     const { measurement, toleranceInPixels } = result;

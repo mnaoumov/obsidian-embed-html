@@ -1,5 +1,5 @@
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   describe,
   expect,
@@ -9,8 +9,7 @@ import {
 describe('open-in-new-tab (desktop)', () => {
   it('should open a second html file in a new tab only when the setting is enabled', async () => {
     const result = await evalInObsidian({
-      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-      fn: async ({ app, lib: { waitUntil } }) => {
+      callback: async ({ app, lib: { waitUntil } }) => {
         const SAVE_DELAY_IN_MILLISECONDS = 800;
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         const PLUGIN_ID = 'embed-html';
@@ -94,7 +93,7 @@ describe('open-in-new-tab (desktop)', () => {
           }
         }
       },
-      vaultPath: getTempVault().path
+      vaultPath: getTemporaryVault().path
     });
 
     expect(result.enabledLeafCount).toBe(2);

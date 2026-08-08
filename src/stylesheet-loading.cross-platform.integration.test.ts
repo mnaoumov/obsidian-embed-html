@@ -1,5 +1,5 @@
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   describe,
   expect,
@@ -23,8 +23,7 @@ const MAGENTA = 'rgb(255, 0, 255)';
 describe('stylesheet loading', () => {
   it('should apply linked, imported and runtime-injected stylesheets, resolving their relative urls', async () => {
     const result = await evalInObsidian({
-      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-      fn: async ({ app, lib: { waitUntil } }) => {
+      callback: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         const directory = 'embed-html-stylesheet-probe';
         const stylesDirectory = `${directory}/styles`;
@@ -156,7 +155,7 @@ body { background-image: url("bg.svg"); }
           }
         }
       },
-      vaultPath: getTempVault().path
+      vaultPath: getTemporaryVault().path
     });
 
     expect(result.linkedColor).toBe(RED);

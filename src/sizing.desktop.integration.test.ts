@@ -1,5 +1,5 @@
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   describe,
   expect,
@@ -9,8 +9,7 @@ import {
 describe('sizing token', () => {
   it('should route the token into the embed alt and auto-fit the height to the content', async () => {
     const result = await evalInObsidian({
-      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-      fn: async ({ app, lib: { waitUntil } }) => {
+      callback: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 15_000;
         const TALL_CONTENT_HEIGHT_IN_PIXELS = 1234;
         const AUTO_FIT_HEIGHT_THRESHOLD_IN_PIXELS = 1000;
@@ -83,7 +82,7 @@ describe('sizing token', () => {
           }
         }
       },
-      vaultPath: getTempVault().path
+      vaultPath: getTemporaryVault().path
     });
 
     expect(result.alt).toBe(result.token);

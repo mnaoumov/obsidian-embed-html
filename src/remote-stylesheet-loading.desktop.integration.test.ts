@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   describe,
   expect,
@@ -41,10 +41,7 @@ describe('remote stylesheet loading', () => {
       expect(port).toBeGreaterThan(0);
 
       const result = await evalInObsidian({
-        // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
-        args: { cssUrl: `http://${LOOPBACK_HOST}:${String(port)}/remote.css` },
-        // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-        fn: async ({ app, cssUrl, lib: { waitUntil } }) => {
+        callback: async ({ app, cssUrl, lib: { waitUntil } }) => {
           const TIMEOUT_IN_MILLISECONDS = 15_000;
           const directory = 'embed-html-remote-stylesheet-probe';
           const htmlPath = `${directory}/page.html`;
@@ -104,7 +101,8 @@ describe('remote stylesheet loading', () => {
             }
           }
         },
-        vaultPath: getTempVault().path
+        input: { cssUrl: `http://${LOOPBACK_HOST}:${String(port)}/remote.css` },
+        vaultPath: getTemporaryVault().path
       });
 
       expect(result.color).toBe(RED);

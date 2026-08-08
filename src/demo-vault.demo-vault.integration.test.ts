@@ -8,7 +8,7 @@ import { join } from 'node:path';
 import process from 'node:process';
 import { getRootFolder } from 'obsidian-dev-utils/script-utils/root';
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   afterAll,
   beforeAll,
@@ -146,10 +146,7 @@ const NOTES = listSelfContainedNotes();
 // Under the 30s CDP cap and starts from a settled view.
 async function clickButton(noteName: string, index: number): Promise<ButtonResult> {
   return evalInObsidian({
-    // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
-    args: { buttonRenderTimeoutMs: BUTTON_RENDER_TIMEOUT_MS, buttonResultTimeoutMs: BUTTON_RESULT_TIMEOUT_MS, index, intervalMs: POLL_INTERVAL_MS, notePath: noteName },
-    // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-    async fn({ app, buttonRenderTimeoutMs, buttonResultTimeoutMs, index: buttonIndex, intervalMs, lib: { waitUntil }, obsidianModule }): Promise<ButtonResult> {
+    async callback({ app, buttonRenderTimeoutMs, buttonResultTimeoutMs, index: buttonIndex, intervalMs, lib: { waitUntil }, obsidianModule }): Promise<ButtonResult> {
       function view(): InstanceType<typeof obsidianModule.MarkdownView> | null {
         return app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
       }
@@ -209,7 +206,8 @@ async function clickButton(noteName: string, index: number): Promise<ButtonResul
 
       return { caption, output: (block?.textContent ?? '').slice(0, 400), status };
     },
-    vaultPath: getTempVault().path
+    input: { buttonRenderTimeoutMs: BUTTON_RENDER_TIMEOUT_MS, buttonResultTimeoutMs: BUTTON_RESULT_TIMEOUT_MS, index, intervalMs: POLL_INTERVAL_MS, notePath: noteName },
+    vaultPath: getTemporaryVault().path
   });
 }
 
@@ -219,10 +217,7 @@ async function clickButton(noteName: string, index: number): Promise<ButtonResul
 // Before any note opens, so the buttons render. In real use demo-vault-helper does this on launch.
 async function enableCodeScriptToolkit(): Promise<CstEnableResult> {
   return evalInObsidian({
-    // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
-    args: { intervalMs: POLL_INTERVAL_MS, timeoutMs: SETTLE_TIMEOUT_MS },
-    // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-    async fn({ app, intervalMs, lib: { waitUntil }, timeoutMs }): Promise<CstEnableResult> {
+    async callback({ app, intervalMs, lib: { waitUntil }, timeoutMs }): Promise<CstEnableResult> {
       if (typeof app.plugins.isEnabled === 'function' && !app.plugins.isEnabled()) {
         await app.plugins.setEnable(true);
       }
@@ -241,7 +236,8 @@ async function enableCodeScriptToolkit(): Promise<CstEnableResult> {
       }
       return { cstLoaded: app.plugins.getPlugin('fix-require-modules') !== null, loadedPlugins: Object.keys(app.plugins.plugins) };
     },
-    vaultPath: getTempVault().path
+    input: { intervalMs: POLL_INTERVAL_MS, timeoutMs: SETTLE_TIMEOUT_MS },
+    vaultPath: getTemporaryVault().path
   });
 }
 
@@ -251,10 +247,7 @@ async function enableCodeScriptToolkit(): Promise<CstEnableResult> {
 // Mounted — and the walk never resets to the top (that would unmount the buttons at the note's end).
 async function openAndSettle(noteName: string, expectedButtons: number, expectedEmbeds: number, expectedSizeKeys: string[]): Promise<SettleResult> {
   return evalInObsidian({
-    // eslint-disable-next-line unicorn/name-replacements -- `args` is an `obsidian-integration-testing` parameter name.
-    args: { expectedButtons, expectedEmbeds, expectedSizeKeys, intervalMs: POLL_INTERVAL_MS, notePath: noteName, settleTimeoutMs: SETTLE_TIMEOUT_MS },
-    // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-    async fn({ app, expectedButtons: wantButtons, expectedEmbeds: wantEmbeds, expectedSizeKeys: wantSizeKeys, intervalMs, lib: { waitUntil }, notePath, obsidianModule, settleTimeoutMs }): Promise<SettleResult> {
+    async callback({ app, expectedButtons: wantButtons, expectedEmbeds: wantEmbeds, expectedSizeKeys: wantSizeKeys, intervalMs, lib: { waitUntil }, notePath, obsidianModule, settleTimeoutMs }): Promise<SettleResult> {
       function view(): InstanceType<typeof obsidianModule.MarkdownView> | null {
         return app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
       }
@@ -400,7 +393,8 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
         unresolvedEmbedCount: maxUnresolved
       };
     },
-    vaultPath: getTempVault().path
+    input: { expectedButtons, expectedEmbeds, expectedSizeKeys, intervalMs: POLL_INTERVAL_MS, notePath: noteName, settleTimeoutMs: SETTLE_TIMEOUT_MS },
+    vaultPath: getTemporaryVault().path
   });
 }
 

@@ -1,5 +1,5 @@
 import { evalInObsidian } from 'obsidian-integration-testing';
-import { getTempVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
+import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
   describe,
   expect,
@@ -40,8 +40,7 @@ interface RgbChannels {
 describe('embed appearance settings', () => {
   it('should apply the border, border-radius and background settings to the embed container', async () => {
     const result = await evalInObsidian({
-      // eslint-disable-next-line unicorn/name-replacements -- `fn` is an `obsidian-integration-testing` parameter name.
-      fn: async ({ app, lib: { waitUntil } }) => {
+      callback: async ({ app, lib: { waitUntil } }) => {
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         const BORDER = '2px solid rgb(255, 0, 0)';
         const EXPECTED_BORDER_STYLE = 'solid';
@@ -135,7 +134,7 @@ describe('embed appearance settings', () => {
           }
         }
       },
-      vaultPath: getTempVault().path
+      vaultPath: getTemporaryVault().path
     });
 
     // Exact, serialization-stable properties: width/style/radius/overflow never go through color
