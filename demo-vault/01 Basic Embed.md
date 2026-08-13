@@ -11,6 +11,8 @@ Use Obsidian's standard embed syntax to embed an HTML file:
 <!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[basic.html]]
 
+![An HTML file embedded in a note, rendered inline](<./_assets/images/screenshot.png>)
+
 ## Markdown embed syntax
 
 The Markdown spelling embeds the same file, and everything below works with it too:

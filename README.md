@@ -3,157 +3,54 @@
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/mnaoumov)
 [![GitHub release](https://img.shields.io/github/v/release/mnaoumov/obsidian-embed-html)](https://github.com/mnaoumov/obsidian-embed-html/releases)
 [![GitHub downloads](https://img.shields.io/github/downloads/mnaoumov/obsidian-embed-html/total)](https://github.com/mnaoumov/obsidian-embed-html/releases)
-[![Coverage: 100%](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mnaoumov/obsidian-email-to-vault)
+[![Coverage: 100%](https://img.shields.io/badge/coverage-100%25-brightgreen)](https://github.com/mnaoumov/obsidian-embed-html)
 
-This is a plugin for [Obsidian](https://obsidian.md/) that adds support for embedding HTML files.
+[Obsidian](https://obsidian.md/) embeds notes, images and PDFs, but an `.html` file in your vault is
+just a file you can open — you cannot show it inside a note. So a report, a chart exported from another
+tool, or a page you built yourself has to live outside your notes, or be flattened into a screenshot.
 
-![Screenshot](<./images/screenshot.png>)
+This plugin embeds HTML files directly in a note, with the same `![[file.html]]` syntax you already use,
+sized how you want, styled to match your theme, and able to run its own JavaScript.
 
-## Usage
+## Demo vault
 
-A demo vault with usage examples ships with every release. You can access it via any of the following:
+**The documentation is an interactive demo vault.** Every feature has a note that explains what it does
+and why you would want it, with real HTML files already in place to embed.
+
+**[Start reading here](<./demo-vault/00 Start.md>)** — it is plain markdown, so it works on GitHub with
+nothing installed.
+
+A copy of the vault ships with every release. You can access it via any of the following:
 
 1. Running the **Embed HTML: Open demo vault** command.
 2. Downloading `embed-html-demo-vault-<version>.zip` (`<version>` is the release version) from the [Releases](https://github.com/mnaoumov/obsidian-embed-html/releases).
 3. Browsing its source in [`demo-vault/`](./demo-vault/README.md) in this repository.
 
-### Supported extensions
+## What it does
 
-You can embed HTML pages from files with following extension:
-
-- `htm`
-- `html`
-- `shtml`
-- `xht`
-- `xhtml`
-
-### Embed HTML with default width, height from plugin settings
-
-```markdown
-![[file.html]]
-```
-
-### Embed HTML with custom width
-
-```markdown
-![[file.html|400]]
-```
-
-### Embed HTML with custom width and height
-
-```markdown
-![[file.html|400x300]]
-```
-
-### Embed HTML with custom height only
-
-```markdown
-![[file.html|x300]]
-```
-
-### Auto-fit the embed to its content
-
-Use the `-` marker (shorthand for the CSS `fit-content` keyword) to size a dimension to the embedded content instead of a fixed value — no inner scrollbar when the content overflows, and no empty gap when it is shorter:
-
-```markdown
-![[file.html|-]]        # default width, height fits the content
-![[file.html|600x-]]    # width 600px, height fits the content
-![[file.html|-x400]]    # width fits the content, height 400px
-![[file.html|-x-]]      # both fit the content
-```
-
-The embed updates reactively as the content's size changes (e.g. images finishing loading, expandable sections).
-
-### Full sizing control (CSS declarations)
-
-For finer control — including min/max clamps — pass a list of CSS declarations. Any of `width`, `height`, `min-width`, `max-width`, `min-height`, `max-height` are accepted, with any CSS length/percentage or a content keyword (`max-content`, `min-content`, `fit-content`):
-
-```markdown
-![[file.html|height: max-content; min-height: 200px; max-height: 800px]]
-![[file.html|width: 50%; min-width: 300px]]
-```
-
-Unknown properties and invalid values are ignored, falling back to the defaults from the plugin settings.
-
-### Default sizing settings
-
-The plugin settings provide global defaults for all six properties (`Default width`, `Default height`, `Default min/max width`, `Default min/max height`), grouped by axis. `Default width` and `Default height` also accept a content keyword to make auto-fit the default. Any per-embed token overrides these defaults.
-
-### Border and background
-
-The plugin settings provide global appearance defaults applied to every embed box, under `Settings → Embed HTML → Appearance`:
-
-- `Border` — any CSS `border` shorthand (e.g. `1px solid var(--background-modifier-border)`). Empty for none.
-- `Border radius` — any CSS `border-radius` value (e.g. `8px`); a bare number is treated as pixels. When set, the embed's corners are rounded and its content is clipped to the rounded box. Empty for square corners.
-- `Background` — any CSS `background` value (e.g. `var(--background-primary)`), painted behind the HTML content. Empty for none.
-
-### Open in new tab
-
-Enable `Settings → Embed HTML → Behavior → Open in new tab` to make opening an HTML file put it in a new tab instead of replacing the content of the current one, without holding a modifier key. When enabled, the first HTML file still reuses an empty tab (so you do not get a blank leftover tab); each subsequent HTML file opens in its own tab. The setting is off by default, preserving Obsidian's standard behavior.
-
-### Open in external browser
-
-Every embed carries an `Open in external browser` button, which hands the file to your system's default browser — useful for a document you would rather read with the tabs, zoom, find and print a real browser brings. The embed itself still renders in the note; the button is an addition, not a replacement.
-
-Turn it off under `Settings → Embed HTML → Behavior → Show "Open in external browser" button (Desktop only)`. The setting is on by default.
-
-> [!WARNING]
->
-> **Scroll-to-element and extract-element do not apply in the browser.** The button hands over the file and nothing else, so the embed's `#id` subpath is left behind:
->
-> ````markdown
-> ![[MyDocument.html#section-3]]
-> ![[MyDocument.html#section-3&mode=extract]]
-> ````
->
-> Both still scroll and extract *in the note*, but the browser opens the whole document from the top. Those two modes are work the plugin does on the embedded document itself — a browser only ever receives the plain file.
-
-It is **desktop only**: Obsidian exposes no way to hand a local file to a browser on mobile, so the button is never rendered there and the setting is inert rather than broken.
-
-### Stylesheets, scripts, images and fonts
-
-An embedded document keeps working with the files next to it. Relative paths resolve against the **HTML file's own location**, so a document that opens correctly in a browser renders the same way in a note:
-
-```html
-<html>
-  <head>
-    <link rel="stylesheet" href="styles/main.css" />
-    <script src="scripts/app.js"></script>
-  </head>
-  <body>
-    <img src="images/diagram.svg" />
-  </body>
-</html>
-```
-
-Stylesheets get special treatment. Obsidian's Content-Security-Policy reaches into the embed and blocks every *external* stylesheet — a `<link rel="stylesheet">` is fetched and then silently ignored, leaving the document unstyled. The plugin therefore reads each stylesheet and inlines it as a `<style>` element, which the policy does allow. This covers:
-
-- stylesheets in the vault, wherever they sit relative to the HTML file;
-- stylesheets on the web (`https://…`), read through Obsidian's own request API so they are not blocked by CORS;
-- `@import`ed stylesheets, followed recursively;
-- stylesheets a script in the document adds while it runs.
-
-Relative `url()` targets inside a stylesheet — background images, `@font-face` sources — keep resolving against **that stylesheet's** location, not the note's or the HTML file's, so fonts and images referenced from CSS in a subfolder still load. Scripts, images, fonts and media are not restricted by the policy and load on their own.
-
-### Color scheme
-
-The embedded HTML follows Obsidian's base color scheme (`Settings → Appearance → Base color scheme`), independent of your operating system's theme. The active scheme is propagated into the embed, so `prefers-color-scheme` media queries in your HTML resolve to Obsidian's `Dark`/`Light` setting (and to the OS when set to `Adapt to system`). Switching the base color scheme updates already-rendered embeds live.
-
-### Embed HTML and scroll to the element with id
-
-```markdown
-![[file.html#foo]]
-
-or
-
-![[file.html#foo&mode=scroll]]
-```
-
-### Embed HTML and extract element with id
-
-```markdown
-![[file.html#foo&mode=extract]]
-```
+- **Embed an HTML file in a note**, with `htm`, `html`, `shtml`, `xht` and `xhtml` all supported.
+  [01 Basic Embed](<./demo-vault/01 Basic Embed.md>) ·
+  [07 File Extensions](<./demo-vault/07 File Extensions.md>)
+- **Size it** — a width, a height, both, auto-fit to the content, or full control with CSS
+  declarations, with defaults in the settings.
+  [02 Custom Size](<./demo-vault/02 Custom Size.md>)
+- **Show only part of a page** — scroll to an element by id, or extract just that element.
+  [03 Scroll to Element](<./demo-vault/03 Scroll to Element.md>) ·
+  [04 Extract Element](<./demo-vault/04 Extract Element.md>)
+- **It stays a real page** — its JavaScript runs, its links work, and its stylesheets, scripts, images
+  and fonts load.
+  [05 JavaScript](<./demo-vault/05 JavaScript.md>) ·
+  [06 Links](<./demo-vault/06 Links.md>) ·
+  [13 External Stylesheets and Assets](<./demo-vault/13 External Stylesheets and Assets.md>)
+- **It fits your vault** — follows your theme's color scheme, takes a border and background, and can
+  open in its own tab or in your external browser.
+  [09 Appearance](<./demo-vault/09 Appearance.md>) ·
+  [08 Direct View](<./demo-vault/08 Direct View.md>) ·
+  [11 Open in External Browser](<./demo-vault/11 Open in External Browser.md>)
+- **Paths work how you expect** — relative to the note or from the vault root.
+  [10 Relative and Full Path](<./demo-vault/10 Relative and Full Path.md>)
+- **Table headers stay put** while you scroll a long table.
+  [12 Sticky Table Headers](<./demo-vault/12 Sticky Table Headers.md>)
 
 ## Installation
 
@@ -178,6 +75,14 @@ window.DEBUG.enable('embed-html');
 ```
 
 For more details, refer to the [documentation](https://mnaoumov.dev/obsidian-dev-utils/guides/debugging/).
+
+## Changelog
+
+All notable changes to this project will be documented in the [CHANGELOG](./CHANGELOG.md).
+
+## Contributing
+
+Contributions are welcome — see [CONTRIBUTING](./CONTRIBUTING.md) to get set up.
 
 ## Support
 

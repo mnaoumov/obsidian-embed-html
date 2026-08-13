@@ -9,9 +9,11 @@ This is an [Obsidian](https://obsidian.md/) vault demonstrating features of the 
 
 When plugins prompt on first open, enable them using one of these methods:
 
-- **Trust author** - to enable plugins immediately.
+- **Trust author**
+  - to enable plugins immediately.
     ![Trust author dialog](./_assets/attachments/trust-author.png)
-- **Enable manually** - turn on Community plugins.
+- **Enable manually**
+  - turn on Community plugins.
     ![Turn on Community plugins](./_assets/attachments/turn-on.png)
 
 Then open [00 Start](<./00 Start.md>).
