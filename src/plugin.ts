@@ -1,3 +1,4 @@
+import { castTo } from 'obsidian-dev-utils/object-utils';
 import { OpenDemoVaultCommandHandler } from 'obsidian-dev-utils/obsidian/command-handlers/open-demo-vault-command-handler';
 import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
 import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
@@ -5,7 +6,6 @@ import { PluginExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extension
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
 import { PluginEventSourceImpl } from 'obsidian-dev-utils/obsidian/plugin/plugin-event-source';
 import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
-import { ensureNonNullable } from 'obsidian-dev-utils/type-guards';
 
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
 import { HtmlExtensions } from './html-extensions.ts';
@@ -17,13 +17,25 @@ import { PluginSettingsTab } from './plugin-settings-tab.ts';
 export class Plugin extends PluginBase {
   /**
    * The plugin's settings component — the public-facing API for reading and editing settings
-   * programmatically (e.g. `settingsComponent.settings`, `settingsComponent.editAndSave(...)`).
+   * programmatically (e.g. `pluginSettingsComponent.settings`, `pluginSettingsComponent.editAndSave(...)`).
+   *
+   * `PluginBase` owns the storage as a `protected` accessor; this override widens it back to `public` and
+   * narrows the type to this plugin's own component, which is what those external callers need.
+   *
+   * @returns The settings component.
    */
-  public get settingsComponent(): PluginSettingsComponent {
-    return ensureNonNullable(this.settingsComponentInstance);
+  public override get pluginSettingsComponent(): PluginSettingsComponent {
+    return castTo<PluginSettingsComponent>(super.pluginSettingsComponent);
   }
 
-  private settingsComponentInstance?: PluginSettingsComponent;
+  /**
+   * Sets the settings component.
+   *
+   * @param value - The settings component.
+   */
+  public override set pluginSettingsComponent(value: PluginSettingsComponent) {
+    super.pluginSettingsComponent = value;
+  }
 
   protected override async onloadImpl(): Promise<void> {
     const pluginSettingsComponent = this.addChild(
@@ -32,7 +44,7 @@ export class Plugin extends PluginBase {
         pluginEventSource: new PluginEventSourceImpl(this)
       })
     );
-    this.settingsComponentInstance = pluginSettingsComponent;
+    this.pluginSettingsComponent = pluginSettingsComponent;
     const htmlExtensions = new HtmlExtensions();
     this.addChild(
       new PluginSettingsTabComponent({
