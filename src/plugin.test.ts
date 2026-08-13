@@ -3,6 +3,7 @@ import type {
   PluginManifest
 } from 'obsidian';
 
+import { castTo } from 'obsidian-dev-utils/object-utils';
 import { PluginExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
 import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
@@ -19,14 +20,9 @@ interface ComponentModule {
   Component: new () => object;
 }
 
-vi.mock('obsidian-dev-utils/obsidian/data-handler', () => ({
-  PluginDataHandler: vi.fn()
-}));
-
-vi.mock('obsidian-dev-utils/obsidian/plugin/plugin-event-source', () => ({
-  PluginEventSourceImpl: vi.fn()
-}));
-
+// `PluginDataHandler` and `PluginEventSourceImpl` are NOT stubbed: since obsidian-dev-utils 93.2 the base
+// Builds its own settings component out of them during `onload`, and that component really calls
+// `pluginEventSource.on`, so a bare `vi.fn()` double makes the base throw before `onloadImpl` runs (G49).
 vi.mock('obsidian-dev-utils/obsidian/components/plugin-settings-tab-component', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
   return {
@@ -125,8 +121,8 @@ describe('Plugin', () => {
 
     expect(vi.mocked(PluginSettingsComponent)).toHaveBeenCalledOnce();
     const params = vi.mocked(PluginSettingsComponent).mock.calls[0]?.[0];
-    expect(params?.dataHandler).toBe(vi.mocked(PluginDataHandler).mock.results[0]?.value);
-    expect(params?.pluginEventSource).toBe(vi.mocked(PluginEventSourceImpl).mock.results[0]?.value);
+    expect(params?.dataHandler).toBeInstanceOf(PluginDataHandler);
+    expect(params?.pluginEventSource).toBeInstanceOf(PluginEventSourceImpl);
   });
 
   it('should register the settings tab wired to the plugin and settings component', async () => {
@@ -195,9 +191,18 @@ describe('Plugin', () => {
   it('should expose the settings component', async () => {
     const plugin = await createLoadedPlugin();
 
-    expect(plugin.settingsComponent).toBe(vi.mocked(PluginSettingsComponent).mock.results[0]?.value);
+    expect(plugin.pluginSettingsComponent).toBe(vi.mocked(PluginSettingsComponent).mock.results[0]?.value);
   });
 });
+
+// The subset of `App` the dev-utils Notebook Navigator bridge reads on layout-ready.
+interface AppWithPlugins {
+  plugins: PluginRegistryLike;
+}
+
+interface PluginRegistryLike {
+  getPlugin(this: void, id: string): unknown;
+}
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -206,6 +211,9 @@ beforeEach(() => {
   appMock.workspace.onLayoutReady = vi.fn((callback: () => void) => {
     callback();
   });
+  // Since obsidian-dev-utils 89.0.0 the base bridges its command handlers into Notebook Navigator's
+  // Menus, which looks the plugin up on layout-ready -- so `plugins` has to answer on the strict mock.
+  castTo<AppWithPlugins>(appMock).plugins = { getPlugin: vi.fn().mockReturnValue(null) };
   app = appMock.asOriginalType__();
 });
 

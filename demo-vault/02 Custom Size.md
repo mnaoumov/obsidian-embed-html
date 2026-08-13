@@ -8,6 +8,7 @@ Set width in pixels after `|`:
 ![[basic.html|400]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[basic.html|400]]
 
 ## Width x Height
@@ -18,6 +19,7 @@ Set both dimensions with `WIDTHxHEIGHT`:
 ![[basic.html|600x200]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[basic.html|600x200]]
 
 ## Height only
@@ -28,6 +30,7 @@ Leave the width empty to set only the height (keeps the default width):
 ![[basic.html|x200]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[basic.html|x200]]
 
 ## Auto-fit to content
@@ -40,6 +43,7 @@ Fit the height, keep the default width:
 ![[auto-fit.html|-]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[auto-fit.html|-]]
 
 Fixed width, auto height:
@@ -48,6 +52,7 @@ Fixed width, auto height:
 ![[auto-fit.html|500x-]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[auto-fit.html|500x-]]
 
 ## Full control with CSS
@@ -60,6 +65,7 @@ Auto height, clamped so runaway content still scrolls past 300px:
 ![[auto-fit.html|height: max-content; max-height: 300px]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[auto-fit.html|height: max-content; max-height: 300px]]
 
 Half width with a minimum:
@@ -68,6 +74,7 @@ Half width with a minimum:
 ![[basic.html|width: 50%; min-width: 300px]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[basic.html|width: 50%; min-width: 300px]]
 
 ## Default size settings
@@ -76,6 +83,7 @@ When an embed has no size parameter, the plugin falls back to the default width 
 
 The embed below has no size parameter, so it always renders at the current defaults:
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[basic.html]]
 
 The buttons below change those defaults and re-render this note so the embed above updates live. (Embeds read the defaults when they render, so the button re-renders the preview for you.)
