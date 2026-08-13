@@ -10,6 +10,7 @@ The complete path from the vault root works from any note, in any folder:
 ![[html/basic.html]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[html/basic.html]]
 
 ## Relative path

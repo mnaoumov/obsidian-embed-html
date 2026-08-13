@@ -34,7 +34,8 @@
     "tsbuildinfo",
     "unstub",
     "virtualizes",
-    "wikilink"
+    "wikilink",
+    "wikilinks"
   ],
   "ignoreWords": [],
   "import": [],

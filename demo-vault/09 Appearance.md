@@ -4,6 +4,7 @@ Give every embed a **border**, **rounded corners**, or a **background** with thr
 
 The embed below has no per-embed styling, so it always renders with the current Appearance settings:
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[basic.html]]
 
 The buttons below change those settings and re-render this note so the embed above updates live. (Embeds read the settings when they render, so the button re-renders the preview for you.)

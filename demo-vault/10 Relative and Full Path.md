@@ -12,6 +12,7 @@ Give the complete path from the vault root. A wikilink works from any note, rega
 
 ### Result
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[html/basic.html]]
 
 ## Relative path
@@ -22,7 +23,7 @@ From a note in a subfolder, a Markdown embed can point at the file **relative to
 ![](../html/basic.html)
 ```
 
-Relative paths only differ from the full path when the note is not at the vault root, so the live example lives in a note inside a subfolder: [[From Another Folder]].
+Relative paths only differ from the full path when the note is not at the vault root, so the live example lives in a note inside a subfolder: [From Another Folder](<./pages/From Another Folder.md>).
 
 ## Both forms resolve to the same file
 

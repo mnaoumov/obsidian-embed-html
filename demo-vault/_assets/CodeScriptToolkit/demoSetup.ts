@@ -65,9 +65,9 @@ export async function editSettings(app: App, editor: SettingsEditor): Promise<vo
     new Notice('Enable the Embed HTML plugin first');
     return;
   }
-  const before = { ...plugin.settingsComponent.settings } as EmbedHtmlSettings;
-  await plugin.settingsComponent.editAndSave(editor);
-  const changes = describeChanges(before, plugin.settingsComponent.settings as EmbedHtmlSettings);
+  const before = { ...plugin.pluginSettingsComponent.settings } as EmbedHtmlSettings;
+  await plugin.pluginSettingsComponent.editAndSave(editor);
+  const changes = describeChanges(before, plugin.pluginSettingsComponent.settings as EmbedHtmlSettings);
   await rerenderActivePreview(app);
   notifyResult(changes);
 }

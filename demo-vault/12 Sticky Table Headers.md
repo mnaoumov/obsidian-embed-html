@@ -11,6 +11,7 @@ header, fully visible, and the header stays pinned as you scroll on.
 ![[sticky-table.html#row-42]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sticky-table.html#row-42]]
 
 ## How it works
@@ -26,4 +27,5 @@ sticky header are unaffected, because there is nothing covering the target to me
 
 The same table without an anchor starts at the top, where the header covers nothing.
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sticky-table.html]]

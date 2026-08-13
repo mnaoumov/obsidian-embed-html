@@ -14,6 +14,7 @@ The embed below is `html/external-assets.html`. Everything it looks like comes f
 ![[external-assets.html]]
 ```
 
+<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[external-assets.html]]
 
 Click the button — the script is running too.
