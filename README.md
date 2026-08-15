@@ -12,6 +12,27 @@ tool, or a page you built yourself has to live outside your notes, or be flatten
 This plugin embeds HTML files directly in a note, with the same `![[file.html]]` syntax you already use,
 sized how you want, styled to match your theme, and able to run its own JavaScript.
 
+<!-- markdownlint-disable MD033 -->
+
+<a href="images/screenshots/screenshot-desktop-1.png"><img src="images/screenshots/screenshot-desktop-1.png" alt="Without the plugin: an HTML file you cannot show" width="600"></a>
+
+<details>
+<summary>More screenshots</summary>
+
+<a href="images/screenshots/screenshot-desktop-2.png"><img src="images/screenshots/screenshot-desktop-2.png" alt="Embed an HTML file with the syntax you already use" width="600"></a>
+<a href="images/screenshots/screenshot-desktop-3.png"><img src="images/screenshots/screenshot-desktop-3.png" alt="Give it exactly the room you want" width="600"></a>
+<a href="images/screenshots/screenshot-desktop-4.png"><img src="images/screenshots/screenshot-desktop-4.png" alt="Or embed just one element out of the page" width="600"></a>
+<a href="images/screenshots/screenshot-desktop-5.png"><img src="images/screenshots/screenshot-desktop-5.png" alt="The page runs its own JavaScript" width="600"></a>
+<a href="images/screenshots/screenshot-mobile-1.png"><img src="images/screenshots/screenshot-mobile-1.png" alt="Without the plugin: an HTML file you cannot show" width="270"></a>
+<a href="images/screenshots/screenshot-mobile-2.png"><img src="images/screenshots/screenshot-mobile-2.png" alt="Embed an HTML file with the syntax you already use" width="270"></a>
+<a href="images/screenshots/screenshot-mobile-3.png"><img src="images/screenshots/screenshot-mobile-3.png" alt="Give it exactly the room you want" width="270"></a>
+<a href="images/screenshots/screenshot-mobile-4.png"><img src="images/screenshots/screenshot-mobile-4.png" alt="Or embed just one element out of the page" width="270"></a>
+<a href="images/screenshots/screenshot-mobile-5.png"><img src="images/screenshots/screenshot-mobile-5.png" alt="The page runs its own JavaScript" width="270"></a>
+
+</details>
+
+<!-- markdownlint-enable MD033 -->
+
 ## Demo vault
 
 **The documentation is an interactive demo vault.** Every feature has a note that explains what it does
