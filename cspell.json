@@ -33,7 +33,9 @@
     "srcs",
     "tsbuildinfo",
     "unstub",
+    "unvalidated",
     "virtualizes",
+    "wdio",
     "wikilink",
     "wikilinks"
   ],
