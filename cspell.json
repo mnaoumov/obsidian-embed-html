@@ -2,7 +2,6 @@
   "version": "0.2",
   "ignorePaths": [
     "coverage",
-    "demo-vault-execution-report.json",
     "dist",
     "node_modules",
     "tsconfig.tsbuildinfo"
