@@ -25,6 +25,37 @@ Embed HTML is an Obsidian plugin that adds support for embedding HTML files (`ht
 | Integration tests | `npm run test:integration` |
 | Commit (wizard)   | `npm run commit`           |
 
+## Test projects
+
+Vitest projects are declared in `scripts/vitest-config.ts`. Five are standard (provided by
+`defineObsidianPluginVitestConfig`); four are this repo's own, returned from `customProjects`.
+
+| Project | Test file suffix | Runs in `npm run test:integration`? |
+| --- | --- | --- |
+| `unit-tests` | `*.test.ts` (integration tests excluded) | no — `npm test` |
+| `integration-tests:no-app` | `*.no-app.integration.test.ts` | yes |
+| `integration-tests:demo-vault` | `*.demo-vault.integration.test.ts` | yes |
+| `integration-tests:android` | `*.android.` + `*.cross-platform.` | yes |
+| `integration-tests:desktop` | `*.desktop.` + `*.cross-platform.` | yes |
+| `integration-tests:desktop-performance` | `*.desktop-performance.` | no — invoked explicitly |
+| `integration-tests:linux` | `*.linux.integration.test.ts` | no — CI only, on a Linux runner |
+| `capture-screenshots:desktop` | `*.desktop-capture.` | no — `npm run capture:screenshots` |
+| `capture-screenshots:android` | `*.android-capture.` | no — `npm run capture:screenshots` |
+
+**A project listed in `scripts/test-integration.ts` MUST be declared in `scripts/vitest-config.ts`, and
+`customProjects` is APPENDED to, never replaced.** Vitest fails a filter that matches nothing
+(`No projects matched the filter …`), and because `test-integration.ts` awaits the projects in order,
+one missing project takes every later project down with it — the whole sweep silently shrinks to
+whatever ran before it. Adding the screenshot-capture projects by replacing the array's contents
+dropped `integration-tests:demo-vault` and `integration-tests:linux` for a day; see T518-P17.
+
+The `integration-tests:demo-vault` project opens a populated copy of the in-repo `demo-vault/` (via
+`scripts/demo-vault-global-setup.ts`, built on `buildDemoVaultPopulate` from
+`obsidian-integration-testing`) rather than an empty vault, and collects two suites: ODU's
+`registerDemoVaultButtonSuite` (clicks every `code-button`) and this repo's own embed/size checks. It
+needs CodeScript Toolkit's binary present in `demo-vault/.obsidian/plugins/fix-require-modules/` —
+gitignored, installed by `demo-vault-helper` the first time you open `demo-vault/` in Obsidian.
+
 ## Architecture
 
 - **Root config files** are thin re-exports — actual logic lives in `scripts/` (`eslint.config.mts` → `scripts/eslint-config.ts`, etc.).

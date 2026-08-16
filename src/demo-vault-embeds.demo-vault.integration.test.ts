@@ -1,8 +1,6 @@
 import {
-  mkdirSync,
   readdirSync,
-  readFileSync,
-  writeFileSync
+  readFileSync
 } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
@@ -10,41 +8,41 @@ import { getRootFolder } from 'obsidian-dev-utils/script-utils/root';
 import { evalInObsidian } from 'obsidian-integration-testing';
 import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
-  afterAll,
   beforeAll,
   describe,
   expect,
   it
 } from 'vitest';
 
+// The Embed HTML half of the demo-vault gate: every note's HTML embeds resolve and render, and every
+// Embed that declares a numeric size renders at that many pixels. The GENERIC half — clicking each
+// `code-button` — is `demo-vault-buttons.demo-vault.integration.test.ts`, which is ODU's
+// `registerDemoVaultButtonSuite`. Both are collected by the `integration-tests:demo-vault` project.
+
 // A single `evalInObsidian` closure runs as one CDP `Runtime.evaluate`, which the harness caps at
-// 30s — so the per-note work is split into several short evals (open+settle, then one per button)
-// Rather than one long closure. These ceilings bound each individual eval well under that cap.
+// 30s — so the per-note walk is bounded well under that cap.
 const SETTLE_TIMEOUT_MS = 20_000;
-const BUTTON_RENDER_TIMEOUT_MS = 10_000;
-const BUTTON_RESULT_TIMEOUT_MS = 15_000;
 const POLL_INTERVAL_MS = 100;
 
 const ROOT = getRootFolder() ?? process.cwd();
 const DEMO_VAULT_DIR = join(ROOT, 'demo-vault');
-const REPORT_PATH = join(ROOT, 'demo-vault-execution-report.json');
 
 // `00 Start.md` is a landing page and `README.md` is repo docs — neither is a self-contained feature demo.
 const EXCLUDED_TOP_LEVEL = new Set(['00 Start.md', 'README.md']);
 
-interface ButtonResult {
-  readonly caption: string;
-  readonly output: string;
-  readonly status: 'error' | 'ok' | 'timeout' | 'unknown';
+// Minimal structural view of the plugin's public settings API (`plugin.pluginSettingsComponent`), used only
+// To type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
+// `src/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
+interface EmbedHtmlPluginLike {
+  pluginSettingsComponent: EmbedHtmlSettingsComponentLike;
 }
 
-interface CstEnableResult {
-  readonly cstLoaded: boolean;
-  readonly loadedPlugins: string[];
+interface EmbedHtmlSettingsComponentLike {
+  readonly defaultSettings: Readonly<Record<string, unknown>>;
+  editAndSave(this: void, editor: (settings: Record<string, unknown>) => void): Promise<void>;
 }
 
 interface NoteExpectation {
-  buttonCount: number;
   // `src|axis|value` keys for every embed whose size token is a pure-digit form (`N` or `NxM`) that
   // Obsidian routes into the container's numeric `width`/`height` attributes. Each must actually be
   // Measured at render time — a declared numeric size that is never measured signals the size check
@@ -54,10 +52,6 @@ interface NoteExpectation {
   name: string;
 }
 
-interface NoteReport extends NoteExpectation, SettleResult {
-  readonly buttonResults: ButtonResult[];
-}
-
 interface SettleResult {
   readonly debug: unknown;
   readonly embedIframeCount: number;
@@ -65,7 +59,6 @@ interface SettleResult {
   // Keys (`src|axis|value`) of the numeric-attribute sizes actually measured during the walk, used to
   // Prove the size check ran rather than silently measuring nothing (see `expectedSizeKeys`).
   readonly measuredSizeKeys: string[];
-  readonly renderedButtonCount: number;
   readonly sizeViolations: SizeViolation[];
   readonly unresolvedEmbedCount: number;
 }
@@ -86,8 +79,6 @@ interface SizeViolation {
   readonly expected: string;
   readonly src: string;
 }
-
-const report: NoteReport[] = [];
 
 // Parses every `![[file.html…|token]]` embed and, for the pure-digit tokens Obsidian routes into the
 // Container's numeric `width`/`height` attributes (`N` → width, `NxM` → both), returns the `src|axis|value`
@@ -130,7 +121,6 @@ function listSelfContainedNotes(): NoteExpectation[] {
     .map((name) => {
       const source = readFileSync(join(DEMO_VAULT_DIR, name), 'utf-8');
       return {
-        buttonCount: (source.match(/```code-button/g) ?? []).length,
         expectedSizeKeys: extractExpectedSizeKeys(source),
         htmlEmbedCount: (source.match(/!\[\[[^\]]*\.html[^\]]*\]\]/g) ?? []).length,
         name
@@ -140,122 +130,18 @@ function listSelfContainedNotes(): NoteExpectation[] {
 
 const NOTES = listSelfContainedNotes();
 
-// Clicks the code button at `index` and reads CST's result line. Each embed-html demo button calls
-// `rebuildView()`, which re-renders the whole note and scrolls back to the top — so this re-scrolls to
-// The bottom to re-mount the button row before clicking. Running one button per eval keeps every eval
-// Under the 30s CDP cap and starts from a settled view.
-async function clickButton(noteName: string, index: number): Promise<ButtonResult> {
+// Opens the note in reading view and walks it — a viewport at a time, wrapping back to the top — until
+// Every HTML embed has produced an iframe. Returns the embed health counts. Reading view renders
+// Sections lazily and unmounts them far off-screen, so no single position holds a whole note: the
+// Counts are running maxima over the walk rather than one snapshot.
+async function openAndSettle(noteName: string, expectedEmbeds: number, expectedSizeKeys: string[]): Promise<SettleResult> {
   return evalInObsidian({
-    async callback({ app, buttonRenderTimeoutMs, buttonResultTimeoutMs, index: buttonIndex, intervalMs, lib: { waitUntil }, obsidianModule }): Promise<ButtonResult> {
+    async callback({ app, expectedEmbeds: wantEmbeds, expectedSizeKeys: wantSizeKeys, intervalMs, lib: { waitUntil }, notePath, obsidianModule, settleTimeoutMs }): Promise<SettleResult> {
       function view(): InstanceType<typeof obsidianModule.MarkdownView> | null {
         return app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
       }
       function previewEl(): HTMLElement | null {
         return view()?.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view') ?? null;
-      }
-      function runButtons(): HTMLButtonElement[] {
-        return [...view()?.containerEl.querySelectorAll<HTMLButtonElement>(':scope .block-language-code-button button.mod-cta') ?? []];
-      }
-
-      try {
-        await waitUntil({
-          intervalInMilliseconds: intervalMs,
-          message: `code button #${String(buttonIndex + 1)} never rendered`,
-          predicate: (): boolean => {
-            const scroller = previewEl();
-            if (scroller) {
-              scroller.scrollTop = scroller.scrollHeight;
-            }
-            return runButtons().length > buttonIndex;
-          },
-          timeoutInMilliseconds: buttonRenderTimeoutMs
-        });
-      } catch {
-        return { caption: `#${String(buttonIndex + 1)}`, output: '', status: 'timeout' };
-      }
-
-      const button = runButtons()[buttonIndex];
-      if (!button) {
-        return { caption: `#${String(buttonIndex + 1)}`, output: '', status: 'timeout' };
-      }
-      const caption = button.textContent;
-      const block = button.closest<HTMLElement>('.block-language-code-button') ?? button.parentElement;
-      button.scrollIntoView();
-      button.click();
-
-      let status: ButtonResult['status'];
-      try {
-        await waitUntil({
-          intervalInMilliseconds: intervalMs,
-          message: `button "${caption}" never reported a result`,
-          // The retained `block` reference still receives CST's result line after the rebuild detaches it.
-          predicate: (): boolean => /Executed (?:successfully|with error)/.test(block?.textContent ?? ''),
-          timeoutInMilliseconds: buttonResultTimeoutMs
-        });
-        const text = block?.textContent ?? '';
-        if (text.includes('Executed with error')) {
-          status = 'error';
-        } else if (text.includes('Executed successfully')) {
-          status = 'ok';
-        } else {
-          status = 'unknown';
-        }
-      } catch {
-        status = 'timeout';
-      }
-
-      return { caption, output: (block?.textContent ?? '').slice(0, 400), status };
-    },
-    input: { buttonRenderTimeoutMs: BUTTON_RENDER_TIMEOUT_MS, buttonResultTimeoutMs: BUTTON_RESULT_TIMEOUT_MS, index, intervalMs: POLL_INTERVAL_MS, notePath: noteName },
-    vaultPath: getTemporaryVault().path
-  });
-}
-
-// The harness enables only the plugin-under-test (embed-html) and rewrites `community-plugins.json`
-// To just that, so the seeded CodeScript Toolkit stays dormant and the `code-button` blocks never
-// Become buttons. Turn off restricted mode and enable CST (its binary is seeded into the vault) once,
-// Before any note opens, so the buttons render. In real use demo-vault-helper does this on launch.
-async function enableCodeScriptToolkit(): Promise<CstEnableResult> {
-  return evalInObsidian({
-    async callback({ app, intervalMs, lib: { waitUntil }, timeoutMs }): Promise<CstEnableResult> {
-      if (typeof app.plugins.isEnabled === 'function' && !app.plugins.isEnabled()) {
-        await app.plugins.setEnable(true);
-      }
-      if (!app.plugins.getPlugin('fix-require-modules')) {
-        await app.plugins.enablePlugin('fix-require-modules');
-      }
-      try {
-        await waitUntil({
-          intervalInMilliseconds: intervalMs,
-          message: 'CodeScript Toolkit never loaded',
-          predicate: (): boolean => app.plugins.getPlugin('fix-require-modules') !== null,
-          timeoutInMilliseconds: timeoutMs
-        });
-      } catch {
-        // Reported via the returned flag; the test's beforeAll assertion fails loudly.
-      }
-      return { cstLoaded: app.plugins.getPlugin('fix-require-modules') !== null, loadedPlugins: Object.keys(app.plugins.plugins) };
-    },
-    input: { intervalMs: POLL_INTERVAL_MS, timeoutMs: SETTLE_TIMEOUT_MS },
-    vaultPath: getTemporaryVault().path
-  });
-}
-
-// Opens the note in reading view and walks it to the bottom until every HTML embed has produced an
-// Iframe and every code button has rendered. Returns the embed/button health counts. Reading view
-// Renders sections lazily and can unmount them far off-screen, so counts track the max simultaneously
-// Mounted — and the walk never resets to the top (that would unmount the buttons at the note's end).
-async function openAndSettle(noteName: string, expectedButtons: number, expectedEmbeds: number, expectedSizeKeys: string[]): Promise<SettleResult> {
-  return evalInObsidian({
-    async callback({ app, expectedButtons: wantButtons, expectedEmbeds: wantEmbeds, expectedSizeKeys: wantSizeKeys, intervalMs, lib: { waitUntil }, notePath, obsidianModule, settleTimeoutMs }): Promise<SettleResult> {
-      function view(): InstanceType<typeof obsidianModule.MarkdownView> | null {
-        return app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
-      }
-      function previewEl(): HTMLElement | null {
-        return view()?.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view') ?? null;
-      }
-      function buttons(): number {
-        return view()?.containerEl.querySelectorAll(':scope .block-language-code-button button.mod-cta').length ?? 0;
       }
       function unresolved(): HTMLElement[] {
         return [...view()?.containerEl.querySelectorAll<HTMLElement>(':scope .internal-embed.is-unresolved, .internal-embed.mod-empty') ?? []];
@@ -330,7 +216,6 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
       // Lower bound) and any unresolved embed that appears at any point along the way.
       const trace: string[] = [];
       let maxRenderedEmbeds = 0;
-      let maxButtons = 0;
       let maxUnresolved = 0;
       let isAtBottomOnce = false;
       for (let elapsed = 0; elapsed < settleTimeoutMs; elapsed += intervalMs) {
@@ -345,18 +230,17 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
         await sleep(intervalMs);
         recordEmbedSizes();
         maxRenderedEmbeds = Math.max(maxRenderedEmbeds, markRenderedEmbeds());
-        maxButtons = Math.max(maxButtons, buttons());
         maxUnresolved = Math.max(maxUnresolved, unresolved().length);
-        trace.push(`${String(markRenderedEmbeds())}i/${String(buttons())}b`);
-        // Done once we have walked to the bottom at least once, rendered the code buttons, seen every
-        // Declared embed produce an iframe at least once, and settled a stable size for every embed that
-        // Declares one. A short note whose embeds are still collapsed reports scrollHeight ~= clientHeight
-        // On the first scan (so `atBottom` fires immediately) — requiring an iframe first stops the walk
-        // From exiting before anything rendered, and requiring settled sizes stops a mid-transition
-        // Reading from slipping through. Both were sources of flaky passes.
+        trace.push(`${String(markRenderedEmbeds())}i`);
+        // Done once we have walked to the bottom at least once, seen every declared embed produce an
+        // Iframe at least once, and settled a stable size for every embed that declares one. A short
+        // Note whose embeds are still collapsed reports scrollHeight ~= clientHeight on the first scan
+        // (so `atBottom` fires immediately) — requiring an iframe first stops the walk from exiting
+        // Before anything rendered, and requiring settled sizes stops a mid-transition reading from
+        // Slipping through. Both were sources of flaky passes.
         const isAllEmbedsRendered = wantEmbeds === 0 || maxRenderedEmbeds > 0;
         const isAllSizesSettled = wantSizeKeys.every((key) => measuredSizes.has(key));
-        if (isAtBottomOnce && maxButtons >= wantButtons && isAllEmbedsRendered && isAllSizesSettled) {
+        if (isAtBottomOnce && isAllEmbedsRendered && isAllSizesSettled) {
           break;
         }
       }
@@ -372,8 +256,6 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
       });
       return {
         debug: {
-          codeButtonBlocks: view()?.containerEl.querySelectorAll(':scope .block-language-code-button').length ?? -1,
-          cstLoaded: app.plugins.getPlugin('fix-require-modules') !== null,
           embedSample: embeds.slice(0, 3).map((embedEl) => ({
             className: embedEl.className,
             hasIframe: embedEl.querySelector('iframe') !== null,
@@ -388,43 +270,48 @@ async function openAndSettle(noteName: string, expectedButtons: number, expected
         embedIframeCount: maxRenderedEmbeds,
         internalEmbedCount: embeds.length,
         measuredSizeKeys: [...measuredSizes.keys()],
-        renderedButtonCount: maxButtons,
         sizeViolations,
         unresolvedEmbedCount: maxUnresolved
       };
     },
-    input: { expectedButtons, expectedEmbeds, expectedSizeKeys, intervalMs: POLL_INTERVAL_MS, notePath: noteName, settleTimeoutMs: SETTLE_TIMEOUT_MS },
+    input: { expectedEmbeds, expectedSizeKeys, intervalMs: POLL_INTERVAL_MS, notePath: noteName, settleTimeoutMs: SETTLE_TIMEOUT_MS },
     vaultPath: getTemporaryVault().path
   });
 }
 
-afterAll(() => {
-  mkdirSync(join(REPORT_PATH, '..'), { recursive: true });
-  writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2), 'utf-8');
-});
+// Puts every Embed HTML setting back to its default. The button suite shares this project's single
+// Obsidian and temp vault, and four of `02 Custom Size.md`'s buttons deliberately change the default
+// Width/height; its last button resets them, but a button that fails mid-note never gets there. The
+// Assertions below only measure embeds carrying an explicit numeric size, which overrides the defaults
+// Either way — this makes that independence structural rather than incidental.
+async function resetSettings(): Promise<void> {
+  await evalInObsidian({
+    async callback({ app }): Promise<void> {
+      const plugin = app.plugins.getPlugin('embed-html') as EmbedHtmlPluginLike | null;
+      if (!plugin) {
+        throw new Error('embed-html plugin is not enabled');
+      }
+      const settingsComponent = plugin.pluginSettingsComponent;
+      // `defaultSettings` is the component's own copy of the defaults, so nothing is duplicated here.
+      const defaults = { ...settingsComponent.defaultSettings };
+      await settingsComponent.editAndSave((settings) => {
+        Object.assign(settings, defaults);
+      });
+    },
+    input: {},
+    vaultPath: getTemporaryVault().path
+  });
+}
 
-describe('demo vault execution', () => {
+describe('demo vault embeds', () => {
   beforeAll(async () => {
-    const enabled = await enableCodeScriptToolkit();
-    expect(enabled.cstLoaded, `CodeScript Toolkit failed to load: ${JSON.stringify(enabled.loadedPlugins)}`).toBe(true);
+    await resetSettings();
   });
 
-  it.each(NOTES)('renders embeds and runs code buttons in "$name"', async (expectation) => {
-    const settled = await openAndSettle(expectation.name, expectation.buttonCount, expectation.htmlEmbedCount, expectation.expectedSizeKeys);
+  it.each(NOTES)('renders every HTML embed at its declared size in "$name"', async (expectation) => {
+    const settled = await openAndSettle(expectation.name, expectation.htmlEmbedCount, expectation.expectedSizeKeys);
 
-    const buttonResults: ButtonResult[] = [];
-    for (let index = 0; index < expectation.buttonCount; index++) {
-      buttonResults.push(await clickButton(expectation.name, index));
-    }
-
-    report.push({ ...expectation, ...settled, buttonResults });
-
-    const brokenButtons = buttonResults.filter((buttonResult) => buttonResult.status !== 'ok');
-    const context = JSON.stringify(
-      { ...expectation, ...settled, buttonResults: brokenButtons.length > 0 ? brokenButtons : `${String(buttonResults.length)} ok` },
-      null,
-      2
-    );
+    const context = JSON.stringify({ ...expectation, ...settled }, null, 2);
 
     // No embed anywhere in the note fell back to Obsidian's "file does not exist" placeholder.
     expect(settled.unresolvedEmbedCount, `unresolved embeds in "${expectation.name}":\n${context}`).toBe(0);
@@ -444,9 +331,5 @@ describe('demo vault execution', () => {
     // Actually rendered at that pixel size — the end-to-end check the health counts above miss.
     expect(settled.sizeViolations, `embeds that ignored their declared size in "${expectation.name}":\n${context}`)
       .toEqual([]);
-    // Every code button rendered and executed without error.
-    expect(buttonResults.length, `code buttons executed in "${expectation.name}":\n${context}`)
-      .toBe(expectation.buttonCount);
-    expect(brokenButtons, `broken code buttons in "${expectation.name}":\n${context}`).toEqual([]);
   });
 });
