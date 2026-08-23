@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 2.5.6
+
+- chore: update obsidian-dev-utils to 94.6.1
+- chore: update obsidian-dev-utils to 94.6.0
+- fix: override deepmerge-ts to clear GHSA-ggr8-5vv4-36mx
+- test: gate the demo vault by clicking every code button
+- fix(test): restore the demo-vault and linux vitest projects
+- chore: teach cspell the advisory wording
+- chore: update libs
+- docs: capture the community-store screenshot set
+
 ## 2.5.5
 
 - docs: make the demo vault the documentation, in the standard layout
