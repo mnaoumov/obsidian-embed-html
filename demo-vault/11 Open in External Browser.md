@@ -1,11 +1,8 @@
 # Open in external browser
 
-Sometimes a document is better read in a real browser than inside a note — a large reference document with
-many internal anchors, say, where you want tabs, zoom, find, print and your own extensions.
+Sometimes a document is better read in a real browser than inside a note — a large reference document with many internal anchors, say, where you want tabs, zoom, find, print and your own extensions.
 
-Every embed therefore carries an **Open in external browser** button. Clicking it hands the file to your
-system's default browser. The embed itself keeps rendering in the note, so the button is an addition rather
-than a second output mode:
+Every embed therefore carries an **Open in external browser** button. Clicking it hands the file to your system's default browser. The embed itself keeps rendering in the note, so the button is an addition rather than a second output mode:
 
 <!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#gamma]]
@@ -14,8 +11,7 @@ than a second output mode:
 
 ## Try it
 
-The button is shown by default. These buttons flip the setting and re-render this note, so the embed above
-gains and loses its button live.
+The button is shown by default. These buttons flip the setting and re-render this note, so the embed above gains and loses its button live.
 
 ```code-button
 ---
@@ -46,11 +42,9 @@ await require('/demoSetup.ts').resetSettings(app);
 
 > [!WARNING]
 >
-> The button hands over the file and nothing else, so the embed's `#id` subpath is left behind.
-> **Scroll to element** and **extract element** therefore have no effect in the browser.
+> The button hands over the file and nothing else, so the embed's `#id` subpath is left behind. **Scroll to element** and **extract element** therefore have no effect in the browser.
 
-The embed below scrolls to Section Beta in the note, and the one after it shows Section Delta alone — but
-the **Open in external browser** button on either one opens the whole document from the top:
+The embed below scrolls to Section Beta in the note, and the one after it shows Section Delta alone — but the **Open in external browser** button on either one opens the whole document from the top:
 
 ```md
 ![[sections.html#beta]]
@@ -66,10 +60,8 @@ the **Open in external browser** button on either one opens the whole document f
 <!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#delta&mode=extract]]
 
-[03 Scroll to Element](<./03 Scroll to Element.md>) and [04 Extract Element](<./04 Extract Element.md>) are work this plugin does on the embedded document
-itself. A browser only ever receives the plain file, so neither mode can travel with it.
+[03 Scroll to Element](<./03 Scroll to Element.md>) and [04 Extract Element](<./04 Extract Element.md>) are work this plugin does on the embedded document itself. A browser only ever receives the plain file, so neither mode can travel with it.
 
 ## Desktop only
 
-Obsidian exposes no way to hand a local file to a browser on mobile, so the button is never rendered
-there — the setting is inert rather than showing an affordance that could not work.
+Obsidian exposes no way to hand a local file to a browser on mobile, so the button is never rendered there — the setting is inert rather than showing an affordance that could not work.

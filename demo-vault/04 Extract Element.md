@@ -27,6 +27,4 @@ Use `#id&mode=extract` to show only the targeted element, hiding everything else
 
 > [!WARNING]
 >
-> Both are this plugin's own work on the embedded document, so they stay in the note. The
-> **Open in external browser** button ([11 Open in External Browser](<./11 Open in External Browser.md>)) hands the browser the plain file,
-> which shows the whole document.
+> Both are this plugin's own work on the embedded document, so they stay in the note. The **Open in external browser** button ([11 Open in External Browser](<./11 Open in External Browser.md>)) hands the browser the plain file, which shows the whole document.
