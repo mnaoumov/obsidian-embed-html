@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.5.7
+
+- fix(versions): correct the stale 1.13.8 minAppVersion row for 2.5.6
+- chore: update libs
+
 ## 2.5.6
 
 - chore: update obsidian-dev-utils to 94.6.1
