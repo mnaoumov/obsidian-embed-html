@@ -216,6 +216,7 @@ function createMockPluginSettingsComponent(): PluginSettingsComponent {
 
 function seedOnRawTarget(strictProxiedObject: object, key: string, value: unknown): void {
   const proxyWithTarget = castTo<Partial<Record<symbol, object>>>(strictProxiedObject);
+  // eslint-disable-next-line unicorn/no-unsafe-property-key -- The well-known strict-proxy target symbol is the key by design; a literal cannot address it.
   const rawTarget = proxyWithTarget[STRICT_PROXY_TARGET_SYMBOL] ?? strictProxiedObject;
   castTo<Record<string, unknown>>(rawTarget)[key] = value;
 }
