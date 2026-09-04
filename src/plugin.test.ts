@@ -3,7 +3,6 @@ import type {
   PluginManifest
 } from 'obsidian';
 
-import { castTo } from 'obsidian-dev-utils/object-utils';
 import { PluginExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
 import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
@@ -195,15 +194,6 @@ describe('Plugin', () => {
   });
 });
 
-// The subset of `App` the dev-utils Notebook Navigator bridge reads on layout-ready.
-interface AppWithPlugins {
-  plugins: PluginRegistryLike;
-}
-
-interface PluginRegistryLike {
-  getPlugin(this: void, id: string): unknown;
-}
-
 beforeEach(() => {
   vi.clearAllMocks();
 
@@ -211,9 +201,6 @@ beforeEach(() => {
   appMock.workspace.onLayoutReady = vi.fn((callback: () => void) => {
     callback();
   });
-  // Since obsidian-dev-utils 89.0.0 the base bridges its command handlers into Notebook Navigator's
-  // Menus, which looks the plugin up on layout-ready -- so `plugins` has to answer on the strict mock.
-  castTo<AppWithPlugins>(appMock).plugins = { getPlugin: vi.fn().mockReturnValue(null) };
   app = appMock.asOriginalType__();
 });
 
