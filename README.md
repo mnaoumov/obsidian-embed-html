@@ -38,7 +38,7 @@ This plugin embeds HTML files directly in a note, with the same `![[file.html]]`
 A copy of the vault ships with every release. You can access it via any of the following:
 
 1. Running the **Embed HTML: Open demo vault** command.
-2. Downloading `embed-html-demo-vault-<version>.zip` (`<version>` is the release version) from the [Releases](https://github.com/mnaoumov/obsidian-embed-html/releases).
+2. Downloading `embed-html-demo-vault.zip` from the [Releases](https://github.com/mnaoumov/obsidian-embed-html/releases). It unzips into a single `embed-html-demo-vault-<version>` folder.
 3. Browsing its source in [`demo-vault/`](./demo-vault/README.md) in this repository.
 
 ## What it does
