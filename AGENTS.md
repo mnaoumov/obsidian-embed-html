@@ -23,6 +23,7 @@ Embed HTML is an Obsidian plugin that adds support for embedding HTML files (`ht
 | Unit tests        | `npm test`                 |
 | Coverage          | `npm run test:coverage`    |
 | Integration tests | `npm run test:integration` |
+| Branch gate       | `npm run gate`             |
 | Commit (wizard)   | `npm run commit`           |
 
 ## Test projects
