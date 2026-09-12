@@ -10,7 +10,14 @@ describe('sizing token', () => {
   it('should route the token into the embed alt and auto-fit the height to the content', async () => {
     const result = await evalInObsidian({
       callback: async ({ app, lib: { waitUntil } }) => {
-        const TIMEOUT_IN_MILLISECONDS = 15_000;
+        /*
+         * Under the transport's ~30s per-closure cap, not at it.
+         * Three waits share this one budget, so at 15_000 apiece the closure declared 45s.
+         * The eval is killed at the cap first and reported as a bare transport timeout.
+         * That names the harness rather than the wait that overran.
+         * What is waited on here lands in well under a second, so the smaller ceiling costs nothing.
+         */
+        const TIMEOUT_IN_MILLISECONDS = 8000;
         const TALL_CONTENT_HEIGHT_IN_PIXELS = 1234;
         const AUTO_FIT_HEIGHT_THRESHOLD_IN_PIXELS = 1000;
         const EXPECTED_MIN_WIDTH = '123px';

@@ -18,7 +18,14 @@ describe('color-scheme propagation', () => {
   it('should propagate Obsidian base color scheme to the embed iframe', async () => {
     const result = await evalInObsidian({
       callback: async ({ app, lib: { waitUntil } }) => {
-        const TIMEOUT_IN_MILLISECONDS = 20_000;
+        /*
+         * Under the transport's ~30s per-closure cap, not at it.
+         * Two waits share this one budget, so at 20_000 apiece the closure declared 40s.
+         * The eval is killed at the cap first and reported as a bare transport timeout.
+         * That names the harness rather than the wait that overran.
+         * What is waited on here lands in well under a second, so the smaller ceiling costs nothing.
+         */
+        const TIMEOUT_IN_MILLISECONDS = 12_000;
         const htmlPath = 'embed-html-color-scheme-probe.html';
         const notePath = 'embed-html-color-scheme-probe.md';
 
