@@ -70,7 +70,8 @@ const DEMO_VAULT_TIMEOUT_IN_MILLISECONDS = 180_000;
 /**
  * Linux-specific entry for GitHub issue #4. Identical to
  * `integration-tests:desktop` except the glob (and the CI knobs below), because
- * OIT's desktop transport runs the HOST OS's Obsidian — so this reproduces the
+ * the obsidian-integration-testing desktop transport runs the HOST OS's
+ * Obsidian — so this reproduces the
  * Linux path-resolution behavior only when invoked
  * (`npm run test:integration:linux`) ON a Linux host (the
  * `.github/workflows/integration-linux.yml` workflow runs it on
@@ -120,12 +121,13 @@ export const config = defineObsidianPluginVitestConfig({
         test: {
           ...context.desktop,
           // CI-only knobs (this project runs ONLY on a Linux CI runner — see `LINUX_TEST_FILES`).
-          // A runner has no installed Obsidian, so pin the public-latest installer shell for OIT to
-          // Download + extract the portable Linux `.tar.gz`; and disable the Chromium setuid sandbox
-          // Because the extracted shell has no root-owned `chrome-sandbox` helper and CI runs as a
-          // Non-root user (the renderer otherwise refuses to start). Both are no-ops on the download
-          // Path OIT built for CI (`resolveInstalledShellOrNull`). Needs a `GITHUB_TOKEN` in the env
-          // To lift the anonymous rate limit when resolving/downloading the release asset.
+          // A runner has no installed Obsidian, so pin the public-latest installer shell and let
+          // The obsidian-integration-testing transport download + extract the portable Linux
+          // `.tar.gz`; and disable the Chromium setuid sandbox because the extracted shell has no
+          // Root-owned `chrome-sandbox` helper and CI runs as a non-root user (the renderer
+          // Otherwise refuses to start). Both are no-ops on the download path that transport built
+          // For CI (`resolveInstalledShellOrNull`). Needs a `GITHUB_TOKEN` in the env to lift the
+          // Anonymous rate limit when resolving/downloading the release asset.
           environmentOptions: {
             obsidianTransport: {
               obsidianInstallerVersion: 'public-latest',
