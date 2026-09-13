@@ -48,7 +48,7 @@ Vitest projects are declared in `scripts/vitest-config.ts`. Five are standard (p
 (`No projects matched the filter …`), and because `test-integration.ts` awaits the projects in order,
 one missing project takes every later project down with it — the whole sweep silently shrinks to
 whatever ran before it. Adding the screenshot-capture projects by replacing the array's contents
-dropped `integration-tests:demo-vault` and `integration-tests:linux` for a day; see T518-P17.
+dropped `integration-tests:demo-vault` and `integration-tests:linux` for a day.
 
 The `integration-tests:demo-vault` project opens a populated copy of the in-repo `demo-vault/` (via
 `scripts/demo-vault-global-setup.ts`, built on `buildDemoVaultPopulate` from
