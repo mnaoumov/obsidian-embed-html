@@ -52,10 +52,11 @@ dropped `integration-tests:demo-vault` and `integration-tests:linux` for a day.
 
 The `integration-tests:demo-vault` project opens a populated copy of the in-repo `demo-vault/` (via
 `scripts/demo-vault-global-setup.ts`, built on `buildDemoVaultPopulate` from
-`obsidian-integration-testing`) rather than an empty vault, and collects two suites: ODU's
-`registerDemoVaultButtonSuite` (clicks every `code-button`) and this repo's own embed/size checks. It
-needs CodeScript Toolkit's binary present in `demo-vault/.obsidian/plugins/fix-require-modules/` —
-gitignored, installed by `demo-vault-helper` the first time you open `demo-vault/` in Obsidian.
+`obsidian-integration-testing`) rather than an empty vault, and collects two suites:
+`obsidian-dev-utils`' `registerDemoVaultButtonSuite` (clicks every `code-button`) and this repo's own
+embed/size checks. It needs CodeScript Toolkit's binary present in
+`demo-vault/.obsidian/plugins/fix-require-modules/` — gitignored, installed by `demo-vault-helper` the
+first time you open `demo-vault/` in Obsidian.
 
 ## Architecture
 

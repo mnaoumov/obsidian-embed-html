@@ -16,8 +16,9 @@ import {
 
 // The Embed HTML half of the demo-vault gate: every note's HTML embeds resolve and render, and every
 // Embed that declares a numeric size renders at that many pixels. The GENERIC half — clicking each
-// `code-button` — is `demo-vault-buttons.demo-vault.integration.test.ts`, which is ODU's
-// `registerDemoVaultButtonSuite`. Both are collected by the `integration-tests:demo-vault` project.
+// `code-button` — is `demo-vault-buttons.demo-vault.integration.test.ts`, which is
+// `obsidian-dev-utils`' `registerDemoVaultButtonSuite`. Both are collected by the
+// `integration-tests:demo-vault` project.
 
 // A single `evalInObsidian` closure runs as one CDP `Runtime.evaluate`, which the harness caps at
 // 30s — so the per-note walk is bounded well under that cap. The walk's loop steps `POLL_INTERVAL_MS`

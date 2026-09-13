@@ -1,7 +1,7 @@
 # Linux integration test for GitHub issue #4 (relative & absolute-path HTML embeds).
 #
 # The `integration-tests:linux` vitest project (see `scripts/vitest-config.ts`) drives a REAL
-# Obsidian on the host OS via the obsidian-integration-testing (OIT) desktop CDP transport. It
+# Obsidian on the host OS via the obsidian-integration-testing desktop CDP transport. It
 # reproduces issue #4 only on Linux (case-sensitive ext4), so it cannot be validated on the
 # Windows/macOS dev machines where it was authored — hence this dedicated `ubuntu-latest` job.
 # The actual Linux verification happens HERE, in GitHub CI, after a push (it cannot be run locally
@@ -9,9 +9,9 @@
 #
 # How it runs a real Obsidian on a headless runner:
 #   * The runner has no installed Obsidian, so the linux vitest project pins
-#     `obsidianInstallerVersion: 'public-latest'` — OIT downloads + extracts the portable Linux
+#     `obsidianInstallerVersion: 'public-latest'` — obsidian-integration-testing downloads + extracts the portable Linux
 #     `.tar.gz` shell into a temp cache and launches it (owned-instance mode). `GITHUB_TOKEN` is
-#     passed so OIT's GitHub release-asset lookup uses the authenticated rate limit (anonymous
+#     passed so the obsidian-integration-testing release-asset lookup uses the authenticated rate limit (anonymous
 #     requests get HTTP 403 on shared CI IPs).
 #   * The linux project also pins `shouldDisableSandbox: true` → `--no-sandbox`: an extracted
 #     portable Electron shell has no root-owned setuid `chrome-sandbox` helper and CI runs as a
@@ -29,7 +29,7 @@
 #   * `public-latest` resolution + shell download needs network egress to GitHub; the download is
 #     ~150 MB and boot can be slow, hence the generous `timeout-minutes`.
 #   * If the owned instance still fails to boot, the likely levers are additional missing
-#     Electron libs (see the boot error) or bumping the OIT dead-boot grace.
+#     Electron libs (see the boot error) or bumping the dead-boot grace in obsidian-integration-testing.
 
 name: Linux integration (path-resolution embeds)
 
@@ -105,7 +105,7 @@ jobs:
           done
 
       - name: Run Linux integration test under Xvfb
-        # `GITHUB_TOKEN`: authenticates OIT's release-asset lookup so the installer download is not
+        # `GITHUB_TOKEN`: authenticates the obsidian-integration-testing release-asset lookup, so the
         # rate-limited (HTTP 403) on the shared CI runner IP.
         env:
           GITHUB_TOKEN: ${{ github.token }}
