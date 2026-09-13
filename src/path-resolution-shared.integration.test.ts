@@ -13,7 +13,7 @@ import {
 //   2. the full-vault-path embed `![[embed-html-path-probe/assets/probe.html]]` (wikilink, from the root)
 // Must BOTH resolve to the same `TFile` and render an iframe carrying the probe content.
 //
-// LINUX NOTE (G97 / G99 — "verify both ends"): issue #4 reports this failing on Linux ONLY. The plugin
+// LINUX NOTE (verify both ends): issue #4 reports this failing on Linux ONLY. The plugin
 // Never resolves the path itself — Obsidian core resolves the link to a `TFile` BEFORE the embed factory
 // Runs, and the plugin then reads it through vault APIs (`vault.read` / `getResourcePath`), which are
 // Separator- and case-preserving and OS-agnostic. So the resolution is Obsidian-core + filesystem
