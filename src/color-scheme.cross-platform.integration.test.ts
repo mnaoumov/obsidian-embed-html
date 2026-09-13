@@ -20,12 +20,14 @@ describe('color-scheme propagation', () => {
       callback: async ({ app, lib: { waitUntil } }) => {
         /*
          * Under the transport's ~30s per-closure cap, not at it.
-         * Two waits share this one budget, so at 20_000 apiece the closure declared 40s.
+         * THREE waits share this one budget, not two: the initial render, then one per case in the
+         * Loop below, and `cases` holds two. At 12_000 apiece that is 36s — over the cap, which is
+         * Where this sat until the budget was counted with the loop rather than around it.
          * The eval is killed at the cap first and reported as a bare transport timeout.
          * That names the harness rather than the wait that overran.
          * What is waited on here lands in well under a second, so the smaller ceiling costs nothing.
          */
-        const TIMEOUT_IN_MILLISECONDS = 12_000;
+        const TIMEOUT_IN_MILLISECONDS = 8000;
         const htmlPath = 'embed-html-color-scheme-probe.html';
         const notePath = 'embed-html-color-scheme-probe.md';
 

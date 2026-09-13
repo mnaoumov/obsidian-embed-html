@@ -20,8 +20,12 @@ import {
 // `registerDemoVaultButtonSuite`. Both are collected by the `integration-tests:demo-vault` project.
 
 // A single `evalInObsidian` closure runs as one CDP `Runtime.evaluate`, which the harness caps at
-// 30s — so the per-note walk is bounded well under that cap.
+// 30s — so the per-note walk is bounded well under that cap. The walk's loop steps `POLL_INTERVAL_MS`
+// At a time up to `SETTLE_TIMEOUT_MS`, sleeping each step, so the loop itself declares the WHOLE settle
+// Timeout: it is the closure's entire budget, and nothing else may share it. That is why the mount wait
+// Is a separate call with its own ceiling (`openNote`) rather than a first statement here.
 const SETTLE_TIMEOUT_MS = 20_000;
+const MOUNT_TIMEOUT_MS = 8000;
 const POLL_INTERVAL_MS = 100;
 
 const ROOT = getRootFolder() ?? process.cwd();
@@ -130,13 +134,14 @@ function listSelfContainedNotes(): NoteExpectation[] {
 
 const NOTES = listSelfContainedNotes();
 
-// Opens the note in reading view and walks it — a viewport at a time, wrapping back to the top — until
-// Every HTML embed has produced an iframe. Returns the embed health counts. Reading view renders
-// Sections lazily and unmounts them far off-screen, so no single position holds a whole note: the
-// Counts are running maxima over the walk rather than one snapshot.
+// Walks the open note — a viewport at a time, wrapping back to the top — until every HTML embed has
+// Produced an iframe. Returns the embed health counts. Reading view renders sections lazily and unmounts
+// Them far off-screen, so no single position holds a whole note: the counts are running maxima over the
+// Walk rather than one snapshot.
 async function openAndSettle(noteName: string, expectedEmbeds: number, expectedSizeKeys: string[]): Promise<SettleResult> {
+  await openNote(noteName);
   return evalInObsidian({
-    async callback({ app, expectedEmbeds: wantEmbeds, expectedSizeKeys: wantSizeKeys, intervalMs, lib: { waitUntil }, notePath, obsidianModule, settleTimeoutMs }): Promise<SettleResult> {
+    async callback({ app, expectedEmbeds: wantEmbeds, expectedSizeKeys: wantSizeKeys, intervalMs, obsidianModule, settleTimeoutMs }): Promise<SettleResult> {
       function view(): InstanceType<typeof obsidianModule.MarkdownView> | null {
         return app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
       }
@@ -200,15 +205,6 @@ async function openAndSettle(noteName: string, expectedEmbeds: number, expectedS
         }
         return count;
       }
-
-      await app.workspace.openLinkText(notePath.replace(/\.md$/, ''), '', false);
-      await app.workspace.getLeaf(false).setViewState({ state: { file: notePath, mode: 'preview' }, type: 'markdown' });
-      await waitUntil({
-        intervalInMilliseconds: intervalMs,
-        message: `preview view for "${notePath}" never mounted`,
-        predicate: (): boolean => previewEl() !== null,
-        timeoutInMilliseconds: settleTimeoutMs
-      });
 
       // Reading view virtualizes: it unmounts `.internal-embed` sections once far off-screen, so no
       // Snapshot ever holds all of a long note's embeds at once — an exact count is infeasible. Instead
@@ -274,7 +270,35 @@ async function openAndSettle(noteName: string, expectedEmbeds: number, expectedS
         unresolvedEmbedCount: maxUnresolved
       };
     },
-    input: { expectedEmbeds, expectedSizeKeys, intervalMs: POLL_INTERVAL_MS, notePath: noteName, settleTimeoutMs: SETTLE_TIMEOUT_MS },
+    input: { expectedEmbeds, expectedSizeKeys, intervalMs: POLL_INTERVAL_MS, settleTimeoutMs: SETTLE_TIMEOUT_MS },
+    vaultPath: getTemporaryVault().path
+  });
+}
+
+// Opens the note in reading view and waits for the preview to mount.
+//
+// This is its OWN transport call rather than the first few statements of the walk below, because the
+// Two waits cannot share one 30s budget: the walk's loop is bounded by `settleTimeoutMs` and sleeps
+// `intervalMs` per step, so it declares that whole timeout a second time, and a mount wait carrying the
+// Same ceiling put the single closure at 40s. Splitting costs one round trip and leaves each call with
+// A budget it can actually honour; nothing crosses the boundary, since the walk re-queries the view.
+async function openNote(noteName: string): Promise<void> {
+  await evalInObsidian({
+    async callback({ app, intervalMs, lib: { waitUntil }, mountTimeoutMs, notePath, obsidianModule }): Promise<void> {
+      function previewEl(): HTMLElement | null {
+        return app.workspace.getActiveViewOfType(obsidianModule.MarkdownView)?.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view') ?? null;
+      }
+
+      await app.workspace.openLinkText(notePath.replace(/\.md$/, ''), '', false);
+      await app.workspace.getLeaf(false).setViewState({ state: { file: notePath, mode: 'preview' }, type: 'markdown' });
+      await waitUntil({
+        intervalInMilliseconds: intervalMs,
+        message: `preview view for "${notePath}" never mounted`,
+        predicate: (): boolean => previewEl() !== null,
+        timeoutInMilliseconds: mountTimeoutMs
+      });
+    },
+    input: { intervalMs: POLL_INTERVAL_MS, mountTimeoutMs: MOUNT_TIMEOUT_MS, notePath: noteName },
     vaultPath: getTemporaryVault().path
   });
 }
