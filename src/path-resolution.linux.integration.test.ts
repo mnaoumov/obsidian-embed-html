@@ -7,5 +7,5 @@ import { registerPathResolutionSuite } from './path-resolution-shared.integratio
 // Ext4), which is the verification the report needs. This entry is deliberately NOT part of the default
 // `npm run test:integration` sweep (see `scripts/test-integration.ts`) and CANNOT be validated on the
 // Windows dev host where it was authored — running it here would launch a Windows Obsidian and prove
-// Nothing about Linux. PENDING a Linux CI runner (G97 "cannot be driven here" escape hatch / G99).
+// Nothing about Linux. PENDING a Linux CI runner, which is why it cannot be driven here yet.
 registerPathResolutionSuite('linux');
