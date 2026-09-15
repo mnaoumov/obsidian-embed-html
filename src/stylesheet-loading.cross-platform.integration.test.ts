@@ -8,13 +8,13 @@ import {
 
 // An embedded document's stylesheets have to survive Obsidian's page CSP
 // (`style-src 'unsafe-inline' 'self' https://fonts.googleapis.com`), which the `srcdoc` iframe inherits
-// Together with Obsidian's origin. A `<link rel="stylesheet">` at the vault's resource host
+// together with Obsidian's origin. A `<link rel="stylesheet">` at the vault's resource host
 // (`app://<per-session-hash>`, which is NOT `'self'`) is fetched with a `200`/`text/css` and then never
-// Applied, so the document renders unstyled. The plugin therefore inlines every stylesheet as a `<style>`,
-// Which `'unsafe-inline'` permits.
+// applied, so the document renders unstyled. The plugin therefore inlines every stylesheet as a `<style>`,
+// which `'unsafe-inline'` permits.
 //
 // Only the real app can prove this: a jsdom document has no CSP at all, so the whole failure mode — and the
-// Fix — is invisible to unit tests. All four cases below are the ones inlining has to get right.
+// fix — is invisible to unit tests. All four cases below are the ones inlining has to get right.
 
 const RED = 'rgb(255, 0, 0)';
 const BLUE = 'rgb(0, 0, 255)';
@@ -42,7 +42,7 @@ describe('stylesheet loading', () => {
         await app.vault.createFolder(stylesDirectory);
 
         // The stylesheet lives in its OWN folder, so its relative `@import` and `url()` targets resolve
-        // Against a different base than the HTML file — the exact thing inlining must preserve.
+        // against a different base than the HTML file — the exact thing inlining must preserve.
         await app.vault.create(
           `${stylesDirectory}/main.css`,
           `@import "imported.css";
@@ -97,7 +97,7 @@ body { background-image: url("bg.svg"); }
         const observation = {
           backgroundImage,
           // The `url()` sat in `styles/main.css`, so it must resolve next to THAT file, not next to the
-          // Embedded `page.html`.
+          // embedded `page.html`.
           doesBackgroundImageLoad: await checkImageLoadsAsync(backgroundImage),
           importedColor: getColor('h3'),
           injectedColor: getColor('h4'),
@@ -111,7 +111,7 @@ body { background-image: url("bg.svg"); }
 
         function getIframe(): HTMLIFrameElement | null {
           // Reading-view virtualization can keep a detached iframe alongside the live one; only the
-          // Laid-out one has resolved styles.
+          // laid-out one has resolved styles.
           const iframes = [...leaf.view.containerEl.querySelectorAll<HTMLIFrameElement>(':scope .internal-embed iframe')];
           return iframes.find((iframe) => iframe.offsetParent !== null) ?? null;
         }
@@ -169,7 +169,7 @@ body { background-image: url("bg.svg"); }
     expect(result.importedColor).toBe(BLUE);
     expect(result.injectedColor).toBe(MAGENTA);
     // The `url()` came from `styles/main.css`, so it must point next to that file — a naive inline would
-    // Have resolved it against the embedded HTML file's folder instead.
+    // have resolved it against the embedded HTML file's folder instead.
     expect(result.backgroundImage).toContain('/styles/bg.svg');
     expect(result.doesBackgroundImageLoad).toBe(true);
   });

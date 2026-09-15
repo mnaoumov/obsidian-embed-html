@@ -146,7 +146,7 @@ const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
 function asContainerEl(mock: MockContainerEl): HTMLElement {
   // StrictProxy<HTMLElement>(mock) cannot be used here because vi.fn() mock function
-  // Types are structurally incompatible with HTMLElement's overloaded method signatures
+  // types are structurally incompatible with HTMLElement's overloaded method signatures
   // (e.g. setCssProps, createEl). Last-resort test-only cast per project conventions.
 
   return castTo<HTMLElement>(mock);
@@ -168,9 +168,9 @@ function createMockApp(): App {
   });
 
   // The real dev-utils helpers (invokeAsyncSafely / debug) read and write a shared state holder on
-  // The app. Seed it on the raw target behind the strict-proxy so those helpers can run, and expose
-  // The same app as the global instance so helpers that resolve state without an explicit app argument
-  // Read/write the same holder.
+  // the app. Seed it on the raw target behind the strict-proxy so those helpers can run, and expose
+  // the same app as the global instance so helpers that resolve state without an explicit app argument
+  // read/write the same holder.
   seedOnRawTarget(app, 'obsidianDevUtilsState', {});
   castTo<WindowWithApp>(window).app = app;
 
@@ -189,7 +189,7 @@ function createMockContainerEl(): MockContainerEl {
 
 function createMockFile(name = 'file.html'): TFile {
   // `resolveSize` compares `alt` against the file's `name`/`basename`/`path` to detect the file-name
-  // Fallback Obsidian writes into `alt` for a numeric-aliased embed, so the mock must expose all three.
+  // fallback Obsidian writes into `alt` for a numeric-aliased embed, so the mock must expose all three.
   return strictProxy<TFile>({
     basename: name.replace(/\.[^.]+$/, ''),
     name,
@@ -280,7 +280,7 @@ describe('HtmlEmbedComponent', () => {
       });
 
       // The real ComponentEx only runs registered cleanups during unload(), and only when the
-      // Component has been loaded. Drive the real load/unload lifecycle to exercise the cleanup.
+      // component has been loaded. Drive the real load/unload lifecycle to exercise the cleanup.
       component.load();
       component.unload();
 
@@ -409,8 +409,8 @@ describe('HtmlEmbedComponent', () => {
     });
 
     // Regression: for a numeric alias (`![[basic.html|400]]`) Obsidian routes `400` into the `width`
-    // Attribute and resets `alt` to the file name `basic.html`. Parsing that file name as a size token
-    // Mis-read it as `width: basic.html` (invalid CSS the browser drops), silently clobbering the real
+    // attribute and resets `alt` to the file name `basic.html`. Parsing that file name as a size token
+    // mis-read it as `width: basic.html` (invalid CSS the browser drops), silently clobbering the real
     // `width` attribute so the embed fell back to the default 100% width instead of 400px.
     it('should ignore an alt that is only the file name so the numeric width attribute wins', () => {
       const containerEl = createMockContainerEl();
@@ -443,7 +443,7 @@ describe('HtmlEmbedComponent', () => {
     });
 
     // Regression: same file-name fallback for a `WxH` alias (`![[basic.html|600x200]]`) — both numeric
-    // Attributes must survive the file name being present in `alt`.
+    // attributes must survive the file name being present in `alt`.
     it('should keep both numeric attributes when alt is the file name', () => {
       const containerEl = createMockContainerEl();
       containerEl.getAttr.mockImplementation((attr: string) => {
@@ -537,7 +537,7 @@ describe('HtmlEmbedComponent', () => {
       });
 
       // LoadFile() uses the real fire-and-forget invokeAsyncSafely; observe the effect rather than
-      // Asserting the helper was called.
+      // asserting the helper was called.
       component.loadFile();
 
       await vi.waitFor(() => {
@@ -699,7 +699,7 @@ describe('HtmlEmbedComponent', () => {
       await component.loadFileAsync();
 
       // PREPENDED, not appended: a `<base>` only governs the elements that FOLLOW it, so appending it left
-      // Every preceding relative `<link>` / `<script>` / `<img>` resolving against Obsidian's own origin.
+      // every preceding relative `<link>` / `<script>` / `<img>` resolving against Obsidian's own origin.
       expect(mockParsedDoc.head.createEl).toHaveBeenCalledWith('base', { prepend: true });
       expect(mockCreatedBaseEl.href).toBe('app://vault/file.html');
     });
@@ -1282,7 +1282,7 @@ describe('HtmlEmbedComponent', () => {
       await waitForAllAsyncOperations();
 
       // The late token reaches the box, and re-reading it never costs a re-render (which would reload
-      // The document and throw away the iframe's scroll position).
+      // the document and throw away the iframe's scroll position).
       expect(containerEl.setCssProps).toHaveBeenLastCalledWith(expect.objectContaining({ width: '600px' }));
       expect(containerEl.empty).toHaveBeenCalledOnce();
     });
@@ -1803,7 +1803,7 @@ describe('HtmlEmbedComponent', () => {
       });
 
       // The real ComponentEx only registers the css-change listener in onload() during load(), so the
-      // Real lifecycle is driven here to wire the listener.
+      // real lifecycle is driven here to wire the listener.
       component.load();
       await component.loadFileAsync();
 
@@ -2158,7 +2158,7 @@ function findClickHandler(
 describe('open in external browser button', () => {
   beforeEach(() => {
     // This block is top-level, so it installs its own MutationObserver stub rather than relying on the
-    // Main describe's beforeEach having run first.
+    // main describe's beforeEach having run first.
     window.MutationObserver = castTo<typeof MutationObserver>(
       class MockMutationObserver {
         public disconnect = vi.fn();
@@ -2184,7 +2184,7 @@ describe('open in external browser button', () => {
     expect(harness.buttonEls[0]?.textContent).toBe('Open in external browser');
 
     // The mocked `ButtonComponent` stores the handler rather than wiring a DOM listener, so the click
-    // Is driven through the callback the component registered.
+    // is driven through the callback the component registered.
     const clickHandler = onClickSpy.mock.calls[0]?.[0];
     clickHandler?.(new MouseEvent('click'));
 
@@ -2226,7 +2226,7 @@ async function loadWithExternalBrowserButtonAsync(
   castTo<MutableOpenInExternalBrowserSetting>(pluginSettingsComponent.settings).shouldShowOpenInExternalBrowserButton = params.isSettingEnabled;
 
   // The button and the iframe are both created on the container, so the mock dispatches on the tag name
-  // Instead of answering every call with the same element.
+  // instead of answering every call with the same element.
   const buttonEls: HTMLButtonElement[] = [];
   const containerEl = createMockContainerEl();
   containerEl.createEl.mockImplementation((tagName: string) => {
@@ -2285,7 +2285,7 @@ async function loadWithExternalBrowserButtonAsync(
 describe('stylesheet observer on the loaded document', () => {
   beforeEach(() => {
     // This block is top-level, so it installs its own MutationObserver stub for the CONTAINER observer
-    // Rather than relying on the main describe's beforeEach having run first.
+    // rather than relying on the main describe's beforeEach having run first.
     window.MutationObserver = castTo<typeof MutationObserver>(
       class MockMutationObserver {
         public disconnect = vi.fn();

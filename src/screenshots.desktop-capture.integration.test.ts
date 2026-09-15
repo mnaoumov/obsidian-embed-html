@@ -143,7 +143,7 @@ beforeAll(async () => {
       });
 
       // The embed is the subject; the file explorer and an empty right dock
-      // Would otherwise take a third of a 1200x800 frame.
+      // would otherwise take a third of a 1200x800 frame.
       app.workspace.leftSplit.collapse();
       const rightSplit: unknown = app.workspace.rightSplit;
       (rightSplit as ResizableSideDock).setSize(0);
@@ -166,8 +166,8 @@ beforeAll(async () => {
 describe('desktop store screenshots', () => {
   it('1 - the same note with the plugin off', async () => {
     // A before-shot is only safe BECAUSE of the caption. A listing carousel
-    // Shows screenshots one at a time, so an unlabelled one reads as a picture
-    // Of what the plugin does, not of what it fixes.
+    // shows screenshots one at a time, so an unlabelled one reads as a picture
+    // of what the plugin does, not of what it fixes.
     await setPluginEnabled(false);
     const probe = await openNote(BASIC_NOTE_PATH);
     expect(probe.hasEmbed).toBe(false);
@@ -319,8 +319,8 @@ async function openNote(path: string): Promise<EmbedProbe> {
       const TEXT_LENGTH_LIMIT = 120;
 
       // Let the previous shot's capture settle. `captureObsidianScreenshot`
-      // Overrides the device metrics and clears them again, and the re-layout
-      // That lands afterwards disturbs anything opened too soon after it.
+      // overrides the device metrics and clears them again, and the re-layout
+      // that lands afterwards disturbs anything opened too soon after it.
       await sleep(RESIZE_SETTLE_DELAY_IN_MILLISECONDS);
 
       const file = app.vault.getFileByPath(notePath);
@@ -331,7 +331,7 @@ async function openNote(path: string): Promise<EmbedProbe> {
       const leaf = app.workspace.getLeaf(false);
       await leaf.openFile(file);
       // Reading view: an embed is a rendered thing, and source mode would show
-      // Only the `![[...]]` line that asks for it.
+      // only the `![[...]]` line that asks for it.
       await leaf.setViewState({
         state: { file: notePath, mode: 'preview', source: false },
         type: 'markdown'
@@ -344,13 +344,13 @@ async function openNote(path: string): Promise<EmbedProbe> {
       });
 
       // Reopening a note Obsidian has already rendered reuses that render, so
-      // The frame taken straight after toggling the plugin showed the PREVIOUS
-      // State — no embed, in the shot whose whole point is the embed.
+      // the frame taken straight after toggling the plugin showed the PREVIOUS
+      // state — no embed, in the shot whose whole point is the embed.
       const view: unknown = app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
       (view as null | PreviewRenderView)?.previewMode.rerender(true);
 
       // Used BOTH to show an embed appearing and to show one not appearing, so a
-      // Timeout here is a legitimate outcome rather than a failure.
+      // timeout here is a legitimate outcome rather than a failure.
       try {
         await waitUntil({
           message: 'the HTML embed to render',

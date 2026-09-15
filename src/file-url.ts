@@ -24,8 +24,8 @@ export function buildFileUrl(absolutePath: string): string {
   const rootedPath = posixPath.startsWith(POSIX_PATH_SEPARATOR) ? posixPath : `${POSIX_PATH_SEPARATOR}${posixPath}`;
 
   // `encodeURI` leaves `/` and `:` alone (so the drive letter and separators survive) while escaping
-  // Spaces and the other characters a vault path may legitimately contain. `#` is NOT left alone: it
-  // Is escaped, which is what keeps a `#` in a FILE NAME from being read as the start of the fragment.
+  // spaces and the other characters a vault path may legitimately contain. `#` is NOT left alone: it
+  // is escaped, which is what keeps a `#` in a FILE NAME from being read as the start of the fragment.
   const encodedPath = encodeURI(rootedPath).replaceAll('#', '%23');
 
   return `file://${encodedPath}`;

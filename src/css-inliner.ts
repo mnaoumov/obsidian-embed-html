@@ -81,7 +81,7 @@ interface ParenthesizedArgument {
 }
 
 // `url(…)` accepts a quoted or an unquoted target; an unquoted one cannot contain `)`, and a quoted one is
-// Taken verbatim, so a single non-greedy group covers both and `unquote()` sorts out which it was.
+// taken verbatim, so a single non-greedy group covers both and `unquote()` sorts out which it was.
 const URL_REG_EXP = /url\(\s*(?<value>[^)]*?)\s*\)/g;
 // `@import` accepts the same `url(…)` form or a bare string, then an optional condition up to the `;`.
 const IMPORT_REG_EXP = /@import\s+(?:url\(\s*(?<urlValue>[^)]*?)\s*\)|(?<stringValue>"[^"]*"|'[^']*'))(?<condition>[^;]*);/g;
@@ -126,7 +126,7 @@ class CssInliner {
     const importedCss = await this.readTextAsync(importUrl);
     if (importedCss === null) {
       // Unreadable: keep the import, but with an absolute URL, so the document still states its intent
-      // Instead of silently losing the rule.
+      // instead of silently losing the rule.
       return `@import url("${importUrl}")${params.condition};`;
     }
 
@@ -147,7 +147,7 @@ class CssInliner {
     let copiedUpTo = 0;
     for (const match of matches) {
       // The pattern's two alternatives are the `url(…)` form and the bare-string form, so exactly one of
-      // The groups took part in the match.
+      // the groups took part in the match.
       const urlValue = getOptionalNamedGroup(match, 'urlValue');
       const target = urlValue ?? getMandatoryNamedGroup(match, 'stringValue');
       result += params.css.slice(copiedUpTo, match.index);

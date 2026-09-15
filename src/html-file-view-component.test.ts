@@ -77,7 +77,7 @@ describe('HtmlFileViewComponent', () => {
     const viewCreator = castTo<RegisterViewParams>(params).viewCreator;
 
     // The real test-mocks App mints a real WorkspaceLeaf whose `app__` satisfies the real
-    // Test-mocks FileView/ItemView/View constructor chain that HtmlFileView extends.
+    // test-mocks FileView/ItemView/View constructor chain that HtmlFileView extends.
     const leaf = App.createConfigured__().workspace.getLeaf();
     const view = viewCreator(leaf.asOriginalType3__());
 

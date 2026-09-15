@@ -15,16 +15,16 @@ import {
 } from 'vitest';
 
 // The Embed HTML half of the demo-vault gate: every note's HTML embeds resolve and render, and every
-// Embed that declares a numeric size renders at that many pixels. The GENERIC half — clicking each
+// embed that declares a numeric size renders at that many pixels. The GENERIC half — clicking each
 // `code-button` — is `demo-vault-buttons.demo-vault.integration.test.ts`, which is
 // `obsidian-dev-utils`' `registerDemoVaultButtonSuite`. Both are collected by the
 // `integration-tests:demo-vault` project.
 
 // A single `evalInObsidian` closure runs as one CDP `Runtime.evaluate`, which the harness caps at
 // 30s — so the per-note walk is bounded well under that cap. The walk's loop steps `POLL_INTERVAL_MS`
-// At a time up to `SETTLE_TIMEOUT_MS`, sleeping each step, so the loop itself declares the WHOLE settle
-// Timeout: it is the closure's entire budget, and nothing else may share it. That is why the mount wait
-// Is a separate call with its own ceiling (`openNote`) rather than a first statement here.
+// at a time up to `SETTLE_TIMEOUT_MS`, sleeping each step, so the loop itself declares the WHOLE settle
+// timeout: it is the closure's entire budget, and nothing else may share it. That is why the mount wait
+// is a separate call with its own ceiling (`openNote`) rather than a first statement here.
 const SETTLE_TIMEOUT_MS = 20_000;
 const MOUNT_TIMEOUT_MS = 8000;
 const POLL_INTERVAL_MS = 100;
@@ -36,7 +36,7 @@ const DEMO_VAULT_DIR = join(ROOT, 'demo-vault');
 const EXCLUDED_TOP_LEVEL = new Set(['00 Start.md', 'README.md']);
 
 // Minimal structural view of the plugin's public settings API (`plugin.pluginSettingsComponent`), used only
-// To type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
+// to type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
 // `src/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
 interface EmbedHtmlPluginLike {
   pluginSettingsComponent: EmbedHtmlSettingsComponentLike;
@@ -50,8 +50,8 @@ interface EmbedHtmlSettingsComponentLike {
 interface NoteExpectation {
   // `src|axis|value` keys for every embed whose size token is a pure-digit form (`N` or `NxM`) that
   // Obsidian routes into the container's numeric `width`/`height` attributes. Each must actually be
-  // Measured at render time — a declared numeric size that is never measured signals the size check
-  // Silently did nothing (e.g. Obsidian changed its attribute routing), not that the size was correct.
+  // measured at render time — a declared numeric size that is never measured signals the size check
+  // silently did nothing (e.g. Obsidian changed its attribute routing), not that the size was correct.
   expectedSizeKeys: string[];
   htmlEmbedCount: number;
   name: string;
@@ -62,14 +62,14 @@ interface SettleResult {
   readonly embedIframeCount: number;
   readonly internalEmbedCount: number;
   // Keys (`src|axis|value`) of the numeric-attribute sizes actually measured during the walk, used to
-  // Prove the size check ran rather than silently measuring nothing (see `expectedSizeKeys`).
+  // prove the size check ran rather than silently measuring nothing (see `expectedSizeKeys`).
   readonly measuredSizeKeys: string[];
   readonly sizeViolations: SizeViolation[];
   readonly unresolvedEmbedCount: number;
 }
 
 // One committed size reading during the walk: a computed value and how many consecutive scans it has
-// Held steady, so a value is only trusted once it stops changing (see `recordEmbedSizes`).
+// held steady, so a value is only trusted once it stops changing (see `recordEmbedSizes`).
 interface SizeReading {
   readonly count: number;
   readonly value: string;
@@ -86,10 +86,10 @@ interface SizeViolation {
 }
 
 // Parses every `![[file.html…|token]]` embed and, for the pure-digit tokens Obsidian routes into the
-// Container's numeric `width`/`height` attributes (`N` → width, `NxM` → both), returns the `src|axis|value`
-// Keys the render is expected to expose. Fenced code samples that merely SHOW the syntax are stripped
-// First so only real embeds count. Deliberately narrow: `x200`, `500x-`, `50%`, `width: …` stay in the
-// Embed's `alt` and are validated by the size-spec unit tests and the sizing integration test, not here.
+// container's numeric `width`/`height` attributes (`N` → width, `NxM` → both), returns the `src|axis|value`
+// keys the render is expected to expose. Fenced code samples that merely SHOW the syntax are stripped
+// first so only real embeds count. Deliberately narrow: `x200`, `500x-`, `50%`, `width: …` stay in the
+// embed's `alt` and are validated by the size-spec unit tests and the sizing integration test, not here.
 function extractExpectedSizeKeys(source: string): string[] {
   const withoutFences = source.replaceAll(/```[\s\S]*?```/g, '');
   const keys = new Set<string>();
@@ -136,9 +136,9 @@ function listSelfContainedNotes(): NoteExpectation[] {
 const NOTES = listSelfContainedNotes();
 
 // Walks the open note — a viewport at a time, wrapping back to the top — until every HTML embed has
-// Produced an iframe. Returns the embed health counts. Reading view renders sections lazily and unmounts
-// Them far off-screen, so no single position holds a whole note: the counts are running maxima over the
-// Walk rather than one snapshot.
+// produced an iframe. Returns the embed health counts. Reading view renders sections lazily and unmounts
+// them far off-screen, so no single position holds a whole note: the counts are running maxima over the
+// walk rather than one snapshot.
 async function openAndSettle(noteName: string, expectedEmbeds: number, expectedSizeKeys: string[]): Promise<SettleResult> {
   await openNote(noteName);
   return evalInObsidian({
@@ -154,15 +154,15 @@ async function openAndSettle(noteName: string, expectedEmbeds: number, expectedS
       }
       // Records the settled computed pixel size of every mounted embed that carries a numeric
       // `width`/`height` attribute — the pure-digit tokens (`|400`, `|600x200`) that Obsidian itself
-      // Routes into those attributes. This validates end-to-end that the declared size actually reaches
-      // The container — independently of the plugin's own resolver, so a resolver bug cannot mask the
-      // Failure. Non-numeric tokens (`x200`, `50%`, `500x-`, `width: ...`) stay in the embed's `alt` and
-      // Are covered by the size-spec unit tests and the sizing integration test instead.
+      // routes into those attributes. This validates end-to-end that the declared size actually reaches
+      // the container — independently of the plugin's own resolver, so a resolver bug cannot mask the
+      // failure. Non-numeric tokens (`x200`, `50%`, `500x-`, `width: ...`) stay in the embed's `alt` and
+      // are covered by the size-spec unit tests and the sizing integration test instead.
       //
       // The plugin applies the resolved size only once the iframe's document finishes loading, which can
-      // Lag the iframe element appearing; reading before then catches the default size mid-transition
+      // lag the iframe element appearing; reading before then catches the default size mid-transition
       // (the source of a flaky 604px). So only a fully-loaded iframe is read, and a value is committed
-      // Only after two identical consecutive readings — a settled size, never a transition frame.
+      // only after two identical consecutive readings — a settled size, never a transition frame.
       const STABLE_READINGS = 2;
       const measuredSizes = new Map<string, SizeViolation>();
       const sizeReadings = new Map<string, SizeReading>();
@@ -193,7 +193,7 @@ async function openAndSettle(noteName: string, expectedEmbeds: number, expectedS
       }
 
       // Tag every embed that has produced an iframe, so the count survives an embed later being
-      // Scrolled out of view and its iframe torn down. Returns the running total of embeds seen rendered.
+      // scrolled out of view and its iframe torn down. Returns the running total of embeds seen rendered.
       function markRenderedEmbeds(): number {
         let count = 0;
         for (const embedEl of view()?.containerEl.querySelectorAll<HTMLElement>(':scope .internal-embed') ?? []) {
@@ -208,9 +208,9 @@ async function openAndSettle(noteName: string, expectedEmbeds: number, expectedS
       }
 
       // Reading view virtualizes: it unmounts `.internal-embed` sections once far off-screen, so no
-      // Snapshot ever holds all of a long note's embeds at once — an exact count is infeasible. Instead
-      // Walk the whole note top-to-bottom, recording the most embeds seen rendered as iframes (a
-      // Lower bound) and any unresolved embed that appears at any point along the way.
+      // snapshot ever holds all of a long note's embeds at once — an exact count is infeasible. Instead
+      // walk the whole note top-to-bottom, recording the most embeds seen rendered as iframes (a
+      // lower bound) and any unresolved embed that appears at any point along the way.
       const trace: string[] = [];
       let maxRenderedEmbeds = 0;
       let maxUnresolved = 0;
@@ -219,7 +219,7 @@ async function openAndSettle(noteName: string, expectedEmbeds: number, expectedS
         const scroller = previewEl();
         if (scroller) {
           // Advance gradually so each embed enters the viewport and mounts — a single jump to the
-          // Bottom skips the middle ones, whose collapsed height keeps the document short.
+          // bottom skips the middle ones, whose collapsed height keeps the document short.
           const isAtBottom = scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 4;
           isAtBottomOnce ||= isAtBottom;
           scroller.scrollTop = isAtBottom ? 0 : scroller.scrollTop + Math.floor(scroller.clientHeight * 0.8);
@@ -230,11 +230,11 @@ async function openAndSettle(noteName: string, expectedEmbeds: number, expectedS
         maxUnresolved = Math.max(maxUnresolved, unresolved().length);
         trace.push(`${String(markRenderedEmbeds())}i`);
         // Done once we have walked to the bottom at least once, seen every declared embed produce an
-        // Iframe at least once, and settled a stable size for every embed that declares one. A short
-        // Note whose embeds are still collapsed reports scrollHeight ~= clientHeight on the first scan
+        // iframe at least once, and settled a stable size for every embed that declares one. A short
+        // note whose embeds are still collapsed reports scrollHeight ~= clientHeight on the first scan
         // (so `atBottom` fires immediately) — requiring an iframe first stops the walk from exiting
-        // Before anything rendered, and requiring settled sizes stops a mid-transition reading from
-        // Slipping through. Both were sources of flaky passes.
+        // before anything rendered, and requiring settled sizes stops a mid-transition reading from
+        // slipping through. Both were sources of flaky passes.
         const isAllEmbedsRendered = wantEmbeds === 0 || maxRenderedEmbeds > 0;
         const isAllSizesSettled = wantSizeKeys.every((key) => measuredSizes.has(key));
         if (isAtBottomOnce && isAllEmbedsRendered && isAllSizesSettled) {
@@ -279,9 +279,9 @@ async function openAndSettle(noteName: string, expectedEmbeds: number, expectedS
 // Opens the note in reading view and waits for the preview to mount.
 //
 // This is its OWN transport call rather than the first few statements of the walk below, because the
-// Two waits cannot share one 30s budget: the walk's loop is bounded by `settleTimeoutMs` and sleeps
+// two waits cannot share one 30s budget: the walk's loop is bounded by `settleTimeoutMs` and sleeps
 // `intervalMs` per step, so it declares that whole timeout a second time, and a mount wait carrying the
-// Same ceiling put the single closure at 40s. Splitting costs one round trip and leaves each call with
+// same ceiling put the single closure at 40s. Splitting costs one round trip and leaves each call with
 // A budget it can actually honour; nothing crosses the boundary, since the walk re-queries the view.
 async function openNote(noteName: string): Promise<void> {
   await evalInObsidian({
@@ -306,9 +306,9 @@ async function openNote(noteName: string): Promise<void> {
 
 // Puts every Embed HTML setting back to its default. The button suite shares this project's single
 // Obsidian and temp vault, and four of `02 Custom Size.md`'s buttons deliberately change the default
-// Width/height; its last button resets them, but a button that fails mid-note never gets there. The
-// Assertions below only measure embeds carrying an explicit numeric size, which overrides the defaults
-// Either way — this makes that independence structural rather than incidental.
+// width/height; its last button resets them, but a button that fails mid-note never gets there. The
+// assertions below only measure embeds carrying an explicit numeric size, which overrides the defaults
+// either way — this makes that independence structural rather than incidental.
 async function resetSettings(): Promise<void> {
   await evalInObsidian({
     async callback({ app }): Promise<void> {
@@ -341,19 +341,19 @@ describe('demo vault embeds', () => {
     // No embed anywhere in the note fell back to Obsidian's "file does not exist" placeholder.
     expect(settled.unresolvedEmbedCount, `unresolved embeds in "${expectation.name}":\n${context}`).toBe(0);
     // A note that declares HTML embeds actually rendered at least one as an iframe (virtualization
-    // Makes an exact all-at-once count infeasible; see the settle walk).
+    // makes an exact all-at-once count infeasible; see the settle walk).
     if (expectation.htmlEmbedCount > 0) {
       expect(settled.embedIframeCount, `HTML embeds that rendered an iframe in "${expectation.name}":\n${context}`)
         .toBeGreaterThan(0);
     }
     // Every declared numeric size was actually measured — guards against the check silently doing nothing
     // (e.g. Obsidian stops routing `|400` into the width attribute), which would make the assertion below
-    // Pass vacuously and let a real sizing regression through — exactly the "not full" gap being closed.
+    // pass vacuously and let a real sizing regression through — exactly the "not full" gap being closed.
     const unmeasuredSizeKeys = expectation.expectedSizeKeys.filter((key) => !settled.measuredSizeKeys.includes(key));
     expect(unmeasuredSizeKeys, `declared embed sizes that were never measured in "${expectation.name}":\n${context}`)
       .toEqual([]);
     // Every embed whose size token routed into a numeric width/height attribute (`|400`, `|600x200`)
-    // Actually rendered at that pixel size — the end-to-end check the health counts above miss.
+    // actually rendered at that pixel size — the end-to-end check the health counts above miss.
     expect(settled.sizeViolations, `embeds that ignored their declared size in "${expectation.name}":\n${context}`)
       .toEqual([]);
   });

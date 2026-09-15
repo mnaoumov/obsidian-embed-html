@@ -127,7 +127,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
 
     // The `FileSystemAdapter` check is a DESKTOP test, not a path-availability one: mobile's
     // `CapacitorAdapter` hands out a full path just as well. What is missing on mobile is the LAUNCH
-    // Mechanism — Obsidian exposes no way to hand a local file to a browser there, so `window.open` on a
+    // mechanism — Obsidian exposes no way to hand a local file to a browser there, so `window.open` on a
     // `file://` URL does nothing. The button is therefore only offered where clicking it can act.
     if (this.pluginSettingsComponent.settings.shouldShowOpenInExternalBrowserButton && this.app.vault.adapter instanceof FileSystemAdapter) {
       const fullPath = this.app.vault.adapter.getFullPath(this.file.path);
@@ -135,7 +135,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       new ButtonComponent(this.containerEl).setButtonText('Open in external browser').onClick(() => {
         // `window.open` rather than an Electron `shell` import: Obsidian routes a URL opened with the
         // `_external` target to the SYSTEM browser, so this stays free of a desktop-only import. Without
-        // The target the URL would open in an in-app window instead, which is the opposite of the point.
+        // the target the URL would open in an in-app window instead, which is the opposite of the point.
         window.open(fileUrl, '_external');
       });
     }
@@ -145,7 +145,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     const html = await this.app.vault.read(this.file);
     const parsedDoc = new DOMParser().parseFromString(html, 'text/html');
     // The injected `<base>` must be the FIRST thing in `<head>`: a `<base>` only governs the elements
-    // That follow it, so appending it left every preceding relative `<link rel="stylesheet">` / `<img>` /
+    // that follow it, so appending it left every preceding relative `<link rel="stylesheet">` / `<img>` /
     // `<script>` to resolve against the srcdoc's inherited base (`app://obsidian.md/`) and 404.
     const base = parsedDoc.querySelector('base') ?? parsedDoc.head.createEl('base', { prepend: true });
     const resourceUrl = this.app.vault.getResourcePath(this.file);
@@ -189,7 +189,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   public override onload(): void {
     super.onload();
     // Obsidian's base color scheme (Settings → Appearance) is independent of the OS color scheme, and
-    // Emits `css-change` when it toggles. Re-apply so an already-rendered embed follows the switch.
+    // emits `css-change` when it toggles. Re-apply so an already-rendered embed follows the switch.
     this.registerEvent(this.app.workspace.on('css-change', () => {
       this.applyColorScheme();
     }));
@@ -223,7 +223,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       'min-height': spec.minHeight,
       'min-width': spec.minWidth,
       // Clip the iframe's square corners to the rounded box, but only when a radius is set so the
-      // Default (no radius) keeps the container's natural overflow behavior.
+      // default (no radius) keeps the container's natural overflow behavior.
       'overflow': decoration.borderRadius === '' ? '' : 'hidden'
     };
     // Content axes are driven by measure(); apply only the literal axes here.
@@ -274,11 +274,11 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   }
 
   // Obsidian routes a pure-digit size token (`|400`, `|600x200`) into the container's `width`/`height`
-  // Attributes and resets `alt` to the embed's own file name. Parsing that file name as a size token would
-  // Mis-read it as a width (`basic.html` -> `width: basic.html`) — invalid CSS the browser silently drops,
-  // Clobbering the real numeric `width` attribute and falling back to the default width. So an `alt` that is
-  // Only the file-name fallback is treated as "no token", letting the numeric attributes (or the defaults)
-  // Win; a genuine non-numeric token (`50%`, `width: max-content`) never equals the file name and is kept.
+  // attributes and resets `alt` to the embed's own file name. Parsing that file name as a size token would
+  // mis-read it as a width (`basic.html` -> `width: basic.html`) — invalid CSS the browser silently drops,
+  // clobbering the real numeric `width` attribute and falling back to the default width. So an `alt` that is
+  // only the file-name fallback is treated as "no token", letting the numeric attributes (or the defaults)
+  // win; a genuine non-numeric token (`50%`, `width: max-content`) never equals the file name and is kept.
   private getSizeToken(): string {
     const altValue = this.containerEl.getAttr(ALT_ATTRIBUTE) ?? '';
     if ([this.file.basename, this.file.name, this.file.path].includes(altValue)) {
@@ -302,7 +302,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     });
 
     // Scripts in the document may have added stylesheets of their own while it loaded, and may add more
-    // Later; both are CSP-blocked exactly like the ones the parsed copy carried.
+    // later; both are CSP-blocked exactly like the ones the parsed copy carried.
     const resourceUrl = this.app.vault.getResourcePath(this.file);
     invokeAsyncSafely(async () => this.inlineStylesheetsAsync(iframeDoc, resourceUrl));
     this.observeStylesheets(iframeDoc, resourceUrl);
@@ -355,9 +355,9 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
         });
 
         // The scroll above lands the target flush against the top of the scroll container, which is
-        // Exactly where a `position: sticky` header stays pinned — so the target ends up underneath it
+        // exactly where a `position: sticky` header stays pinned — so the target ends up underneath it
         // (issue #14). The overlap can only be measured once the header is in its stuck position, hence
-        // The second pass here rather than an offset folded into the scroll above.
+        // the second pass here rather than an offset folded into the scroll above.
         const stickyOverlap = measureStickyOverlap(iframeDoc, el);
         if (stickyOverlap > 0) {
           scrollingEl.scrollBy({
@@ -454,7 +454,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
    */
   private observeStylesheets(iframeDoc: HTMLDocument, baseUrl: string): void {
     // Use the framed document's own realm, mirroring `configureMeasurement()`. A document with no browsing
-    // Context cannot run the scripts that would add a stylesheet, so there is nothing to observe.
+    // context cannot run the scripts that would add a stylesheet, so there is nothing to observe.
     const MutationObserverConstructor = iframeDoc.defaultView?.MutationObserver;
     if (!MutationObserverConstructor) {
       return;

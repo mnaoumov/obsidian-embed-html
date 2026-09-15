@@ -60,7 +60,7 @@ describe('sizing token', () => {
         });
 
         // The content is far taller than the default 400px height, so a successful
-        // Auto-fit measurement drives the container past the threshold.
+        // auto-fit measurement drives the container past the threshold.
         await waitUntil({
           message: 'height was not auto-fit to the content',
           predicate: () => parseInt(resolvedEmbedEl.style.height, 10) > AUTO_FIT_HEIGHT_THRESHOLD_IN_PIXELS,

@@ -7,7 +7,7 @@ import {
 } from 'vitest';
 
 // Minimal structural view of the plugin's public settings API (`plugin.pluginSettingsComponent`), used only
-// To type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
+// to type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
 // `src/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
 interface EmbedAppearanceSettings {
   background: string;
@@ -138,7 +138,7 @@ describe('embed appearance settings', () => {
     });
 
     // Exact, serialization-stable properties: width/style/radius/overflow never go through color
-    // Serialization, so they match the configured values verbatim.
+    // serialization, so they match the configured values verbatim.
     expect(result.borderTopWidth).toBe(result.expectedBorderWidth);
     expect(result.borderTopStyle).toBe(result.expectedBorderStyle);
     expect(result.borderTopLeftRadius).toBe(result.expectedBorderRadius);
@@ -146,7 +146,7 @@ describe('embed appearance settings', () => {
     expect(result.overflow).toBe('hidden');
 
     // Colors: assert both non-empty/non-transparent AND channel-dominant (red border, green background),
-    // Parsing tolerantly so Obsidian 1.13.x CSS Color 4 (`oklch(...)`) serialization cannot flake the run.
+    // parsing tolerantly so Obsidian 1.13.x CSS Color 4 (`oklch(...)`) serialization cannot flake the run.
     expect(isNonTransparent(result.borderTopColor)).toBe(true);
     expect(isNonTransparent(result.backgroundColor)).toBe(true);
     expectDominantChannel(result.borderTopColor, 'r');
@@ -157,7 +157,7 @@ describe('embed appearance settings', () => {
 function expectDominantChannel(color: string, channel: 'b' | 'g' | 'r'): void {
   const channels = parseRgbChannels(color);
   // `oklch(...)` (or any non-rgb serialization) is not channel-parseable — the non-transparent check
-  // Above already proved the color applied, so skip the dominance assertion rather than fail spuriously.
+  // above already proved the color applied, so skip the dominance assertion rather than fail spuriously.
   if (!channels) {
     return;
   }

@@ -13,9 +13,9 @@ import {
 // Obsidian's `requestUrl`, which is not CORS-bound.
 //
 // The stylesheet is served by a throwaway loopback server rather than a real CDN, so the suite neither needs
-// The internet nor depends on a third party staying up. It deliberately sends NO
+// the internet nor depends on a third party staying up. It deliberately sends NO
 // `Access-Control-Allow-Origin` header: a plain `fetch` from Obsidian's origin would be rejected, which is
-// Exactly what makes this a test of the `requestUrl` path.
+// exactly what makes this a test of the `requestUrl` path.
 //
 // Desktop-only: the Android emulator does not reach the host's loopback interface.
 

@@ -131,7 +131,7 @@ describe('measureStickyOverlap', () => {
 
   it('should report no overlap for a detached document, which has no window to compute styles against', () => {
     // The target is never touched: with no window there is nothing to compute styles against, so the
-    // Measurement gives up before it reads the element at all.
+    // measurement gives up before it reads the element at all.
     const detachedDoc = document.implementation.createHTMLDocument('detached');
     expect(measureStickyOverlap(detachedDoc, createDiv())).toBe(0);
   });

@@ -33,7 +33,7 @@ describe('open-in-new-tab (desktop)', () => {
         const enabledLeafCount = countHtmlLeaves();
 
         // With the setting disabled: opening another html file reuses the active leaf, so no third tab
-        // Appears (the count stays at two).
+        // appears (the count stays at two).
         await setOpenInNewTab(false);
         await app.workspace.openLinkText(htmlPathA, '', false);
         await waitFor(() => app.workspace.getActiveFile()?.path === htmlPathA, 'file A did not reopen when disabled');

@@ -13,7 +13,7 @@ describe('embed JavaScript execution', () => {
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         // The script rewrites the pending marker to the executed marker.
         // A page whose scripts never run (the issue-#9 Android blob-URL symptom)
-        // Keeps the pending marker, so the executed-marker assertion fails.
+        // keeps the pending marker, so the executed-marker assertion fails.
         const PENDING_MARKER = 'JS_PENDING';
         const EXECUTED_MARKER = 'JS_EXECUTED';
         const htmlPath = 'embed-html-js-execution-probe.html';

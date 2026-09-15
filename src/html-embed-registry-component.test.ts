@@ -100,7 +100,7 @@ beforeEach(() => {
   vi.clearAllMocks();
 
   // The HtmlEmbedComponent built by the factory constructs a MutationObserver in its constructor, so a
-  // Browser-global stub is needed to execute the real factory body.
+  // browser-global stub is needed to execute the real factory body.
   window.MutationObserver = class {
     public disconnect(): void {
       // No-op observer for the unit environment.
@@ -121,7 +121,7 @@ beforeEach(() => {
   const appMock = App.createConfigured__();
   app = appMock.asOriginalType__();
   // The configured App mock has no embedRegistry; attach a strict-proxy one so the real onload can call
-  // The documented registerExtensions / unregisterExtensions API.
+  // the documented registerExtensions / unregisterExtensions API.
   castTo<AppWithEmbedRegistry>(app).embedRegistry = strictProxy<EmbedRegistry>({
     registerExtensions,
     unregisterExtensions
