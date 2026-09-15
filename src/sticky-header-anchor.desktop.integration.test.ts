@@ -18,8 +18,8 @@ describe('anchor jump under a sticky table header', () => {
 
         const TIMEOUT_IN_MILLISECONDS = 20_000;
         // Far more rows than the target's position, so the scroll that lands it at the top is nowhere
-        // Near the end of the document. A target close to the bottom cannot reproduce this at all: the
-        // Browser clamps the scroll at the last screenful, leaving the row well below the pinned header.
+        // near the end of the document. A target close to the bottom cannot reproduce this at all: the
+        // browser clamps the scroll at the last screenful, leaving the row well below the pinned header.
         const ROW_COUNT = 400;
         const TARGET_ROW = 42;
         const HEADER_HEIGHT_IN_PIXELS = 40;
@@ -76,8 +76,8 @@ describe('anchor jump under a sticky table header', () => {
 
         function measure(): Measurement | null {
           // Reading view renders the section more than once and only one copy is laid out, so take the
-          // Iframe that actually has a box rather than the first in document order — the other reports
-          // Zero-size rects for everything inside it and there is nothing to measure there.
+          // iframe that actually has a box rather than the first in document order — the other reports
+          // zero-size rects for everything inside it and there is nothing to measure there.
           const iframes = [...leaf.view.containerEl.querySelectorAll<HTMLIFrameElement>(':scope .internal-embed iframe')];
           for (const iframe of iframes) {
             if (iframe.getBoundingClientRect().height === 0) {

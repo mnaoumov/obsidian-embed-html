@@ -61,7 +61,7 @@ export async function inlineDocumentStylesheetsAsync(params: InlineDocumentStyle
   }
 
   // A `<style>` may pull in more CSS with `@import`, which is a stylesheet fetch like any other and so is
-  // Blocked just the same.
+  // blocked just the same.
   for (const styleEl of params.doc.querySelectorAll(STYLE_TAG_NAME)) {
     await inlineStyleImportsAsync(styleEl, params);
   }
@@ -95,7 +95,7 @@ async function inlineLinkAsync(linkEl: HTMLLinkElement, params: InlineDocumentSt
   });
 
   // Created in `head` and then MOVED into the link's exact position by `replaceWith`, so the rules keep
-  // Their place in the cascade.
+  // their place in the cascade.
   const styleEl = params.doc.head.createEl(STYLE_TAG_NAME);
   styleEl.dataset[INLINED_FROM_DATASET_KEY] = url;
   // `media` is the one `<link>` attribute that changes WHEN the rules apply, so it has to survive the swap.
@@ -114,7 +114,7 @@ async function inlineStyleImportsAsync(styleEl: HTMLStyleElement, params: Inline
   }
 
   // The element's own `url()`s already resolve against the document, so passing the document's base URL
-  // Leaves them untouched while the IMPORTED text is resolved against its own location.
+  // leaves them untouched while the IMPORTED text is resolved against its own location.
   setCss(
     styleEl,
     await inlineCssAsync({

@@ -12,7 +12,7 @@ import { readStylesheetTextAsync } from './stylesheet-reader.ts';
 
 // A thin return-value stub of `requestUrl`, so the reader's transport choice is observable. The real
 // Obsidian request API cannot run in a unit test, and the test-mocks implementation always answers with an
-// Empty body, which would not distinguish "read the remote stylesheet" from "read nothing".
+// empty body, which would not distinguish "read the remote stylesheet" from "read nothing".
 vi.mock('obsidian', async (importOriginal) => ({
   ...await importOriginal<typeof import('obsidian')>(),
   requestUrl: vi.fn()

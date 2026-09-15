@@ -54,7 +54,7 @@ describe('open in external browser button', () => {
         }
 
         // The plugin does not expose its settings publicly; walk its component tree, as the sibling
-        // Suites in this repo do.
+        // suites in this repo do.
         function isSettingsCarrier(value: Record<string, unknown>): value is Record<string, unknown> & SettingsCarrier {
           return isEmbedHtmlSettings(value['settings']) && typeof value['editAndSave'] === 'function';
         }
@@ -97,7 +97,7 @@ describe('open in external browser button', () => {
 
         function findButton(viewEl: HTMLElement): HTMLButtonElement | null {
           // The button carries no plugin-specific class, so it is found the way a user finds it: by its
-          // Label, inside the embed itself.
+          // label, inside the embed itself.
           const buttonEls = viewEl.querySelectorAll<HTMLButtonElement>(':scope .markdown-preview-view .internal-embed button');
           for (const buttonEl of buttonEls) {
             if (buttonEl.textContent === buttonText) {
@@ -132,7 +132,7 @@ describe('open in external browser button', () => {
           openedLeaf = leaf;
           await leaf.openFile(noteFile);
           // Reveal before waiting: several suites share one Obsidian, so another may have left the
-          // Workspace focused elsewhere and this view would never render.
+          // workspace focused elsewhere and this view would never render.
           await app.workspace.revealLeaf(leaf);
           const markdownView = leaf.view as MarkdownView;
           await markdownView.setState({ mode: 'preview' }, { history: false });

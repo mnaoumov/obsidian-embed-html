@@ -30,9 +30,9 @@ beforeEach(() => {
   vi.restoreAllMocks();
   app = App.createConfigured__().asOriginalType__();
   // The real `bind` is exercised by `obsidian-dev-utils`'s own tests. Here we only need to observe
-  // That the tab wires each text component to the correct setting key, so we stub its return value
+  // that the tab wires each text component to the correct setting key, so we stub its return value
   // (an allowed test double): the real test-mocks `TextComponent` is a strict proxy that throws on
-  // The `setPlaceholderValue` duck-typing probe inside the real `bind`.
+  // the `setPlaceholderValue` duck-typing probe inside the real `bind`.
   vi.spyOn(PluginSettingsTabBase.prototype, 'bind').mockImplementation((params) => params.valueComponent);
 });
 

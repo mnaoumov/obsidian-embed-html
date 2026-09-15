@@ -63,7 +63,7 @@ describe('reading-view scroll re-render', () => {
 
         // Incrementally scroll to the bottom and back to the top.
         // Reading view lazy-renders and virtualizes sections, detaching and re-attaching
-        // Each embed's DOM as it leaves and re-enters the viewport.
+        // each embed's DOM as it leaves and re-enters the viewport.
         // Real-user-like incremental scrolling drives that; a single scrollTop jump does not.
         await scrollThrough('down');
         await scrollThrough('up');
@@ -71,7 +71,7 @@ describe('reading-view scroll re-render', () => {
         // A re-attached iframe reloads from its source. A source that no longer resolves
         // (a revoked object URL) lands on a chrome-error page, leaving the embed blank.
         // Let re-loads settle: a mid-load iframe resolves to its content, whereas a
-        // Chrome-error page never recovers, so it stays counted as broken.
+        // chrome-error page never recovers, so it stays counted as broken.
         let brokenEmbedCount = 0;
         try {
           await waitUntil({

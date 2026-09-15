@@ -53,7 +53,7 @@ describe('color-scheme propagation', () => {
 
         // Toggle Obsidian's base color scheme (independent of the OS) and confirm the embed follows it.
         // `obsidian` is the dark base scheme, `moonstone` the light one; `updateTheme()` toggles the
-        // Body theme classes and fires `css-change`, which the plugin listens for to re-apply.
+        // body theme classes and fires `css-change`, which the plugin listens for to re-apply.
         const cases: [boolean, 'moonstone' | 'obsidian'][] = [[true, 'obsidian'], [false, 'moonstone']];
         const observations: SchemeObservation[] = [];
         for (const [expectedDark, theme] of cases) {
@@ -86,8 +86,8 @@ describe('color-scheme propagation', () => {
 
         function getVisibleIframe(): HTMLIFrameElement | null {
           // Reading-view virtualization can momentarily keep a detached/off-layout iframe alongside
-          // The live one; only the laid-out (offsetParent non-null) iframe evaluates media queries,
-          // So the assertions target that one.
+          // the live one; only the laid-out (offsetParent non-null) iframe evaluates media queries,
+          // so the assertions target that one.
           const iframes = [...leaf.view.containerEl.querySelectorAll<HTMLIFrameElement>(':scope .internal-embed iframe')];
           return iframes.find((iframe) => iframe.offsetParent !== null) ?? null;
         }

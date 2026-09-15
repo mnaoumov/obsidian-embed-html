@@ -33,8 +33,8 @@ export function measureStickyOverlap(doc: Document, el: Element): number {
   }
 
   // The hit test is the only way to ask what is covering the target, and a runtime without it — jsdom,
-  // Which the unit tests run in — has no layout to answer with anyway. Reporting no overlap there leaves
-  // The plain scroll in place rather than throwing.
+  // which the unit tests run in — has no layout to answer with anyway. Reporting no overlap there leaves
+  // the plain scroll in place rather than throwing.
 
   if (typeof doc.elementsFromPoint !== 'function') {
     return 0;
@@ -47,7 +47,7 @@ export function measureStickyOverlap(doc: Document, el: Element): number {
   let overlap = 0;
 
   // A hit test at one point rather than a scan of every element: the documents this plugin embeds run to
-  // Tens of megabytes, so walking them to look for sticky positioning would cost far more than the jump.
+  // tens of megabytes, so walking them to look for sticky positioning would cost far more than the jump.
   for (const candidateEl of doc.elementsFromPoint(probeX, probeY)) {
     // An ancestor or descendant of the target is part of it, not something covering it.
     if (candidateEl.contains(el) || el.contains(candidateEl)) {

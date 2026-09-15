@@ -20,7 +20,7 @@ interface ComponentModule {
 }
 
 // `PluginDataHandler` and `PluginEventSourceImpl` are NOT stubbed: since obsidian-dev-utils 93.2 the base
-// Builds its own settings component out of them during `onload`, and that component really calls
+// builds its own settings component out of them during `onload`, and that component really calls
 // `pluginEventSource.on`, so a bare `vi.fn()` double makes the base throw before `onloadImpl` runs.
 vi.mock('obsidian-dev-utils/obsidian/components/plugin-settings-tab-component', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
@@ -207,7 +207,7 @@ beforeEach(() => {
 async function createLoadedPlugin(): Promise<Plugin> {
   const plugin = new Plugin(app, manifest);
   // PluginBase.onload is async; driving the real async load path (as the obsidian-dev-utils reference
-  // Test does) runs every universal component plus onloadImpl.
+  // test does) runs every universal component plus onloadImpl.
   await plugin.onload();
   return plugin;
 }

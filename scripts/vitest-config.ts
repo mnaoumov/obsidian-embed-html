@@ -109,8 +109,8 @@ export const config = defineObsidianPluginVitestConfig({
         test: {
           ...context.desktop,
           // Project-specific: seeds the whole demo-vault (plus the CodeScript Toolkit binary and its
-          // Config) before Obsidian opens, so its startup scan indexes every note and the code-buttons
-          // Work with no network.
+          // config) before Obsidian opens, so its startup scan indexes every note and the code-buttons
+          // work with no network.
           globalSetup: ['./scripts/demo-vault-global-setup.ts'],
           include: [DEMO_VAULT_TEST_FILES],
           name: 'integration-tests:demo-vault',
@@ -122,12 +122,12 @@ export const config = defineObsidianPluginVitestConfig({
           ...context.desktop,
           // CI-only knobs (this project runs ONLY on a Linux CI runner — see `LINUX_TEST_FILES`).
           // A runner has no installed Obsidian, so pin the public-latest installer shell and let
-          // The obsidian-integration-testing transport download + extract the portable Linux
+          // the obsidian-integration-testing transport download + extract the portable Linux
           // `.tar.gz`; and disable the Chromium setuid sandbox because the extracted shell has no
-          // Root-owned `chrome-sandbox` helper and CI runs as a non-root user (the renderer
-          // Otherwise refuses to start). Both are no-ops on the download path that transport built
-          // For CI (`resolveInstalledShellOrNull`). Needs a `GITHUB_TOKEN` in the env to lift the
-          // Anonymous rate limit when resolving/downloading the release asset.
+          // root-owned `chrome-sandbox` helper and CI runs as a non-root user (the renderer
+          // otherwise refuses to start). Both are no-ops on the download path that transport built
+          // for CI (`resolveInstalledShellOrNull`). Needs a `GITHUB_TOKEN` in the env to lift the
+          // anonymous rate limit when resolving/downloading the release asset.
           environmentOptions: {
             obsidianTransport: {
               obsidianInstallerVersion: 'public-latest',
