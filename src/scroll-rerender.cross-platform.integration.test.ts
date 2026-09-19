@@ -11,13 +11,14 @@ describe('reading-view scroll re-render', () => {
     const result = await evalInObsidian({
       callback: async ({ app, lib: { waitUntil } }) => {
         /*
-         * Under the transport's ~30s per-closure cap, and the scroll pass is most of that budget:
-         * `scrollThrough` sleeps STEP_SETTLE x SCROLL_STEP_COUNT, and it runs twice (down, then up),
-         * So 12s of this closure is spent sleeping before either ceiling below is touched. The two
-         * Ceilings therefore have ~18s between them, not 30. At 20_000 the first one alone put the
-         * Closure at 38s — over the cap, killed as a bare transport timeout naming the harness
-         * Rather than the wait that overran. The first embed renders in well under a second, so the
-         * Smaller ceiling costs nothing; the scroll pass is the mechanism under test and stays as it is.
+         * Under the transport's ~30s per-closure cap, not at it. The scroll pass is most of that budget:
+         * `scrollThrough` sleeps STEP_SETTLE x SCROLL_STEP_COUNT and runs twice, down then up, so 12s of
+         * this closure is spent sleeping before either ceiling below is touched. The two ceilings
+         * therefore have ~18s between them, not 30.
+         * At 20_000 the first one alone put the closure at 38s - over the cap, killed as a bare transport
+         * timeout naming the harness rather than the wait that overran. The first embed renders in well
+         * under a second, so the smaller ceiling costs nothing; the scroll pass is the mechanism under
+         * test and stays as it is.
          */
         const TIMEOUT_IN_MILLISECONDS = 8000;
         const RECOVER_TIMEOUT_IN_MILLISECONDS = 6000;

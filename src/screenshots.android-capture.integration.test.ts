@@ -304,7 +304,17 @@ function buildSectionsHtml(): string {
 async function openNote(path: string): Promise<EmbedProbe> {
   return await evalInObsidian({
     async callback({ app, lib: { waitUntil }, obsidianModule, path: notePath }) {
-      const RENDER_TIMEOUT_IN_MILLISECONDS = 20_000;
+      /*
+       * Under the transport's ~30s per-closure cap, not at it.
+       * The desktop twin of this helper carries the same reasoning. The embed settle below is an ABSENCE
+       * probe, so its 5_000 is spent in full on every negative shot and the settle after it is elapsed
+       * time as well; at 20_000 the render ceiling left the closure only a few seconds inside the cap for
+       * opening the note, switching it to reading view and forcing the re-render, which on a phone is
+       * exactly where the seconds go.
+       * The render ceiling waits only for `.markdown-preview-view` to exist, so 10_000 is a wide margin
+       * even on a cold device, and the closure keeps its own.
+       */
+      const RENDER_TIMEOUT_IN_MILLISECONDS = 10_000;
       const EMBED_SETTLE_TIMEOUT_IN_MILLISECONDS = 5000;
       const SETTLE_DELAY_IN_MILLISECONDS = 1500;
       const TEXT_LENGTH_LIMIT = 120;
