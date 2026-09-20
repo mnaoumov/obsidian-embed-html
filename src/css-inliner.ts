@@ -271,10 +271,7 @@ function rewriteUrls(css: string, cssUrl: string): string {
 
 function unquote(value: string): string {
   const firstCharacter = value.at(0);
-  if ((firstCharacter === '"' || firstCharacter === '\'') && value.endsWith(firstCharacter) && value.length > 1) {
-    return value.slice(1, -1);
-  }
-  return value;
+  return (firstCharacter === '"' || firstCharacter === '\'') && value.endsWith(firstCharacter) && value.length > 1 ? value.slice(1, -1) : value;
 }
 
 /**

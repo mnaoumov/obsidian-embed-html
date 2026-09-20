@@ -28,15 +28,12 @@ const HALF = 2;
  */
 export function measureStickyOverlap(doc: Document, el: Element): number {
   const win = doc.defaultView;
-  if (!win) {
-    return 0;
-  }
 
   // The hit test is the only way to ask what is covering the target, and a runtime without it — jsdom,
   // which the unit tests run in — has no layout to answer with anyway. Reporting no overlap there leaves
-  // the plain scroll in place rather than throwing.
-
-  if (typeof doc.elementsFromPoint !== 'function') {
+  // the plain scroll in place rather than throwing. A detached document has no `defaultView` to measure
+  // against either, and answers the same way.
+  if (!win || typeof doc.elementsFromPoint !== 'function') {
     return 0;
   }
 

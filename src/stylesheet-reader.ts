@@ -31,10 +31,7 @@ export async function readStylesheetTextAsync(url: string): Promise<null | strin
     // `requestUrl` is an HTTP client, so the vault's own resource scheme (`app://` on desktop,
     // `capacitor://` on mobile) and `data:` / `blob:` have to go through the window's `fetch`.
     const response = await activeWindow.fetch(url);
-    if (!response.ok) {
-      return null;
-    }
-    return await response.text();
+    return response.ok ? (await response.text()) : null;
   } catch {
     return null;
   }

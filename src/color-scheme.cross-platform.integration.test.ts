@@ -94,10 +94,7 @@ describe('color-scheme propagation', () => {
 
         function iframePrefersDark(): boolean | null {
           const win = getVisibleIframe()?.contentWindow;
-          if (!win) {
-            return null;
-          }
-          return win.matchMedia('(prefers-color-scheme: dark)').matches;
+          return win ? win.matchMedia('(prefers-color-scheme: dark)').matches : null;
         }
 
         async function deleteIfExists(path: string): Promise<void> {
