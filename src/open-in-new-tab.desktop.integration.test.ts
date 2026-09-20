@@ -11,7 +11,18 @@ describe('open-in-new-tab (desktop)', () => {
     const result = await evalInObsidian({
       callback: async ({ app, lib: { waitUntil } }) => {
         const SAVE_DELAY_IN_MILLISECONDS = 800;
-        const TIMEOUT_IN_MILLISECONDS = 20_000;
+        /*
+         * ONE ceiling SHARED by all three `waitFor` calls below — file A opening, file B landing in a
+         * second tab, file A reopening — so what this closure declares is 3 x this number plus the two
+         * `SAVE_DELAY_IN_MILLISECONDS` settles, not this number once. At 20_000 that summed to 61_600,
+         * twice the transport's ~30_000 per-eval cap: the success path is fast so it passed, but a FAILURE
+         * was killed at the cap before its own ceiling was reached and reported as a bare
+         * `WebDriverError: script timeout` naming `AppiumTransport.evaluate` instead of the condition that
+         * overran. At 6000 the declared worst case is 3 x 6000 + 1600 = 19_600, with real headroom under
+         * the cap. Opening a leaf and counting `getLeavesOfType` lands in well under a second, so sizing
+         * costs nothing here; a wait that can genuinely run long belongs in Node instead.
+         */
+        const TIMEOUT_IN_MILLISECONDS = 6000;
         const PLUGIN_ID = 'embed-html';
         const VIEW_TYPE = 'html-file-view';
         const SETTING_NAME = 'Open in new tab';
