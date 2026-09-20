@@ -28,11 +28,12 @@ Embed HTML is an Obsidian plugin that adds support for embedding HTML files (`ht
 
 ## Test projects
 
-Vitest projects are declared in `scripts/vitest-config.ts`. Five are standard (provided by `defineObsidianPluginVitestConfig`); four are this repo's own, returned from `customProjects`.
+Vitest projects are declared in `scripts/vitest-config.ts`. Six are standard (provided by `defineObsidianPluginVitestConfig`); four are this repo's own, returned from `customProjects`.
 
 | Project | Test file suffix | Runs in `npm run test:integration`? |
 | --- | --- | --- |
 | `unit-tests` | `*.test.ts` (integration tests excluded) | no — `npm test` |
+| `unit-tests:global-stubs` | the files named in `editContext` | no — `npm test` |
 | `integration-tests:no-app` | `*.no-app.integration.test.ts` | yes |
 | `integration-tests:demo-vault` | `*.demo-vault.integration.test.ts` | yes |
 | `integration-tests:android` | `*.android.` + `*.cross-platform.` | yes |
@@ -43,6 +44,8 @@ Vitest projects are declared in `scripts/vitest-config.ts`. Five are standard (p
 | `capture-screenshots:android` | `*.android-capture.` | no — `npm run capture:screenshots` |
 
 **A project listed in `scripts/test-integration.ts` MUST be declared in `scripts/vitest-config.ts`, and `customProjects` is APPENDED to, never replaced.** Vitest fails a filter that matches nothing (`No projects matched the filter …`), and because `test-integration.ts` awaits the projects in order, one missing project takes every later project down with it — the whole sweep silently shrinks to whatever ran before it. Adding the screenshot-capture projects by replacing the array's contents dropped `integration-tests:demo-vault` and `integration-tests:linux` for a day.
+
+**`unit-tests` runs on vitest's VM pool, where `window`, `document`, `location` and `top` are NON-CONFIGURABLE.** A unit suite that redefines one of the four — `vi.stubGlobal('location', …)`, `Object.defineProperty(window, 'location', …)` — throws `TypeError: Cannot redefine property` there. That is JS semantics under `pool: 'vmThreads'`, not a bug to route around: the pool builds one jsdom per worker instead of one per file, which is where the suite's speed comes from. Name such a file in `editContext` (`context.globalStubTestFiles.push(…)`) and `obsidian-dev-utils` emits the `unit-tests:global-stubs` sibling for it — identical except that it runs on the default pool. `npm test` and `npm run test:coverage` pass `--project=unit-tests` AND `--project=unit-tests:*`, so the sibling runs and is covered with no script change. One file is named today, `src/html-embed-component.test.ts`, which stubs `location` 23 times to check the `iframe` `src` origin; on the VM pool it fails 38 tests and every other unit suite passes.
 
 The `integration-tests:demo-vault` project opens a populated copy of the in-repo `demo-vault/` (via `scripts/demo-vault-global-setup.ts`, built on `buildDemoVaultPopulate` from `obsidian-integration-testing`) rather than an empty vault, and collects two suites: `obsidian-dev-utils`' `registerDemoVaultButtonSuite` (clicks every `code-button`) and this repo's own embed/size checks. It needs CodeScript Toolkit's binary present in `demo-vault/.obsidian/plugins/fix-require-modules/` — gitignored, installed by `demo-vault-helper` the first time you open `demo-vault/` in Obsidian.
 
