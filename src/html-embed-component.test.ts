@@ -32,7 +32,7 @@ interface ClickEvent {
 type ClickHandler = ($event: ClickEvent) => void;
 
 interface ComponentWithApplySize {
-  applySize(): void;
+  applySize: () => void;
 }
 
 interface ComponentWithIframeEl {
@@ -51,7 +51,7 @@ interface DecorationOverrides {
 
 interface LoadedContentComponent {
   component: HtmlEmbedComponent;
-  fireLoad(): void;
+  fireLoad: () => void;
 }
 
 interface MockContainerEl {
@@ -129,7 +129,7 @@ interface SizingIframeDoc {
 interface StylesheetObserverHarness {
   component: HtmlEmbedComponent;
   disconnect: ReturnType<typeof vi.fn>;
-  fireMutations(mutations: MutationRecord[]): void;
+  fireMutations: (mutations: MutationRecord[]) => void;
   iframeDoc: MockStylesheetIframeDoc;
   observe: ReturnType<typeof vi.fn>;
 }
