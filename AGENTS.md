@@ -28,8 +28,7 @@ Embed HTML is an Obsidian plugin that adds support for embedding HTML files (`ht
 
 ## Test projects
 
-Vitest projects are declared in `scripts/vitest-config.ts`. Five are standard (provided by
-`defineObsidianPluginVitestConfig`); four are this repo's own, returned from `customProjects`.
+Vitest projects are declared in `scripts/vitest-config.ts`. Five are standard (provided by `defineObsidianPluginVitestConfig`); four are this repo's own, returned from `customProjects`.
 
 | Project | Test file suffix | Runs in `npm run test:integration`? |
 | --- | --- | --- |
@@ -43,20 +42,9 @@ Vitest projects are declared in `scripts/vitest-config.ts`. Five are standard (p
 | `capture-screenshots:desktop` | `*.desktop-capture.` | no — `npm run capture:screenshots` |
 | `capture-screenshots:android` | `*.android-capture.` | no — `npm run capture:screenshots` |
 
-**A project listed in `scripts/test-integration.ts` MUST be declared in `scripts/vitest-config.ts`, and
-`customProjects` is APPENDED to, never replaced.** Vitest fails a filter that matches nothing
-(`No projects matched the filter …`), and because `test-integration.ts` awaits the projects in order,
-one missing project takes every later project down with it — the whole sweep silently shrinks to
-whatever ran before it. Adding the screenshot-capture projects by replacing the array's contents
-dropped `integration-tests:demo-vault` and `integration-tests:linux` for a day.
+**A project listed in `scripts/test-integration.ts` MUST be declared in `scripts/vitest-config.ts`, and `customProjects` is APPENDED to, never replaced.** Vitest fails a filter that matches nothing (`No projects matched the filter …`), and because `test-integration.ts` awaits the projects in order, one missing project takes every later project down with it — the whole sweep silently shrinks to whatever ran before it. Adding the screenshot-capture projects by replacing the array's contents dropped `integration-tests:demo-vault` and `integration-tests:linux` for a day.
 
-The `integration-tests:demo-vault` project opens a populated copy of the in-repo `demo-vault/` (via
-`scripts/demo-vault-global-setup.ts`, built on `buildDemoVaultPopulate` from
-`obsidian-integration-testing`) rather than an empty vault, and collects two suites:
-`obsidian-dev-utils`' `registerDemoVaultButtonSuite` (clicks every `code-button`) and this repo's own
-embed/size checks. It needs CodeScript Toolkit's binary present in
-`demo-vault/.obsidian/plugins/fix-require-modules/` — gitignored, installed by `demo-vault-helper` the
-first time you open `demo-vault/` in Obsidian.
+The `integration-tests:demo-vault` project opens a populated copy of the in-repo `demo-vault/` (via `scripts/demo-vault-global-setup.ts`, built on `buildDemoVaultPopulate` from `obsidian-integration-testing`) rather than an empty vault, and collects two suites: `obsidian-dev-utils`' `registerDemoVaultButtonSuite` (clicks every `code-button`) and this repo's own embed/size checks. It needs CodeScript Toolkit's binary present in `demo-vault/.obsidian/plugins/fix-require-modules/` — gitignored, installed by `demo-vault-helper` the first time you open `demo-vault/` in Obsidian.
 
 ## Architecture
 
