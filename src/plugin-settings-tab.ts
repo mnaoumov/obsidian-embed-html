@@ -15,7 +15,7 @@ interface AppendClampDescParams {
 }
 
 interface PluginSettingsTabSizeSettingExParams {
-  descBuilder(this: void, f: DocumentFragment): void;
+  readonly descBuilder: (this: void, f: DocumentFragment) => void;
   readonly name: string;
   readonly propertyName: SizeSettingKey;
 }

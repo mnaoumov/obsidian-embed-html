@@ -44,7 +44,7 @@ describe('open in external browser button', () => {
         }
 
         interface SettingsCarrier {
-          editAndSave(editor: (settings: EmbedHtmlSettings) => void): Promise<void>;
+          editAndSave: (editor: (settings: EmbedHtmlSettings) => void) => Promise<void>;
           settings: EmbedHtmlSettings;
         }
 

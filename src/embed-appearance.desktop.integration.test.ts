@@ -20,7 +20,7 @@ interface EmbedHtmlPluginLike {
 }
 
 interface EmbedHtmlSettingsComponentLike {
-  editAndSave(this: void, editor: (settings: EmbedAppearanceSettings) => void): Promise<void>;
+  editAndSave: (this: void, editor: (settings: EmbedAppearanceSettings) => void) => Promise<void>;
   settings: EmbedAppearanceSettings;
 }
 

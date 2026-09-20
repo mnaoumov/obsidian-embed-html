@@ -44,7 +44,7 @@ interface EmbedHtmlPluginLike {
 
 interface EmbedHtmlSettingsComponentLike {
   readonly defaultSettings: Readonly<Record<string, unknown>>;
-  editAndSave(this: void, editor: (settings: Record<string, unknown>) => void): Promise<void>;
+  editAndSave: (this: void, editor: (settings: Record<string, unknown>) => void) => Promise<void>;
 }
 
 interface NoteExpectation {

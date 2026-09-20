@@ -60,14 +60,14 @@ interface EmbedProbe {
  * declare. Setting the config alone changes nothing on screen.
  */
 interface InlineTitleApp {
-  updateInlineTitleDisplay(this: void): void;
+  updateInlineTitleDisplay: (this: void) => void;
 }
 
 /**
  * The preview half of a Markdown view, reduced to the call that re-renders it.
  */
 interface PreviewMode {
-  rerender(this: void, isFull: boolean): void;
+  rerender: (this: void, isFull: boolean) => void;
 }
 
 /**
@@ -81,14 +81,14 @@ interface PreviewRenderView {
  * The desktop side dock, reduced to the resize call.
  */
 interface ResizableSideDock {
-  setSize(this: void, size: number): void;
+  setSize: (this: void, size: number) => void;
 }
 
 /**
  * The settings component every plugin exposes for editing its own settings.
  */
 interface SettingsEditableComponent {
-  editAndSave(this: void, settingsEditor: (settings: Record<string, unknown>) => void): Promise<void>;
+  editAndSave: (this: void, settingsEditor: (settings: Record<string, unknown>) => void) => Promise<void>;
 }
 
 /**
