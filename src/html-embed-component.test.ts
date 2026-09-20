@@ -324,10 +324,7 @@ describe('HtmlEmbedComponent', () => {
         if (attr === 'width') {
           return '500';
         }
-        if (attr === 'height') {
-          return '300';
-        }
-        return null;
+        return attr === 'height' ? '300' : null;
       });
       const pluginSettingsComponent = createMockPluginSettingsComponent();
       const mockApp = createMockApp();
@@ -359,10 +356,7 @@ describe('HtmlEmbedComponent', () => {
     it('should append px to pure numeric values', () => {
       const containerEl = createMockContainerEl();
       containerEl.getAttr.mockImplementation((attr: string) => {
-        if (attr === 'width') {
-          return '800';
-        }
-        return null;
+        return attr === 'width' ? '800' : null;
       });
       const pluginSettingsComponent = createMockPluginSettingsComponent();
       const mockApp = createMockApp();
@@ -385,10 +379,7 @@ describe('HtmlEmbedComponent', () => {
     it('should not append px to values with units', () => {
       const containerEl = createMockContainerEl();
       containerEl.getAttr.mockImplementation((attr: string) => {
-        if (attr === 'width') {
-          return '50%';
-        }
-        return null;
+        return attr === 'width' ? '50%' : null;
       });
       const pluginSettingsComponent = createMockPluginSettingsComponent();
       const mockApp = createMockApp();
@@ -418,10 +409,7 @@ describe('HtmlEmbedComponent', () => {
         if (attr === 'alt') {
           return 'basic.html';
         }
-        if (attr === 'width') {
-          return '400';
-        }
-        return null;
+        return attr === 'width' ? '400' : null;
       });
       const pluginSettingsComponent = createMockPluginSettingsComponent();
       const mockApp = createMockApp();
@@ -453,10 +441,7 @@ describe('HtmlEmbedComponent', () => {
         if (attr === 'width') {
           return '600';
         }
-        if (attr === 'height') {
-          return '200';
-        }
-        return null;
+        return attr === 'height' ? '200' : null;
       });
       const pluginSettingsComponent = createMockPluginSettingsComponent();
       const mockApp = createMockApp();

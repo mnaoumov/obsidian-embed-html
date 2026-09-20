@@ -103,10 +103,12 @@ function extractExpectedSizeKeys(source: string): string[] {
       continue;
     }
     const dimensions = /^(?<width>\d+)x(?<height>\d+)$/.exec(token);
-    if (dimensions) {
-      keys.add(`${src}|width|${dimensions.groups?.['width'] ?? ''}`);
-      keys.add(`${src}|height|${dimensions.groups?.['height'] ?? ''}`);
+    if (!dimensions) {
+      continue;
     }
+
+    keys.add(`${src}|width|${dimensions.groups?.['width'] ?? ''}`);
+    keys.add(`${src}|height|${dimensions.groups?.['height'] ?? ''}`);
   }
   return [...keys];
 }

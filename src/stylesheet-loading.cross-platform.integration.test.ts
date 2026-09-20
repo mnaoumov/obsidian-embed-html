@@ -120,39 +120,32 @@ body { background-image: url("bg.svg"); }
           const iframe = getIframe();
           const el = iframe?.contentDocument?.querySelector(selector);
           const win = iframe?.contentWindow;
-          if (!el || !win) {
-            return '';
-          }
-          return win.getComputedStyle(el).color;
+          return !el || !win ? '' : win.getComputedStyle(el).color;
         }
 
         function getBackgroundImage(): string {
           const iframe = getIframe();
           const bodyEl = iframe?.contentDocument?.body;
           const win = iframe?.contentWindow;
-          if (!bodyEl || !win) {
-            return '';
-          }
-          return win.getComputedStyle(bodyEl).backgroundImage;
+          return !bodyEl || !win ? '' : win.getComputedStyle(bodyEl).backgroundImage;
         }
 
         async function checkImageLoadsAsync(cssUrlValue: string): Promise<boolean> {
           const match = /url\("?(?<url>[^")]+)"?\)/.exec(cssUrlValue);
           const url = match?.groups?.['url'];
           const iframeDoc = getIframe()?.contentDocument;
-          if (!url || !iframeDoc) {
-            return false;
-          }
-          return await new Promise<boolean>((resolve) => {
-            const imageEl = iframeDoc.head.createEl('img');
-            imageEl.addEventListener('load', () => {
-              resolve(true);
-            });
-            imageEl.addEventListener('error', () => {
-              resolve(false);
-            });
-            imageEl.src = url;
-          });
+          return !url || !iframeDoc
+            ? false
+            : (await new Promise<boolean>((resolve) => {
+              const imageEl = iframeDoc.head.createEl('img');
+              imageEl.addEventListener('load', () => {
+                resolve(true);
+              });
+              imageEl.addEventListener('error', () => {
+                resolve(false);
+              });
+              imageEl.src = url;
+            }));
         }
 
         async function cleanup(): Promise<void> {

@@ -110,11 +110,7 @@ export function parseSizeSpec(token: string): SizeSpec {
     return EMPTY_SIZE_SPEC;
   }
 
-  if (trimmedToken.includes(PROPERTY_VALUE_SEPARATOR)) {
-    return parseDeclarationForm(trimmedToken);
-  }
-
-  return parseShortForm(trimmedToken);
+  return trimmedToken.includes(PROPERTY_VALUE_SEPARATOR) ? parseDeclarationForm(trimmedToken) : parseShortForm(trimmedToken);
 }
 
 function normalizeValue(rawValue: string): null | string {
@@ -127,11 +123,7 @@ function normalizeValue(rawValue: string): null | string {
     return 'fit-content';
   }
 
-  if (PURE_NUMBER_REGEX.test(trimmedValue)) {
-    return `${trimmedValue}px`;
-  }
-
-  return trimmedValue;
+  return PURE_NUMBER_REGEX.test(trimmedValue) ? `${trimmedValue}px` : trimmedValue;
 }
 
 function parseDeclarationForm(token: string): SizeSpec {
@@ -168,16 +160,14 @@ function parseShortForm(token: string): SizeSpec {
   // `WxH` form: split on a single `x` (pieces then contain no `x`, matching the legacy `NxM` shape). `slice` yields definite strings, so no empty piece is ever `undefined`.
   const separatorIndex = token.indexOf(DIMENSION_SEPARATOR);
   const hasSingleSeparator = separatorIndex !== -1 && !token.includes(DIMENSION_SEPARATOR, separatorIndex + 1);
-  if (hasSingleSeparator) {
-    return {
+  return hasSingleSeparator
+    ? {
       ...EMPTY_SIZE_SPEC,
       height: normalizeValue(token.slice(separatorIndex + 1)),
       width: normalizeValue(token.slice(0, separatorIndex))
+    }
+    : {
+      ...EMPTY_SIZE_SPEC,
+      width: normalizeValue(token)
     };
-  }
-
-  return {
-    ...EMPTY_SIZE_SPEC,
-    width: normalizeValue(token)
-  };
 }

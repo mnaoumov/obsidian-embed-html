@@ -224,15 +224,13 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
       'min-width': spec.minWidth,
       // Clip the iframe's square corners to the rounded box, but only when a radius is set so the
       // default (no radius) keeps the container's natural overflow behavior.
-      'overflow': decoration.borderRadius === '' ? '' : 'hidden'
+      'overflow': decoration.borderRadius === '' ? '' : 'hidden',
+      // Content axes are driven by measure(), which writes them itself once it has a measurement, so
+      // an axis on a content keyword is OMITTED here rather than written as `''` — an empty value
+      // would clear whatever measure() last put there.
+      ...(!this.widthContentKeyword && { [WIDTH_ATTRIBUTE]: spec.width }),
+      ...(!this.heightContentKeyword && { [HEIGHT_ATTRIBUTE]: spec.height })
     };
-    // Content axes are driven by measure(); apply only the literal axes here.
-    if (!this.widthContentKeyword) {
-      props[WIDTH_ATTRIBUTE] = spec.width;
-    }
-    if (!this.heightContentKeyword) {
-      props[HEIGHT_ATTRIBUTE] = spec.height;
-    }
     this.containerEl.setCssProps(props);
 
     this.configureMeasurement();
@@ -281,24 +279,22 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
   // win; a genuine non-numeric token (`50%`, `width: max-content`) never equals the file name and is kept.
   private getSizeToken(): string {
     const altValue = this.containerEl.getAttr(ALT_ATTRIBUTE) ?? '';
-    if ([this.file.basename, this.file.name, this.file.path].includes(altValue)) {
-      return '';
-    }
-    return altValue;
+    return [this.file.basename, this.file.name, this.file.path].includes(altValue) ? '' : altValue;
   }
 
   private initIframe(iframeDoc: HTMLDocument): void {
     this.registerDomEvent(iframeDoc, 'click', ($event) => {
       const iframeWin = iframeDoc.defaultView;
-      if (!iframeWin) {
+      // `instanceof` has to be tested against the IFRAME's `Element`, not the host document's: the two
+      // realms have separate intrinsics, so a node from inside the frame fails the host's check.
+      if (!iframeWin || !($event.target instanceof iframeWin.Element)) {
         return;
       }
-      if ($event.target instanceof iframeWin.Element) {
-        const aEl = $event.target.closest('a');
-        if (aEl) {
-          aEl.target = '_blank';
-        }
+      const aEl = $event.target.closest('a');
+      if (!aEl) {
+        return;
       }
+      aEl.target = '_blank';
     });
 
     // Scripts in the document may have added stylesheets of their own while it loaded, and may add more
@@ -522,27 +518,15 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
  */
 function checkHasStylesheetLinkMutation(mutations: MutationRecord[]): boolean {
   return mutations.some((mutation) => {
-    if (mutation.type === 'attributes') {
-      return mutation.target.nodeName === LINK_NODE_NAME;
-    }
-    return [...mutation.addedNodes].some((node) => node.nodeName === LINK_NODE_NAME);
+    return mutation.type === 'attributes' ? mutation.target.nodeName === LINK_NODE_NAME : [...mutation.addedNodes].some((node) => node.nodeName === LINK_NODE_NAME);
   });
 }
 
 function resolveAxis(params: ResolveAxisParams): string {
   const { fromAttribute, fromSettings, fromToken } = params;
-  if (fromToken !== null) {
-    return fromToken;
-  }
-  if (fromAttribute !== null) {
-    return fromAttribute;
-  }
-  return fromSettings;
+  return fromToken ?? fromAttribute ?? fromSettings;
 }
 
 function toPx(value: string): string {
-  if (value === String(Number(value))) {
-    return `${value}px`;
-  }
-  return value;
+  return value === String(Number(value)) ? `${value}px` : value;
 }

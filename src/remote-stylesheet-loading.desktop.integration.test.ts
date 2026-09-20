@@ -88,10 +88,7 @@ describe('remote stylesheet loading', () => {
             const iframe = getIframe();
             const el = iframe?.contentDocument?.querySelector('h1');
             const win = iframe?.contentWindow;
-            if (!el || !win) {
-              return '';
-            }
-            return win.getComputedStyle(el).color;
+            return !el || !win ? '' : win.getComputedStyle(el).color;
           }
 
           async function cleanup(): Promise<void> {

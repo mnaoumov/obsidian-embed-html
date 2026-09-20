@@ -88,11 +88,10 @@ describe('embed appearance settings', () => {
             message: 'embed container never reflected the appearance settings',
             predicate: () => {
               embedEl = leaf.view.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view .internal-embed');
-              if (!embedEl?.offsetParent) {
-                return false;
-              }
               // The border width is applied synchronously by `applySize()`, so it is the readiness signal.
-              return getComputedStyle(embedEl).borderTopWidth === EXPECTED_BORDER_WIDTH;
+              return embedEl?.offsetParent
+                ? getComputedStyle(embedEl).borderTopWidth === EXPECTED_BORDER_WIDTH
+                : false;
             },
             timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS
           });
@@ -178,13 +177,12 @@ function isNonTransparent(color: string): boolean {
 
 function parseRgbChannels(color: string): null | RgbChannels {
   const match = /^rgba?\((?<r>\d+),\s*(?<g>\d+),\s*(?<b>\d+)(?:,\s*(?<a>[\d.]+))?\)$/.exec(color);
-  if (!match?.groups) {
-    return null;
-  }
-  return {
-    a: match.groups['a'] === undefined ? 1 : Number(match.groups['a']),
-    b: Number(match.groups['b']),
-    g: Number(match.groups['g']),
-    r: Number(match.groups['r'])
-  };
+  return match?.groups
+    ? {
+      a: match.groups['a'] === undefined ? 1 : Number(match.groups['a']),
+      b: Number(match.groups['b']),
+      g: Number(match.groups['g']),
+      r: Number(match.groups['r'])
+    }
+    : null;
 }

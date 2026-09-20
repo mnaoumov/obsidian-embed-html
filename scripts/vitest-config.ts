@@ -80,6 +80,24 @@ const DEMO_VAULT_TIMEOUT_IN_MILLISECONDS = 180_000;
  */
 const LINUX_TEST_FILES = 'src/**/*.linux.integration.test.ts';
 
+/**
+ * The one unit suite that redefines a global the `unit-tests` project's VM pool locks down.
+ *
+ * It stubs `location` 23 times — every `iframe` `src` the component builds is checked against
+ * `location.origin`, so the suite has to pretend to be `app://obsidian.md` and, for the negative
+ * cases, something else. Under `pool: 'vmThreads'` `location` is a non-configurable property of the
+ * VM global, so `vi.stubGlobal('location', …)` throws `Cannot redefine property` and the file fails
+ * 38 tests. Measured 2026-09-16 against `obsidian-dev-utils` `main` with `--pool=vmThreads`: this
+ * file was the ONLY one of the seventeen unit suites here to fail, and re-measured 2026-09-20, it is
+ * still the only one that touches `window`, `document`, `location` or `top` at all.
+ *
+ * Naming it here moves it out of `unit-tests` and into the sibling `unit-tests:global-stubs`
+ * project, which is identical except that it runs on the default pool. `test` and `test:coverage`
+ * pass `--project=unit-tests` AND `--project=unit-tests:*`, so the sibling runs and is covered with
+ * no script change.
+ */
+const GLOBAL_STUB_TEST_FILES = ['src/html-embed-component.test.ts'];
+
 export const config = defineObsidianPluginVitestConfig({
   customProjects(context: ObsidianPluginVitestConfigContext): TestProjectConfiguration[] {
     return [
@@ -140,5 +158,8 @@ export const config = defineObsidianPluginVitestConfig({
         }
       }
     ];
+  },
+  editContext(context: ObsidianPluginVitestConfigContext): void {
+    context.globalStubTestFiles.push(...GLOBAL_STUB_TEST_FILES);
   }
 });
