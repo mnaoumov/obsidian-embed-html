@@ -145,7 +145,7 @@ class MockIframeElement {
 const STRICT_PROXY_TARGET_SYMBOL = Symbol.for('strictProxyTarget');
 
 function asContainerEl(mock: MockContainerEl): HTMLElement {
-  // StrictProxy<HTMLElement>(mock) cannot be used here because vi.fn() mock function
+  // strictProxy<HTMLElement>(mock) cannot be used here because vi.fn() mock function
   // types are structurally incompatible with HTMLElement's overloaded method signatures
   // (e.g. setCssProps, createEl). Last-resort test-only cast per project conventions.
 
@@ -521,7 +521,7 @@ describe('HtmlEmbedComponent', () => {
         subpath: ''
       });
 
-      // LoadFile() uses the real fire-and-forget invokeAsyncSafely; observe the effect rather than
+      // loadFile() uses the real fire-and-forget invokeAsyncSafely; observe the effect rather than
       // asserting the helper was called.
       component.loadFile();
 
@@ -842,7 +842,7 @@ describe('HtmlEmbedComponent', () => {
         subpath: ''
       });
 
-      // SetSubpath delegates to loadFile, which fires the real async load path.
+      // setSubpath delegates to loadFile, which fires the real async load path.
       component.setSubpath('#myId');
 
       await vi.waitFor(() => {
