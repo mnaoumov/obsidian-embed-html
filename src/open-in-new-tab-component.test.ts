@@ -28,7 +28,7 @@ describe('OpenInNewTabComponent', () => {
     loadComponent(true);
 
     const leaf = app.workspace.getLeaf();
-    await leaf.setViewState({ type: 'markdown' });
+    await showNoteIn(leaf);
 
     const openFileMock = vi.fn<WorkspaceLeaf['openFile']>();
     const newLeaf = strictProxy<WorkspaceLeaf>({ openFile: openFileMock });
@@ -46,7 +46,7 @@ describe('OpenInNewTabComponent', () => {
     loadComponent(false);
 
     const leaf = app.workspace.getLeaf();
-    await leaf.setViewState({ type: 'markdown' });
+    await showNoteIn(leaf);
 
     const getLeafSpy = vi.spyOn(app.workspace, 'getLeaf');
 
@@ -72,7 +72,7 @@ describe('OpenInNewTabComponent', () => {
     loadComponent(true);
 
     const leaf = app.workspace.getLeaf();
-    await leaf.setViewState({ type: 'markdown' });
+    await showNoteIn(leaf);
 
     const getLeafSpy = vi.spyOn(app.workspace, 'getLeaf');
 
@@ -85,7 +85,7 @@ describe('OpenInNewTabComponent', () => {
     loadComponent(true);
 
     const leaf = app.workspace.getLeaf();
-    await leaf.setViewState({ type: 'markdown' });
+    await showNoteIn(leaf);
 
     component?.unload();
     component = null;
@@ -123,4 +123,11 @@ function loadComponent(shouldOpenInNewTab: boolean): void {
     pluginSettingsComponent
   });
   component.load();
+}
+
+// A markdown view with no file closes back to the empty view, as in Obsidian, so occupying a leaf takes a real note.
+async function showNoteIn(leaf: WorkspaceLeaf): Promise<void> {
+  const note = await app.vault.create('note.md', '');
+  await leaf.setViewState({ state: { file: note.path }, type: 'markdown' });
+  expect(leaf.getViewState().type).toBe('markdown');
 }
