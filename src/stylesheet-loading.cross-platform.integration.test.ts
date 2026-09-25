@@ -134,18 +134,19 @@ body { background-image: url("bg.svg"); }
           const match = /url\("?(?<url>[^")]+)"?\)/.exec(cssUrlValue);
           const url = match?.groups?.['url'];
           const iframeDoc = getIframe()?.contentDocument;
-          return !url || !iframeDoc
-            ? false
-            : (await new Promise<boolean>((resolve) => {
-              const imageEl = iframeDoc.head.createEl('img');
-              imageEl.addEventListener('load', () => {
-                resolve(true);
-              });
-              imageEl.addEventListener('error', () => {
-                resolve(false);
-              });
-              imageEl.src = url;
-            }));
+          if (!url || !iframeDoc) {
+            return false;
+          }
+          return await new Promise<boolean>((resolve) => {
+            const imageEl = iframeDoc.head.createEl('img');
+            imageEl.addEventListener('load', () => {
+              resolve(true);
+            });
+            imageEl.addEventListener('error', () => {
+              resolve(false);
+            });
+            imageEl.src = url;
+          });
         }
 
         async function cleanup(): Promise<void> {
