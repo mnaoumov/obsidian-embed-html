@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## 2.5.10
+
+- chore: merge the applyObsidianTheme move for the desktop capture suite
+- chore(deps): merge the obsidian-integration-testing 17 float
+- chore(deps): merge the obsidian-test-mocks 7 float
+- fix(test): merge the headless demo-vault toolkit install
+- fix(deps): restore the lockfile's missing resolved and integrity fields
+- style(comments): stop rewriting symbol names that open a comment
+- test(vitest-config): run the location-stubbing suite on the default pool
+- build(markdownlint): forbid hard-wrapped markdown paragraphs
+- test: size the open-in-new-tab closure's shared wait ceiling
+- fix(deps): float devalue to 5.9.4, clearing GHSA-9rgm-9g3h-6x36
+- test: give the capture suites' open-note closures room inside the per-eval cap
+- chore(deps): drop the dead markdown-it override
+- chore(deps): drop the dead js-yaml override
+- style(comments): stop capitalizing the middle of a wrapped comment
+- docs: replace the private rule-id citations with what they assert
+- docs: name the library and the sibling plugins so a reader can resolve them
+- docs: replace the private tracker references with what they pointed at
+- test: keep the embed suites' declared waiting under the transport cap
+- chore(deps): move to obsidian-dev-utils 103
+- test: bring the in-closure wait ceilings under the transport's per-eval cap
+- chore: adopt the npm run gate branch gate
+- test: bring the in-closure wait ceiling under the transport's per-eval cap
+- docs: name the unversioned demo-vault asset and the folder it unzips into
+- chore: make the LICENSE copyright line checkable by the linter and guard it against the year roll-over
+- test(test-mocks): drop the hand-rolled app.plugins stub, and sweep the dependencies
+- fix(build): wire build:compile to buildCompile and drop the duplicate leaf script
+
 ## 2.5.9
 
 - chore(deps): sweep caret-ranged dependencies to latest
