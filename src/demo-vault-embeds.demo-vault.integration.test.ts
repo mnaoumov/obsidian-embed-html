@@ -129,7 +129,9 @@ function listSelfContainedNotes(): NoteExpectation[] {
       const source = readFileSync(join(DEMO_VAULT_DIR, name), 'utf-8');
       return {
         expectedSizeKeys: extractExpectedSizeKeys(source),
-        htmlEmbedCount: (source.match(/!\[\[[^\]]*\.html[^\]]*\]\]/g) ?? []).length,
+        // VAULT embeds only: a remote `![[https://…]]` is not the plugin's `.internal-embed` iframe, and it needs
+        // the network, which this gate must not. `remote-embed.desktop.integration.test.ts` covers those.
+        htmlEmbedCount: (source.match(/!\[\[(?!https?:\/\/)[^\]]*\.html[^\]]*\]\]/g) ?? []).length,
         name
       };
     });
