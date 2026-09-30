@@ -3,7 +3,9 @@ import type {
   PluginManifest
 } from 'obsidian';
 
+import { PluginEditorExtensionRegistrar } from 'obsidian-dev-utils/obsidian/editor-extension-registrar';
 import { PluginExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
+import { PluginMarkdownPostProcessorRegistrar } from 'obsidian-dev-utils/obsidian/markdown-post-processor-registrar';
 import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import { App } from 'obsidian-test-mocks/obsidian';
@@ -70,6 +72,16 @@ vi.mock('./html-file-view-component.ts', async () => {
   };
 });
 
+vi.mock('./remote-html-embeds-component.ts', async () => {
+  const { Component } = await vi.importActual<ComponentModule>('obsidian');
+  return {
+    // eslint-disable-next-line prefer-arrow-callback -- mock must be constructable with `new` and return a loadable Component.
+    RemoteHtmlEmbedsComponent: vi.fn(function RemoteHtmlEmbedsComponentStub(): object {
+      return new Component();
+    })
+  };
+});
+
 vi.mock('./open-in-new-tab-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
   return {
@@ -105,6 +117,8 @@ import { PluginSettingsComponent } from './plugin-settings-component.ts';
 import { PluginSettingsTab } from './plugin-settings-tab.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { Plugin } from './plugin.ts';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { RemoteHtmlEmbedsComponent } from './remote-html-embeds-component.ts';
 
 const manifest = strictProxy<PluginManifest>({
   id: 'embed-html',
@@ -147,6 +161,20 @@ describe('Plugin', () => {
     expect(embedParams?.app).toBe(app);
     expect(embedParams?.pluginSettingsComponent).toBe(settingsComponent);
     expect(embedParams?.htmlExtensions).toBe(htmlExtensions);
+  });
+
+  it('should register the remote embeds with the app, extensions, settings component, and registrars', async () => {
+    await createLoadedPlugin();
+
+    const settingsComponent: unknown = vi.mocked(PluginSettingsComponent).mock.results[0]?.value;
+    const htmlExtensions: unknown = vi.mocked(HtmlExtensions).mock.results[0]?.value;
+
+    const remoteParams = vi.mocked(RemoteHtmlEmbedsComponent).mock.calls[0]?.[0];
+    expect(remoteParams?.app).toBe(app);
+    expect(remoteParams?.htmlExtensions).toBe(htmlExtensions);
+    expect(remoteParams?.pluginSettingsComponent).toBe(settingsComponent);
+    expect(remoteParams?.editorExtensionRegistrar).toBeInstanceOf(PluginEditorExtensionRegistrar);
+    expect(remoteParams?.markdownPostProcessorRegistrar).toBeInstanceOf(PluginMarkdownPostProcessorRegistrar);
   });
 
   it('should register the file view with the extensions, settings component, and registrars', async () => {

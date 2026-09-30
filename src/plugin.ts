@@ -2,7 +2,9 @@ import { castTo } from 'obsidian-dev-utils/object-utils';
 import { OpenDemoVaultCommandHandler } from 'obsidian-dev-utils/obsidian/command-handlers/open-demo-vault-command-handler';
 import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
 import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
+import { PluginEditorExtensionRegistrar } from 'obsidian-dev-utils/obsidian/editor-extension-registrar';
 import { PluginExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
+import { PluginMarkdownPostProcessorRegistrar } from 'obsidian-dev-utils/obsidian/markdown-post-processor-registrar';
 import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
 import { PluginEventSourceImpl } from 'obsidian-dev-utils/obsidian/plugin/plugin-event-source';
 import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
@@ -13,6 +15,7 @@ import { HtmlFileViewComponent } from './html-file-view-component.ts';
 import { OpenInNewTabComponent } from './open-in-new-tab-component.ts';
 import { PluginSettingsComponent } from './plugin-settings-component.ts';
 import { PluginSettingsTab } from './plugin-settings-tab.ts';
+import { RemoteHtmlEmbedsComponent } from './remote-html-embeds-component.ts';
 
 export class Plugin extends PluginBase {
   /**
@@ -59,6 +62,15 @@ export class Plugin extends PluginBase {
       new HtmlEmbedRegistryComponent({
         app: this.app,
         htmlExtensions,
+        pluginSettingsComponent
+      })
+    );
+    this.addChild(
+      new RemoteHtmlEmbedsComponent({
+        app: this.app,
+        editorExtensionRegistrar: new PluginEditorExtensionRegistrar(this),
+        htmlExtensions,
+        markdownPostProcessorRegistrar: new PluginMarkdownPostProcessorRegistrar(this),
         pluginSettingsComponent
       })
     );

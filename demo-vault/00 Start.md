@@ -17,6 +17,7 @@ This vault demonstrates the [Embed HTML](https://community.obsidian.md/plugins/e
 11. [11 Open in External Browser](<./11 Open in External Browser.md>) — Hand the embedded file to your system's default browser (with live buttons)
 12. [12 Sticky Table Headers](<./12 Sticky Table Headers.md>) — Anchor jumps land below a sticky header instead of underneath it
 13. [13 External Stylesheets and Assets](<./13 External Stylesheets and Assets.md>) — Stylesheets, scripts, images and fonts loaded from other files
+14. [14 Remote HTML Pages](<./14 Remote HTML Pages.md>) — Embed a page from the web or your local network by its address
 
 ## Interactive buttons
 

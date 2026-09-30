@@ -44,6 +44,7 @@ A copy of the vault ships with every release. You can access it via any of the f
 ## What it does
 
 - **Embed an HTML file in a note**, with `htm`, `html`, `shtml`, `xht` and `xhtml` all supported. [01 Basic Embed](<./demo-vault/01 Basic Embed.md>) · [07 File Extensions](<./demo-vault/07 File Extensions.md>)
+- **Embed a page from the web or your local network** by its address, with `![caption](https://host/page.html)` or `![[https://host/page.html]]` — shown as an isolated page that keeps its own styles and scripts. [14 Remote HTML Pages](<./demo-vault/14 Remote HTML Pages.md>)
 - **Size it** — a width, a height, both, auto-fit to the content, or full control with CSS declarations, with defaults in the settings. [02 Custom Size](<./demo-vault/02 Custom Size.md>)
 - **Show only part of a page** — scroll to an element by id, or extract just that element. [03 Scroll to Element](<./demo-vault/03 Scroll to Element.md>) · [04 Extract Element](<./demo-vault/04 Extract Element.md>)
 - **It stays a real page** — its JavaScript runs, its links work, and its stylesheets, scripts, images and fonts load. [05 JavaScript](<./demo-vault/05 JavaScript.md>) · [06 Links](<./demo-vault/06 Links.md>) · [13 External Stylesheets and Assets](<./demo-vault/13 External Stylesheets and Assets.md>)
