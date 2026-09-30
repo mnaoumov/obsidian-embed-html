@@ -19,6 +19,10 @@ This vault demonstrates the [Embed HTML](https://community.obsidian.md/plugins/e
 13. [13 External Stylesheets and Assets](<./13 External Stylesheets and Assets.md>) — Stylesheets, scripts, images and fonts loaded from other files
 14. [14 Remote HTML Pages](<./14 Remote HTML Pages.md>) — Embed a page from the web or your local network by its address
 
+## Reference
+
+- [15 Settings](<./15 Settings.md>) — Every setting, by the key it is stored under in `data.json`
+
 ## Interactive buttons
 
 Some notes include **code buttons** that change the plugin's settings and re-render the embeds so you can see the effect immediately. They are powered by the [CodeScript Toolkit](https://github.com/mnaoumov/obsidian-codescript-toolkit) plugin, which this vault installs and enables automatically on first open.
