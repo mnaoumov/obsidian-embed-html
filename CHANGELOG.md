@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.6.0
+
+- docs(demo-vault): merge the Settings reference note
+- feat: merge remote HTML page embeds
+
 ## 2.5.10
 
 - chore: merge the applyObsidianTheme move for the desktop capture suite
