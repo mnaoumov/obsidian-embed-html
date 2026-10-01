@@ -17,6 +17,7 @@ import type { HtmlExtensions } from './html-extensions.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 import type { RemoteHtmlUrl } from './remote-html-url.ts';
 
+import { getMarkdownImageSourceLength } from './markdown-image-source.ts';
 import { RemoteHtmlEmbedComponent } from './remote-html-embed-component.ts';
 import { parseRemoteHtmlUrl } from './remote-html-url.ts';
 
@@ -120,6 +121,11 @@ class LivePreviewEmbedWatcher implements PluginValue {
       hostEl.removeClass(EMPTY_ATTACHMENT_CLASS);
 
       const component = this.owner.createEmbed(candidate, hostEl);
+      if (candidate.isImage) {
+        component.registerDomEvent(hostEl, 'click', (event_) => {
+          this.selectSource(hostEl, event_);
+        });
+      }
       this.owner.addChild(component);
       this.trackedEmbeds.set(hostEl, {
         component,
@@ -127,6 +133,31 @@ class LivePreviewEmbedWatcher implements PluginValue {
         url: candidate.src
       });
     }
+  }
+
+  /**
+   * Selects the source of an image widget's embed, which reveals it for editing.
+   *
+   * Obsidian's image widget only reacts to a click on its `<img>`, which the embed replaced, so a click on a
+   * remote `![](url)` embed did nothing. An internal embed — a vault file, or `![[url]]` — selects its whole
+   * source on a click, and this does the same. A click on the button stops before it gets here, and one inside
+   * the frame never leaves the frame's document.
+   *
+   * @param hostEl - The widget root the embed rendered into.
+   * @param event_ - The click.
+   */
+  private selectSource(hostEl: HTMLElement, event_: MouseEvent): void {
+    if (event_.defaultPrevented) {
+      return;
+    }
+    // An image on a line of its own is an INLINE widget, whose two edges map to the same position, so the end
+    // is measured on the source instead.
+    const from = this.view.posAtDOM(hostEl);
+    const line = this.view.state.doc.lineAt(from);
+    const length = getMarkdownImageSourceLength(line.text.slice(from - line.from)) ?? 0;
+    const to = from + length;
+    this.view.focus();
+    this.view.dispatch({ scrollIntoView: true, selection: { anchor: to, head: from } });
   }
 
   private untrack(hostEl: HTMLElement, trackedEmbed: TrackedEmbed): void {
