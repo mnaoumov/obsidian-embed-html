@@ -1,5 +1,8 @@
 import type { AddressInfo } from 'node:net';
-import type { WorkspaceLeaf } from 'obsidian';
+import type {
+  MarkdownView,
+  WorkspaceLeaf
+} from 'obsidian';
 
 import { createServer } from 'node:http';
 import { evalInObsidian } from 'obsidian-integration-testing';
@@ -73,8 +76,17 @@ interface ExternalBrowserObservation {
 }
 
 interface ModeObservation {
+  /**
+   * Whether the first embed's button sits wholly above its frame, rather than beside it.
+   */
+  readonly buttonAboveFrame: boolean;
   readonly embeds: Record<string, EmbedObservation>;
   readonly externalBrowser: ExternalBrowserObservation;
+
+  /**
+   * The editor's selection after a click on the first embed, outside its button and frame; `null` in reading view.
+   */
+  readonly selectionAfterClick: null | string;
 }
 
 interface Observation {
@@ -165,6 +177,18 @@ describe('remote HTML embed', () => {
     }
   });
 
+  // Live Preview draws `![](url)` as an image widget: a flex row, which put the button beside the frame, and
+  // whose click handler sits on the `<img>` the embed replaces, so a click revealed nothing.
+  it('should stack the button above the frame, and reveal the source on a click, like a vault embed', async () => {
+    const embedLine = `![](${baseUrl}/attachments/clicked.html)`;
+    const result = await observeNote('embed-html-remote-embed-click.md', [embedLine]);
+
+    for (const [modeName, { buttonAboveFrame }] of getModes(result)) {
+      expect(buttonAboveFrame, modeName).toBe(true);
+    }
+    expect(result.livePreview.selectionAfterClick).toBe(embedLine);
+  });
+
   // A note of its own: reading view only renders the sections near the viewport, and these heights stacked
   // under the first test's would push the last embeds out of it.
   it('should size each syntax the way Obsidian hands the size over', async () => {
@@ -207,7 +231,7 @@ function getModes(observation: Observation): [string, ModeObservation][] {
 
 async function observeNote(noteName: string, noteEmbedLines: string[]): Promise<Observation> {
   return await evalInObsidian({
-    callback: async ({ app, embedLines, lib: { waitUntil }, notePath }): Promise<Observation> => {
+    callback: async ({ app, embedLines, lib: { clickMouse, waitUntil }, notePath }): Promise<Observation> => {
       // Two waits share the transport's 30s cap for one closure.
       const TIMEOUT_IN_MILLISECONDS = 10_000;
       const noteContent = ['Top line.', '', ...embedLines.flatMap((line) => [line, ''])].join('\n');
@@ -226,8 +250,8 @@ async function observeNote(noteName: string, noteEmbedLines: string[]): Promise<
       try {
         // Each mode gets a leaf OPENED in it. A frame loaded while its mode was hidden has no layout, so it
         // cannot scroll to its fragment; that is not what a reader who opens the note meets.
-        const readingView = await observe('reading view', { mode: 'preview' });
-        const livePreview = await observe('Live Preview', { mode: 'source', source: false });
+        const readingView = await observe('reading view', { mode: 'preview' }, false);
+        const livePreview = await observe('Live Preview', { mode: 'source', source: false }, true);
         return { livePreview, readingView };
       } finally {
         window.removeEventListener('message', onMessage);
@@ -240,17 +264,17 @@ async function observeNote(noteName: string, noteEmbedLines: string[]): Promise<
         }
       }
 
-      async function observe(modeName: string, state: Record<string, unknown>): Promise<ModeObservation> {
+      async function observe(modeName: string, state: Record<string, unknown>, isLivePreview: boolean): Promise<ModeObservation> {
         const leaf = app.workspace.getLeaf(true);
         try {
           await leaf.openFile(noteFile, { state });
-          return await observeLeaf(modeName, leaf);
+          return await observeLeaf(modeName, leaf, isLivePreview);
         } finally {
           leaf.detach();
         }
       }
 
-      async function observeLeaf(modeName: string, leaf: WorkspaceLeaf): Promise<ModeObservation> {
+      async function observeLeaf(modeName: string, leaf: WorkspaceLeaf, isLivePreview: boolean): Promise<ModeObservation> {
         await waitUntil({
           message: `the remote embeds never reported back in ${modeName}`,
           predicate: () => {
@@ -271,7 +295,37 @@ async function observeNote(noteName: string, noteEmbedLines: string[]): Promise<
           const rect = host.getBoundingClientRect();
           embeds[pathname] = { ...message, height: Math.round(rect.height), width: Math.round(rect.width) };
         }
-        return { embeds, externalBrowser: clickExternalBrowserButton(leaf) };
+        return {
+          buttonAboveFrame: isButtonAboveFrame(leaf),
+          embeds,
+          externalBrowser: clickExternalBrowserButton(leaf),
+          // Last: revealing the source makes the editor redraw the widget.
+          selectionAfterClick: isLivePreview ? await clickBesideFirstButton(leaf) : null
+        };
+      }
+
+      function isButtonAboveFrame(leaf: WorkspaceLeaf): boolean {
+        const iframe = getIframes(leaf)[0];
+        const buttonEl = iframe?.parentElement?.querySelector('button');
+        return !!iframe && !!buttonEl && buttonEl.getBoundingClientRect().bottom <= iframe.getBoundingClientRect().top;
+      }
+
+      // A real click on the host, in the button's row to its right: outside the button and the frame.
+      async function clickBesideFirstButton(leaf: WorkspaceLeaf): Promise<null | string> {
+        const CLICK_OFFSET_IN_PIXELS = 20;
+        // Short, so the closure's waits stay under the transport's cap.
+        const SELECTION_TIMEOUT_IN_MILLISECONDS = 2000;
+        const buttonRect = getIframes(leaf)[0]?.parentElement?.querySelector('button')?.getBoundingClientRect();
+        if (!buttonRect) {
+          return null;
+        }
+        await clickMouse({ x: buttonRect.right + CLICK_OFFSET_IN_PIXELS, y: buttonRect.top + buttonRect.height / 2 });
+        await waitUntil({
+          message: 'the click never changed the selection',
+          predicate: () => (leaf.view as MarkdownView).editor.getSelection() !== '',
+          timeoutInMilliseconds: SELECTION_TIMEOUT_IN_MILLISECONDS
+        });
+        return (leaf.view as MarkdownView).editor.getSelection();
       }
 
       // The `![[url]]` host is Obsidian's "could not be found" placeholder, whose own click handler offers to

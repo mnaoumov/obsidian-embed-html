@@ -1,9 +1,6 @@
 import type { App } from 'obsidian';
 
-import {
-  ButtonComponent,
-  Platform
-} from 'obsidian';
+import { Platform } from 'obsidian';
 import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
 
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
@@ -12,6 +9,7 @@ import {
   resolveEmbedDecoration,
   resolveEmbedSize
 } from './embed-size.ts';
+import { addOpenInExternalBrowserButton } from './open-in-external-browser-button.ts';
 import { PluginSettings } from './plugin-settings.ts';
 import { getContentKeyword } from './size-spec.ts';
 
@@ -88,10 +86,11 @@ export class RemoteHtmlEmbedComponent extends ComponentEx {
     super.onload();
 
     this.containerEl.empty();
+    // The class also stacks the button above the frame in Live Preview's image widget (`styles/main.scss`).
     this.containerEl.addClass(REMOTE_EMBED_CLASS);
 
     if (this.pluginSettingsComponent.settings.shouldShowOpenInExternalBrowserButton && Platform.isDesktopApp) {
-      new ButtonComponent(this.containerEl).setButtonText('Open in external browser').onClick((event_) => {
+      addOpenInExternalBrowserButton(this.containerEl, (event_) => {
         // The host can be an unresolved internal embed, whose own click handler would offer to CREATE a note
         // named after the URL.
         event_.stopPropagation();

@@ -17,6 +17,7 @@ import {
 
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
+import { OPEN_IN_EXTERNAL_BROWSER_BUTTON_CLASS } from './open-in-external-browser-button.ts';
 import { PluginSettings } from './plugin-settings.ts';
 import {
   REMOTE_EMBED_CLASS,
@@ -75,6 +76,12 @@ describe('RemoteHtmlEmbedComponent', () => {
 
     expect(openSpy).toHaveBeenCalledWith(`${URL_WITHOUT_FRAGMENT}#target`, '_external');
     expect(hostClickSpy).not.toHaveBeenCalled();
+  });
+
+  it('should mark the button for CSS snippets', () => {
+    create().load();
+
+    expect(getButton()?.hasClass(OPEN_IN_EXTERNAL_BROWSER_BUTTON_CLASS)).toBe(true);
   });
 
   it('should not render the button when the setting is off', () => {

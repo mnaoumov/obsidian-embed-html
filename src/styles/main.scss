@@ -1,0 +1,7 @@
+// Live Preview draws `![](url)` as an image widget, a flex ROW (`.cm-content > .image-embed { display: flex }`),
+// which put the "Open in external browser" button BESIDE the frame. A column stacks it above, as in every other
+// host; a block host ignores both.
+.embed-html-remote {
+  align-items: flex-start;
+  flex-direction: column;
+}

@@ -62,6 +62,17 @@ The embed below scrolls to Section Beta in the note, and the one after it shows 
 
 [03 Scroll to Element](<./03 Scroll to Element.md>) and [04 Extract Element](<./04 Extract Element.md>) are work this plugin does on the embedded document itself. A browser only ever receives the plain file, so neither mode can travel with it.
 
+## Restyle the button
+
+The button is a plain Obsidian button, so your theme decides how it looks. Every one of them, on a vault file and on a [remote page](<./14 Remote HTML Pages.md>) alike, carries the `embed-html-open-in-external-browser` class, so a [CSS snippet](https://help.obsidian.md/snippets) can restyle all of them with one selector:
+
+```css
+.embed-html-open-in-external-browser {
+  background-color: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+```
+
 ## Desktop only
 
 Obsidian exposes no way to hand a local file to a browser on mobile, so the button is never rendered there — the setting is inert rather than showing an affordance that could not work.

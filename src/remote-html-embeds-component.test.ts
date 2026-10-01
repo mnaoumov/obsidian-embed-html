@@ -1,3 +1,4 @@
+import type { TransactionSpec } from '@codemirror/state';
 import type {
   EditorView,
   PluginValue
@@ -13,6 +14,7 @@ import type { MockInstance } from 'vitest';
 
 import { ViewPlugin } from '@codemirror/view';
 import { noopAsync } from 'obsidian-dev-utils/function';
+import { castTo } from 'obsidian-dev-utils/object-utils';
 import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
 import {
   App,
@@ -33,6 +35,7 @@ import { HtmlExtensions } from './html-extensions.ts';
 import { PluginSettings } from './plugin-settings.ts';
 import { RemoteHtmlEmbedsComponent } from './remote-html-embeds-component.ts';
 
+type DispatchFunction = (spec: TransactionSpec) => void;
 type PostProcessor = Parameters<MarkdownPostProcessorRegistrar['registerMarkdownPostProcessor']>[0]['postProcessor'];
 type WatcherFactory = (view: EditorView) => PluginValue;
 
@@ -231,6 +234,96 @@ describe('RemoteHtmlEmbedsComponent', () => {
       expect(removeChildSpy).toHaveBeenCalledOnce();
     });
 
+    describe('a click on an image widget', () => {
+      const IMAGE_SOURCE = `![Page](${REMOTE_URL})`;
+      const LINE_PREFIX = 'Text ';
+      const LINE_FROM = 100;
+      const IMAGE_FROM = LINE_FROM + LINE_PREFIX.length;
+
+      it('should select the whole source of the image, which reveals it, as a click on a vault embed does', () => {
+        const editor = createEditorHarness(`${LINE_PREFIX}${IMAGE_SOURCE} more`);
+        const widgetEl = createImageWidget();
+        createWatcher(editor.view);
+
+        widgetEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+        expect(editor.focus).toHaveBeenCalledOnce();
+        expect(editor.dispatch).toHaveBeenCalledWith({
+          scrollIntoView: true,
+          selection: { anchor: IMAGE_FROM + IMAGE_SOURCE.length, head: IMAGE_FROM }
+        });
+      });
+
+      it('should place the cursor at the widget when its source is not an image', () => {
+        const editor = createEditorHarness(`${LINE_PREFIX}something else`);
+        const widgetEl = createImageWidget();
+        createWatcher(editor.view);
+
+        widgetEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+        expect(editor.dispatch).toHaveBeenCalledWith({ scrollIntoView: true, selection: { anchor: IMAGE_FROM, head: IMAGE_FROM } });
+      });
+
+      it('should leave a click somebody already handled alone', () => {
+        const editor = createEditorHarness(`${LINE_PREFIX}${IMAGE_SOURCE}`);
+        const widgetEl = createImageWidget();
+        createWatcher(editor.view);
+        const clickEvent = new MouseEvent('click', { bubbles: true, cancelable: true });
+        clickEvent.preventDefault();
+
+        widgetEl.dispatchEvent(clickEvent);
+
+        expect(editor.dispatch).not.toHaveBeenCalled();
+      });
+
+      it('should stop selecting once the embed is unloaded', async () => {
+        const editor = createEditorHarness(`${LINE_PREFIX}${IMAGE_SOURCE}`);
+        const widgetEl = createImageWidget();
+        createWatcher(editor.view);
+
+        widgetEl.remove();
+        rootEl.createDiv();
+        await flushMutations();
+        widgetEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+        expect(editor.dispatch).not.toHaveBeenCalled();
+      });
+
+      it('should leave an internal embed to Obsidian, which selects its source by itself', () => {
+        const editor = createEditorHarness(`${LINE_PREFIX}${IMAGE_SOURCE}`);
+        const widgetEl = rootEl.createDiv({ attr: { src: REMOTE_URL }, cls: 'internal-embed' });
+        createWatcher(editor.view);
+
+        widgetEl.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+        expect(editor.dispatch).not.toHaveBeenCalled();
+      });
+
+      function createImageWidget(): HTMLElement {
+        const widgetEl = rootEl.createDiv('image-embed');
+        widgetEl.createDiv('image-wrapper').createEl('img', { attr: { src: REMOTE_URL } });
+        return widgetEl;
+      }
+
+      function createEditorHarness(lineText: string): EditorHarness {
+        const dispatch = vi.fn<DispatchFunction>();
+        const focus = vi.fn<EditorView['focus']>();
+        const view = strictProxy<EditorView>({
+          contentDOM: rootEl,
+          // `dispatch` is overloaded, which a mock of one signature cannot satisfy.
+          dispatch: castTo<EditorView['dispatch']>(dispatch),
+          focus,
+          posAtDOM: () => IMAGE_FROM,
+          state: strictProxy<EditorView['state']>({
+            doc: strictProxy<EditorView['state']['doc']>({
+              lineAt: () => strictProxy<ReturnType<EditorView['state']['doc']['lineAt']>>({ from: LINE_FROM, text: lineText })
+            })
+          })
+        });
+        return { dispatch, focus, view };
+      }
+    });
+
     it('should stop watching and unload every embed when destroyed', async () => {
       rootEl.createDiv({ attr: { src: REMOTE_URL }, cls: 'internal-embed' });
       const removeChildSpy = vi.spyOn(component, 'removeChild');
@@ -276,6 +369,12 @@ interface ContextHarness {
   readonly renderChildren: MarkdownRenderChildOriginal[];
 }
 
+interface EditorHarness {
+  readonly dispatch: ReturnType<typeof vi.fn<DispatchFunction>>;
+  readonly focus: ReturnType<typeof vi.fn<EditorView['focus']>>;
+  readonly view: EditorView;
+}
+
 function createContext(): ContextHarness {
   const renderChildren: MarkdownRenderChildOriginal[] = [];
   const context = strictProxy<MarkdownPostProcessorContext>({
@@ -286,12 +385,12 @@ function createContext(): ContextHarness {
   return { context, renderChildren };
 }
 
-function createWatcher(): PluginValue {
+function createWatcher(view?: EditorView): PluginValue {
   const factory = defineSpy.mock.calls[0]?.[0] as undefined | WatcherFactory;
   if (!factory) {
     throw new Error('No view plugin defined');
   }
-  return factory(strictProxy<EditorView>({ contentDOM: rootEl }));
+  return factory(view ?? strictProxy<EditorView>({ contentDOM: rootEl }));
 }
 
 async function flushMutations(): Promise<void> {

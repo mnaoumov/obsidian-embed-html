@@ -2,7 +2,6 @@ import type { EmbedComponent } from '@obsidian-typings/obsidian-public-latest';
 
 import {
   App,
-  ButtonComponent,
   FileSystemAdapter,
   TFile
 } from 'obsidian';
@@ -19,6 +18,7 @@ import {
   resolveEmbedSize
 } from './embed-size.ts';
 import { buildFileUrl } from './file-url.ts';
+import { addOpenInExternalBrowserButton } from './open-in-external-browser-button.ts';
 import { getContentKeyword } from './size-spec.ts';
 import { measureStickyOverlap } from './sticky-overlap.ts';
 import { readStylesheetTextAsync } from './stylesheet-reader.ts';
@@ -112,7 +112,7 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
     if (this.pluginSettingsComponent.settings.shouldShowOpenInExternalBrowserButton && this.app.vault.adapter instanceof FileSystemAdapter) {
       const fullPath = this.app.vault.adapter.getFullPath(this.file.path);
       const fileUrl = buildFileUrl(fullPath);
-      new ButtonComponent(this.containerEl).setButtonText('Open in external browser').onClick(() => {
+      addOpenInExternalBrowserButton(this.containerEl, () => {
         // `window.open` rather than an Electron `shell` import: Obsidian routes a URL opened with the
         // `_external` target to the SYSTEM browser, so this stays free of a desktop-only import. Without
         // the target the URL would open in an in-app window instead, which is the opposite of the point.
