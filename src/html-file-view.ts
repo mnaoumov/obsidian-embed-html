@@ -1,3 +1,5 @@
+import type { MarkdownViewEphemeralState } from '@obsidian-typings/obsidian-public-latest';
+
 import {
   FileView,
   TFile,
@@ -7,10 +9,6 @@ import {
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 
 import { HtmlEmbedComponent } from './html-embed-component.ts';
-
-interface EphemeralState {
-  subpath?: string;
-}
 
 export class HtmlFileView extends FileView {
   public static readonly VIEW_TYPE = 'html-file-view';
@@ -39,7 +37,7 @@ export class HtmlFileView extends FileView {
 
   public override setEphemeralState(state: unknown): void {
     super.setEphemeralState(state);
-    const ephemeralState = state as EphemeralState;
+    const ephemeralState = state as Pick<MarkdownViewEphemeralState, 'subpath'>;
     this.htmlEmbedComponent?.setSubpath(ephemeralState.subpath ?? '');
   }
 }
