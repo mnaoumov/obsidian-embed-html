@@ -29,5 +29,5 @@ dist
 
 # The demo vault's plugins are injected at release time (archivePluginDemoVault),
 # not committed: the built embed-html plugin from dist/build/ and the
-# obsidian-dev-utils-owned demo-vault-helper.
+# @mnaoumov/obsidian-dev-toolkit-owned demo-vault-helper.
 /demo-vault/.obsidian/plugins

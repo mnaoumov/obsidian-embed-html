@@ -19,7 +19,7 @@
 import {
   getMandatoryNamedGroup,
   getOptionalNamedGroup
-} from 'obsidian-dev-utils/reg-exp';
+} from '@mnaoumov/typescript-lib/reg-exp';
 
 /**
  * Reads the text of a stylesheet at an absolute URL.

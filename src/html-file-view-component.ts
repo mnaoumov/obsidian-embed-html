@@ -1,7 +1,7 @@
-import type { ExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
-import type { ViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
+import type { ExtensionsRegistrar } from '@mnaoumov/obsidian-lib/extensions-registrar';
+import type { ViewRegistrar } from '@mnaoumov/obsidian-lib/view-registrar';
 
-import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
+import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
 
 import type { HtmlExtensions } from './html-extensions.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';

@@ -2,16 +2,16 @@ import type {
   EditorView,
   PluginValue
 } from '@codemirror/view';
+import type { EditorExtensionRegistrar } from '@mnaoumov/obsidian-lib/editor-extension-registrar';
+import type { MarkdownPostProcessorRegistrar } from '@mnaoumov/obsidian-lib/markdown-post-processor-registrar';
 import type {
   App,
   MarkdownPostProcessorContext
 } from 'obsidian';
-import type { EditorExtensionRegistrar } from 'obsidian-dev-utils/obsidian/editor-extension-registrar';
-import type { MarkdownPostProcessorRegistrar } from 'obsidian-dev-utils/obsidian/markdown-post-processor-registrar';
 
 import { ViewPlugin } from '@codemirror/view';
+import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
 import { MarkdownRenderChild } from 'obsidian';
-import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
 
 import type { HtmlExtensions } from './html-extensions.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';

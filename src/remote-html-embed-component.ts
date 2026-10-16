@@ -1,7 +1,7 @@
 import type { App } from 'obsidian';
 
+import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
 import { Platform } from 'obsidian';
-import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
 
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 

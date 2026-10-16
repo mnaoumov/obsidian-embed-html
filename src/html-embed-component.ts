@@ -1,13 +1,13 @@
 import type { EmbedComponent } from '@obsidian-typings/obsidian-public-latest';
 
+import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
+import { invokeAsyncSafely } from '@mnaoumov/typescript-lib/async';
+import { trimStart } from '@mnaoumov/typescript-lib/string';
 import {
   App,
   FileSystemAdapter,
   TFile
 } from 'obsidian';
-import { invokeAsyncSafely } from 'obsidian-dev-utils/async';
-import { ComponentEx } from 'obsidian-dev-utils/obsidian/components/component-ex';
-import { trimStart } from 'obsidian-dev-utils/string';
 
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';
 import type { ContentKeyword } from './size-spec.ts';

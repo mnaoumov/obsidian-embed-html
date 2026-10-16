@@ -3,8 +3,8 @@ import type {
   TFile
 } from 'obsidian';
 
+import { MonkeyAroundComponent } from '@mnaoumov/obsidian-lib/components/monkey-around-component';
 import { WorkspaceLeaf } from 'obsidian';
-import { MonkeyAroundComponent } from 'obsidian-dev-utils/obsidian/components/monkey-around-component';
 
 import type { HtmlExtensions } from './html-extensions.ts';
 import type { PluginSettingsComponent } from './plugin-settings-component.ts';

@@ -1,10 +1,10 @@
+import { getRootFolder } from '@mnaoumov/typescript-dev-toolkit/root';
 import {
   readdirSync,
   readFileSync
 } from 'node:fs';
 import { join } from 'node:path';
 import process from 'node:process';
-import { getRootFolder } from 'obsidian-dev-utils/script-utils/root';
 import { evalInObsidian } from 'obsidian-integration-testing';
 import { getTemporaryVault } from 'obsidian-integration-testing/vitest-global-setup-plugin';
 import {
@@ -17,7 +17,7 @@ import {
 // The `Embed HTML` half of the demo-vault gate: every note's HTML embeds resolve and render, and every
 // embed that declares a numeric size renders at that many pixels. The GENERIC half — clicking each
 // `code-button` — is `demo-vault-buttons.demo-vault.integration.test.ts`, which is
-// `obsidian-dev-utils`' `registerDemoVaultButtonSuite`. Both are collected by the
+// `@mnaoumov/obsidian-dev-toolkit`'s `registerDemoVaultButtonSuite`. Both are collected by the
 // `integration-tests:demo-vault` project.
 
 // A single `evalInObsidian` closure runs as one CDP `Runtime.evaluate`, which the harness caps at

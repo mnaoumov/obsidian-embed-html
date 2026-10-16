@@ -4,10 +4,10 @@ import type {
   TFile
 } from 'obsidian';
 
-import { waitForAllAsyncOperations } from 'obsidian-dev-utils/async';
-import { noop } from 'obsidian-dev-utils/function';
-import { castTo } from 'obsidian-dev-utils/object-utils';
-import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { noop } from '@mnaoumov/typescript-lib/function';
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
+import { waitForAllAsyncOperations } from '@mnaoumov/typescript-test-toolkit/async-operation-tracking';
+import { strictProxy } from '@mnaoumov/typescript-test-toolkit/strict-proxy';
 import {
   ButtonComponent,
   FileSystemAdapter
