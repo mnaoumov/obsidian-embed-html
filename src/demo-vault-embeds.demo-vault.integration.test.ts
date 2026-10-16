@@ -14,7 +14,7 @@ import {
   it
 } from 'vitest';
 
-// The Embed HTML half of the demo-vault gate: every note's HTML embeds resolve and render, and every
+// The `Embed HTML` half of the demo-vault gate: every note's HTML embeds resolve and render, and every
 // embed that declares a numeric size renders at that many pixels. The GENERIC half — clicking each
 // `code-button` — is `demo-vault-buttons.demo-vault.integration.test.ts`, which is
 // `obsidian-dev-utils`' `registerDemoVaultButtonSuite`. Both are collected by the
@@ -308,7 +308,7 @@ async function openNote(noteName: string): Promise<void> {
   });
 }
 
-// Puts every Embed HTML setting back to its default. The button suite shares this project's single
+// Puts every `Embed HTML` setting back to its default. The button suite shares this project's single
 // Obsidian and temp vault, and four of `02 Custom Size.md`'s buttons deliberately change the default
 // width/height; its last button resets them, but a button that fails mid-note never gets there. The
 // assertions below only measure embeds carrying an explicit numeric size, which overrides the defaults

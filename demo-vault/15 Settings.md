@@ -1,6 +1,6 @@
 # Settings
 
-Every setting of the plugin, grouped the way **Settings → Embed HTML** groups them, and named by the key it is stored under in the plugin's `data.json`. Use this page when you already know what you want to change; the notes linked from each entry show the setting in action.
+Every setting of the plugin, grouped the way **Settings → `Embed HTML`** groups them, and named by the key it is stored under in the plugin's `data.json`. Use this page when you already know what you want to change; the notes linked from each entry show the setting in action.
 
 Every setting here is a default: a size or style written on an individual embed always wins over it.
 
