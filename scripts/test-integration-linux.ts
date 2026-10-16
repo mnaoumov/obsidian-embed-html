@@ -1,5 +1,5 @@
-import { wrapCliTask } from 'obsidian-dev-utils/script-utils/cli-utils';
-import { test } from 'obsidian-dev-utils/script-utils/test-runners/vitest';
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
+import { test } from '@mnaoumov/typescript-dev-toolkit/test-runners/vitest';
 
 // Runs the Linux-specific integration entry (`src/**/*.linux.integration.test.ts`). MUST be run on a
 // Linux host: the obsidian-integration-testing desktop transport launches the host OS's Obsidian, so

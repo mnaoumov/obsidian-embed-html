@@ -1,7 +1,7 @@
 import type { App as AppOriginal } from 'obsidian';
 
-import { noopAsync } from 'obsidian-dev-utils/function';
-import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { noopAsync } from '@mnaoumov/typescript-lib/function';
+import { strictProxy } from '@mnaoumov/typescript-test-toolkit/strict-proxy';
 import {
   App,
   Platform

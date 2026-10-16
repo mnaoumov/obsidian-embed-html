@@ -1,13 +1,13 @@
-import { castTo } from 'obsidian-dev-utils/object-utils';
-import { OpenDemoVaultCommandHandler } from 'obsidian-dev-utils/obsidian/command-handlers/open-demo-vault-command-handler';
-import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
-import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
-import { PluginEditorExtensionRegistrar } from 'obsidian-dev-utils/obsidian/editor-extension-registrar';
-import { PluginExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
-import { PluginMarkdownPostProcessorRegistrar } from 'obsidian-dev-utils/obsidian/markdown-post-processor-registrar';
-import { PluginBase } from 'obsidian-dev-utils/obsidian/plugin/plugin';
-import { PluginEventSourceImpl } from 'obsidian-dev-utils/obsidian/plugin/plugin-event-source';
-import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
+import { OpenDemoVaultCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/open-demo-vault-command-handler';
+import { PluginSettingsTabComponent } from '@mnaoumov/obsidian-lib/components/plugin-settings-tab-component';
+import { PluginDataHandler } from '@mnaoumov/obsidian-lib/data-handler';
+import { PluginEditorExtensionRegistrar } from '@mnaoumov/obsidian-lib/editor-extension-registrar';
+import { PluginExtensionsRegistrar } from '@mnaoumov/obsidian-lib/extensions-registrar';
+import { PluginMarkdownPostProcessorRegistrar } from '@mnaoumov/obsidian-lib/markdown-post-processor-registrar';
+import { PluginBase } from '@mnaoumov/obsidian-lib/plugin/plugin';
+import { PluginEventSourceImpl } from '@mnaoumov/obsidian-lib/plugin/plugin-event-source';
+import { PluginViewRegistrar } from '@mnaoumov/obsidian-lib/view-registrar';
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
 
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
 import { HtmlExtensions } from './html-extensions.ts';

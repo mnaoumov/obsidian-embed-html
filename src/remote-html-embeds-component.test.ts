@@ -3,19 +3,19 @@ import type {
   EditorView,
   PluginValue
 } from '@codemirror/view';
+import type { EditorExtensionRegistrar } from '@mnaoumov/obsidian-lib/editor-extension-registrar';
+import type { MarkdownPostProcessorRegistrar } from '@mnaoumov/obsidian-lib/markdown-post-processor-registrar';
 import type {
   App as AppOriginal,
   MarkdownPostProcessorContext,
   MarkdownRenderChild as MarkdownRenderChildOriginal
 } from 'obsidian';
-import type { EditorExtensionRegistrar } from 'obsidian-dev-utils/obsidian/editor-extension-registrar';
-import type { MarkdownPostProcessorRegistrar } from 'obsidian-dev-utils/obsidian/markdown-post-processor-registrar';
 import type { MockInstance } from 'vitest';
 
 import { ViewPlugin } from '@codemirror/view';
-import { noopAsync } from 'obsidian-dev-utils/function';
-import { castTo } from 'obsidian-dev-utils/object-utils';
-import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { noopAsync } from '@mnaoumov/typescript-lib/function';
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
+import { strictProxy } from '@mnaoumov/typescript-test-toolkit/strict-proxy';
 import {
   App,
   MarkdownRenderChild

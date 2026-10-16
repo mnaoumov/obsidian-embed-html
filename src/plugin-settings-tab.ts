@@ -3,8 +3,8 @@ import type {
   SettingDefinitionRender
 } from 'obsidian';
 
-import { appendCodeBlock } from 'obsidian-dev-utils/obsidian/html-element';
-import { PluginSettingsTabBase } from 'obsidian-dev-utils/obsidian/plugin/plugin-settings-tab';
+import { appendCodeBlock } from '@mnaoumov/obsidian-lib/html-element';
+import { PluginSettingsTabBase } from '@mnaoumov/obsidian-lib/plugin/plugin-settings-tab';
 
 import type { PluginSettings } from './plugin-settings.ts';
 

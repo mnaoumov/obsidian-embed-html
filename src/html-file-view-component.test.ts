@@ -1,8 +1,8 @@
-import type { ExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
-import type { ViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
+import type { ExtensionsRegistrar } from '@mnaoumov/obsidian-lib/extensions-registrar';
+import type { ViewRegistrar } from '@mnaoumov/obsidian-lib/view-registrar';
 
-import { castTo } from 'obsidian-dev-utils/object-utils';
-import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { castTo } from '@mnaoumov/typescript-lib/object-utils';
+import { strictProxy } from '@mnaoumov/typescript-test-toolkit/strict-proxy';
 import { App } from 'obsidian-test-mocks/obsidian';
 import {
   beforeEach,

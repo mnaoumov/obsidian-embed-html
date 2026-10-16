@@ -3,11 +3,11 @@ import type {
   PluginManifest
 } from 'obsidian';
 
-import { PluginEditorExtensionRegistrar } from 'obsidian-dev-utils/obsidian/editor-extension-registrar';
-import { PluginExtensionsRegistrar } from 'obsidian-dev-utils/obsidian/extensions-registrar';
-import { PluginMarkdownPostProcessorRegistrar } from 'obsidian-dev-utils/obsidian/markdown-post-processor-registrar';
-import { PluginViewRegistrar } from 'obsidian-dev-utils/obsidian/view-registrar';
-import { strictProxy } from 'obsidian-dev-utils/strict-proxy';
+import { PluginEditorExtensionRegistrar } from '@mnaoumov/obsidian-lib/editor-extension-registrar';
+import { PluginExtensionsRegistrar } from '@mnaoumov/obsidian-lib/extensions-registrar';
+import { PluginMarkdownPostProcessorRegistrar } from '@mnaoumov/obsidian-lib/markdown-post-processor-registrar';
+import { PluginViewRegistrar } from '@mnaoumov/obsidian-lib/view-registrar';
+import { strictProxy } from '@mnaoumov/typescript-test-toolkit/strict-proxy';
 import { App } from 'obsidian-test-mocks/obsidian';
 import {
   beforeEach,
@@ -24,7 +24,7 @@ interface ComponentModule {
 // `PluginDataHandler` and `PluginEventSourceImpl` are NOT stubbed: since obsidian-dev-utils 93.2 the base
 // builds its own settings component out of them during `onload`, and that component really calls
 // `pluginEventSource.on`, so a bare `vi.fn()` double makes the base throw before `onloadImpl` runs.
-vi.mock('obsidian-dev-utils/obsidian/components/plugin-settings-tab-component', async () => {
+vi.mock('@mnaoumov/obsidian-lib/components/plugin-settings-tab-component', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
   return {
     // eslint-disable-next-line prefer-arrow-callback -- mock must be constructable with `new` and return a loadable Component.
@@ -93,15 +93,15 @@ vi.mock('./open-in-new-tab-component.ts', async () => {
 });
 
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { CommandHandlerComponent } from 'obsidian-dev-utils/obsidian/command-handlers/command-handler-component';
+import { CommandHandlerComponent } from '@mnaoumov/obsidian-lib/command-handlers/command-handler-component';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { OpenDemoVaultCommandHandler } from 'obsidian-dev-utils/obsidian/command-handlers/open-demo-vault-command-handler';
+import { OpenDemoVaultCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/open-demo-vault-command-handler';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { PluginSettingsTabComponent } from 'obsidian-dev-utils/obsidian/components/plugin-settings-tab-component';
+import { PluginSettingsTabComponent } from '@mnaoumov/obsidian-lib/components/plugin-settings-tab-component';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { PluginDataHandler } from 'obsidian-dev-utils/obsidian/data-handler';
+import { PluginDataHandler } from '@mnaoumov/obsidian-lib/data-handler';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { PluginEventSourceImpl } from 'obsidian-dev-utils/obsidian/plugin/plugin-event-source';
+import { PluginEventSourceImpl } from '@mnaoumov/obsidian-lib/plugin/plugin-event-source';
 
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
