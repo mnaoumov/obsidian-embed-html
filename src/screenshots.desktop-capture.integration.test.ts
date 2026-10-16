@@ -26,6 +26,8 @@
  * exported report keeps its CSS exactly there.
  */
 
+import type { WorkspaceSidedock } from 'obsidian';
+
 import {
   mkdirSync,
   writeFileSync
@@ -54,35 +56,6 @@ import {
 interface EmbedProbe {
   readonly hasEmbed: boolean;
   readonly text: string;
-}
-
-/**
- * `App`, reduced to the inline-title toggle that `obsidian-typings` does not
- * declare. Setting the config alone changes nothing on screen.
- */
-interface InlineTitleApp {
-  updateInlineTitleDisplay: (this: void) => void;
-}
-
-/**
- * The preview half of a Markdown view, reduced to the call that re-renders it.
- */
-interface PreviewMode {
-  rerender: (this: void, isFull: boolean) => void;
-}
-
-/**
- * A Markdown view, reduced to {@link PreviewMode}.
- */
-interface PreviewRenderView {
-  previewMode: PreviewMode;
-}
-
-/**
- * The desktop side dock, reduced to the resize call.
- */
-interface ResizableSideDock {
-  setSize: (this: void, size: number) => void;
 }
 
 /**
@@ -146,14 +119,12 @@ beforeAll(async () => {
       // The embed is the subject; the file explorer and an empty right dock
       // would otherwise take a third of a 1200x800 frame.
       app.workspace.leftSplit.collapse();
-      const rightSplit: unknown = app.workspace.rightSplit;
-      (rightSplit as ResizableSideDock).setSize(0);
+      (app.workspace.rightSplit as WorkspaceSidedock).setSize(0);
       app.workspace.rightSplit.collapse();
 
       // Each note opens with its own `# H1`, so the inline title doubles it.
       app.vault.setConfig('showInlineTitle', false);
-      const inlineTitleApp: unknown = app;
-      (inlineTitleApp as InlineTitleApp).updateInlineTitleDisplay();
+      app.updateInlineTitleDisplay();
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
     },
@@ -357,8 +328,7 @@ async function openNote(path: string): Promise<EmbedProbe> {
       // Reopening a note Obsidian has already rendered reuses that render, so
       // the frame taken straight after toggling the plugin showed the PREVIOUS
       // state — no embed, in the shot whose whole point is the embed.
-      const view: unknown = app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
-      (view as null | PreviewRenderView)?.previewMode.rerender(true);
+      app.workspace.getActiveViewOfType(obsidianModule.MarkdownView)?.previewMode.rerender(true);
 
       // Used BOTH to show an embed appearing and to show one not appearing, so a
       // timeout here is a legitimate outcome rather than a failure.
