@@ -48,36 +48,6 @@ interface EmbedProbe {
 }
 
 /**
- * App, reduced to the font-size applier that obsidian-typings does not declare.
- * Setting baseFontSize alone changes nothing on screen.
- */
-interface FontSizeApp {
-  updateFontSize: (this: void) => void;
-}
-
-/**
- * `App`, reduced to the inline-title toggle that `obsidian-typings` does not
- * declare. Setting the config alone changes nothing on screen.
- */
-interface InlineTitleApp {
-  updateInlineTitleDisplay: (this: void) => void;
-}
-
-/**
- * The preview half of a Markdown view, reduced to the call that re-renders it.
- */
-interface PreviewMode {
-  rerender: (this: void, isFull: boolean) => void;
-}
-
-/**
- * A Markdown view, reduced to {@link PreviewMode}.
- */
-interface PreviewRenderView {
-  previewMode: PreviewMode;
-}
-
-/**
  * The settings component every plugin exposes for editing its own settings.
  */
 interface SettingsEditableComponent {
@@ -138,13 +108,11 @@ beforeAll(async () => {
       });
 
       app.vault.setConfig('baseFontSize', fontSizeInPixels);
-      const fontApp: unknown = app;
-      (fontApp as FontSizeApp).updateFontSize();
+      app.updateFontSize();
 
       // Each note opens with its own `# H1`, so the inline title doubles it.
       app.vault.setConfig('showInlineTitle', false);
-      const inlineTitleApp: unknown = app;
-      (inlineTitleApp as InlineTitleApp).updateInlineTitleDisplay();
+      app.updateInlineTitleDisplay();
 
       await sleep(SETTLE_DELAY_IN_MILLISECONDS);
     },
@@ -342,8 +310,7 @@ async function openNote(path: string): Promise<EmbedProbe> {
       // Reopening a note Obsidian has already rendered reuses that render, so
       // the frame taken straight after toggling the plugin showed the PREVIOUS
       // state — no embed, in the shot whose whole point is the embed.
-      const view: unknown = app.workspace.getActiveViewOfType(obsidianModule.MarkdownView);
-      (view as null | PreviewRenderView)?.previewMode.rerender(true);
+      app.workspace.getActiveViewOfType(obsidianModule.MarkdownView)?.previewMode.rerender(true);
 
       // Used BOTH to show an embed appearing and to show one not appearing, so a
       // timeout here is a legitimate outcome rather than a failure.
