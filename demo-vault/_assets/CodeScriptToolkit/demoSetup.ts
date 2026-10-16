@@ -6,7 +6,7 @@ import {
 } from 'obsidian';
 
 /**
- * The Embed HTML plugin settings, mirrored here so the demo buttons get autocomplete and the notes
+ * The `Embed HTML` plugin settings, mirrored here so the demo buttons get autocomplete and the notes
  * read as `settings.<name>`. The real definition lives in the plugin's `src/plugin-settings.ts`.
  */
 interface EmbedHtmlSettings {
@@ -21,6 +21,8 @@ interface EmbedHtmlSettings {
   defaultWidth: string;
   shouldOpenInNewTab: boolean;
 }
+
+const PLUGIN_NAME = 'Embed HTML';
 
 type SettingsEditor = (settings: EmbedHtmlSettings) => void;
 
@@ -52,7 +54,7 @@ const SETTING_LABELS: Record<keyof EmbedHtmlSettings, string> = {
 };
 
 /**
- * Edits the Embed HTML settings via the plugin's public settings component, then re-renders the
+ * Edits the `Embed HTML` settings via the plugin's public settings component, then re-renders the
  * active preview. Embeds read the default size at render time and do not subscribe to settings
  * changes, so the re-render is what surfaces a changed default on already-open embeds.
  *
@@ -62,7 +64,7 @@ const SETTING_LABELS: Record<keyof EmbedHtmlSettings, string> = {
 export async function editSettings(app: App, editor: SettingsEditor): Promise<void> {
   const plugin = app.plugins.getPlugin('embed-html');
   if (!plugin) {
-    new Notice('Enable the Embed HTML plugin first');
+    new Notice(withPluginName('Enable the ', ' plugin first'));
     return;
   }
   const before = { ...plugin.pluginSettingsComponent.settings } as EmbedHtmlSettings;
@@ -73,7 +75,18 @@ export async function editSettings(app: App, editor: SettingsEditor): Promise<vo
 }
 
 /**
- * Resets every Embed HTML setting back to its default and re-renders the active preview.
+ * Builds a toast message with the plugin's name rendered as code between `before` and `after`.
+ */
+function withPluginName(before: string, after: string): DocumentFragment {
+  return createFragment((f) => {
+    f.appendText(before);
+    f.createEl('code', { text: PLUGIN_NAME });
+    f.appendText(after);
+  });
+}
+
+/**
+ * Resets every `Embed HTML` setting back to its default and re-renders the active preview.
  */
 export async function resetSettings(app: App): Promise<void> {
   await editSettings(app, (settings) => {
@@ -113,8 +126,8 @@ function formatValue(value: boolean | string): string {
 /** Shows a toast summarizing the change(s) and the re-render, so the clicked button is obvious. */
 function notifyResult(changes: string[]): void {
   if (changes.length === 0) {
-    new Notice('Embed HTML · already at these values, nothing changed · preview re-rendered', 5000);
+    new Notice(withPluginName('', ' · already at these values, nothing changed · preview re-rendered'), 5000);
     return;
   }
-  new Notice(`Embed HTML · preview re-rendered\n${changes.join('\n')}`, 5000);
+  new Notice(withPluginName('', ` · preview re-rendered\n${changes.join('\n')}`), 5000);
 }

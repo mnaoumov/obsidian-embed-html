@@ -1,6 +1,6 @@
 # Appearance
 
-Give every embed a **border**, **rounded corners**, or a **background** with three global settings under **Settings → Embed HTML → Appearance**. They apply to every embed on the page; leave any of them empty for no change (the default).
+Give every embed a **border**, **rounded corners**, or a **background** with three global settings under **Settings → `Embed HTML` → Appearance**. They apply to every embed on the page; leave any of them empty for no change (the default).
 
 The embed below has no per-embed styling, so it always renders with the current Appearance settings:
 

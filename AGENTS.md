@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Embed HTML is an Obsidian plugin that adds support for embedding HTML files (`htm`, `html`, `shtml`, `xht`, `xhtml`) in notes — from the vault or from an `http(s)` address — and opening vault files in a dedicated file view. It is built on `obsidian-dev-utils`.
+`Embed HTML` is an Obsidian plugin that adds support for embedding HTML files (`htm`, `html`, `shtml`, `xht`, `xhtml`) in notes — from the vault or from an `http(s)` address — and opening vault files in a dedicated file view. It is built on `obsidian-dev-utils`.
 
 ## Commands
 
@@ -47,7 +47,7 @@ Vitest projects are declared in `scripts/vitest-config.ts`. Six are standard (pr
 
 **`unit-tests` runs on vitest's VM pool, where `window`, `document`, `location` and `top` are NON-CONFIGURABLE.** A unit suite that redefines one of the four — `vi.stubGlobal('location', …)`, `Object.defineProperty(window, 'location', …)` — throws `TypeError: Cannot redefine property` there. That is JS semantics under `pool: 'vmThreads'`, not a bug to route around: the pool builds one jsdom per worker instead of one per file, which is where the suite's speed comes from. Name such a file in `editContext` (`context.globalStubTestFiles.push(…)`) and `obsidian-dev-utils` emits the `unit-tests:global-stubs` sibling for it — identical except that it runs on the default pool. `npm test` and `npm run test:coverage` pass `--project=unit-tests` AND `--project=unit-tests:*`, so the sibling runs and is covered with no script change. One file is named today, `src/html-embed-component.test.ts`, which stubs `location` 23 times to check the `iframe` `src` origin; on the VM pool it fails 38 tests and every other unit suite passes.
 
-The `integration-tests:demo-vault` project opens a populated copy of the in-repo `demo-vault/` (via `scripts/demo-vault-global-setup.ts`, built on `buildDemoVaultPopulate` from `obsidian-integration-testing`) rather than an empty vault, and collects two suites: `obsidian-dev-utils`' `registerDemoVaultButtonSuite` (clicks every `code-button`) and this repo's own embed/size checks. It needs CodeScript Toolkit's binary present in `demo-vault/.obsidian/plugins/fix-require-modules/` — gitignored, installed by `demo-vault-helper` the first time you open `demo-vault/` in Obsidian.
+The `integration-tests:demo-vault` project opens a populated copy of the in-repo `demo-vault/` (via `scripts/demo-vault-global-setup.ts`, built on `buildDemoVaultPopulate` from `obsidian-integration-testing`) rather than an empty vault, and collects two suites: `obsidian-dev-utils`' `registerDemoVaultButtonSuite` (clicks every `code-button`) and this repo's own embed/size checks. It needs `CodeScript Toolkit`'s binary present in `demo-vault/.obsidian/plugins/fix-require-modules/` — gitignored, installed by `demo-vault-helper` the first time you open `demo-vault/` in Obsidian.
 
 ## Architecture
 

@@ -126,7 +126,7 @@ export const config = defineObsidianPluginVitestConfig({
       {
         test: {
           ...context.desktop,
-          // Project-specific: seeds the whole demo-vault (plus the CodeScript Toolkit binary and its
+          // Project-specific: seeds the whole demo-vault (plus the `CodeScript Toolkit` binary and its
           // config) before Obsidian opens, so its startup scan indexes every note and the code-buttons
           // work with no network.
           globalSetup: ['./scripts/demo-vault-global-setup.ts'],
