@@ -1,8 +1,8 @@
-import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
 import {
   parseVersionArguments,
   updateVersion
-} from '@mnaoumov/typescript-dev-toolkit/version';
+} from '@mnaoumov/obsidian-dev-toolkit/version';
+import { wrapCliTask } from '@mnaoumov/typescript-dev-toolkit/cli-utils';
 import process from 'node:process';
 
 const [, , ...$arguments] = process.argv;
