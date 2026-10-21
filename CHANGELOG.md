@@ -2,14 +2,14 @@
 
 ## 2.6.1
 
-- Fix: a remote `![](url)` embed in Live Preview now shows its button above the frame instead of beside it.
-- Fix: clicking a remote embed in Live Preview reveals its source, like a vault embed.
+- Fix: a remote `![](url)` embed in Live Preview now shows its button above the frame instead of beside it (re #16 - [FR] Add support for external links).
+- Fix: clicking a remote embed in Live Preview reveals its source, like a vault embed (re #16 - [FR] Add support for external links).
 - Every "open in external browser" button carries the `embed-html-open-in-external-browser` class, so a CSS snippet can restyle it.
 
 ## 2.6.0
 
 - docs(demo-vault): merge the Settings reference note
-- feat: merge remote HTML page embeds
+- feat: merge remote HTML page embeds (re #16 - [FR] Add support for external links)
 
 ## 2.5.10
 
