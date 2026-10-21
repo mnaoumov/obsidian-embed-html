@@ -8,7 +8,7 @@ Use `#id&mode=extract` to show only the targeted element, hiding everything else
 ![[sections.html#beta&mode=extract]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#beta&mode=extract]]
 
 ## Extract Section Delta
@@ -17,7 +17,7 @@ Use `#id&mode=extract` to show only the targeted element, hiding everything else
 ![[sections.html#delta&mode=extract]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#delta&mode=extract]]
 
 ## Comparison

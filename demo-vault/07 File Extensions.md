@@ -16,7 +16,7 @@ Any file with one of these extensions can be embedded and opened directly.
 ![[sample.htm]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sample.htm]]
 
 ## .xhtml
@@ -25,5 +25,5 @@ Any file with one of these extensions can be embedded and opened directly.
 ![[sample.xhtml]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sample.xhtml]]
