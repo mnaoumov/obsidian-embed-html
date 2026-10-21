@@ -8,7 +8,7 @@ The embed below targets row 42 of a fifty-row table whose header row is sticky. 
 ![[sticky-table.html#row-42]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sticky-table.html#row-42]]
 
 ## How it works
@@ -21,5 +21,5 @@ Nothing about the embed syntax changes — `![[document.html#anchor]]` is all yo
 
 The same table without an anchor starts at the top, where the header covers nothing.
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sticky-table.html]]

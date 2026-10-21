@@ -8,7 +8,7 @@ Use `#id` to scroll the iframe to a specific element.
 ![[sections.html#gamma]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#gamma]]
 
 ## Scroll to Section Alpha
@@ -17,7 +17,7 @@ Use `#id` to scroll the iframe to a specific element.
 ![[sections.html#alpha]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#alpha]]
 
 The iframe loads the full page but automatically scrolls to the targeted element.

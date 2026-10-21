@@ -4,7 +4,7 @@ Sometimes a document is better read in a real browser than inside a note — a l
 
 Every embed therefore carries an **Open in external browser** button. Clicking it hands the file to your system's default browser. The embed itself keeps rendering in the note, so the button is an addition rather than a second output mode:
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#gamma]]
 
 **The embed syntax does not change.** The same `![[document.html#anchor]]` you already wrote keeps working.
@@ -50,14 +50,14 @@ The embed below scrolls to Section Beta in the note, and the one after it shows 
 ![[sections.html#beta]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#beta]]
 
 ```md
 ![[sections.html#delta&mode=extract]]
 ```
 
-<!-- obsidian-dev-utils-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
+<!-- obsidian-dev-toolkit-disable-next-line demo-vault-validation/no-wikilinks -- The note teaches Obsidian's embed syntax, so the live example is written the way a reader would write it. -->
 ![[sections.html#delta&mode=extract]]
 
 [03 Scroll to Element](<./03 Scroll to Element.md>) and [04 Extract Element](<./04 Extract Element.md>) are work this plugin does on the embedded document itself. A browser only ever receives the plain file, so neither mode can travel with it.
