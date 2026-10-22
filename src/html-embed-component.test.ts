@@ -168,11 +168,8 @@ function createMockApp(): App {
     })
   });
 
-  // The real obsidian-lib helpers (invokeAsyncSafely / debug) read and write a shared state holder on
-  // the app. Seed it on the raw target behind the strict-proxy so those helpers can run, and expose
-  // the same app as the global instance so helpers that resolve state without an explicit app argument
-  // read/write the same holder.
-  seedOnRawTarget(app, 'obsidianDevUtilsState', {});
+  // Expose the app as the global instance for the real obsidian-lib helpers that resolve it without
+  // an explicit app argument.
   castTo<WindowWithApp>(window).app = app;
 
   return app;
