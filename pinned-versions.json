@@ -10,6 +10,34 @@
     "that is actually present in the declared section; the script reports either mismatch."
   ],
   "pins": {
+    "@codemirror/state": {
+      "section": "devDependencies",
+      "why": "Obsidian provides @codemirror/state at runtime and never bundles a second copy, so the plugin compiles against the exact version Obsidian ships. The obsidian package declares that version as an EXACT peer, and @mnaoumov/obsidian-lib declares it as a caret floor, so a pin below it breaks obsidian-lib's peer and a pin above it types the Live Preview watcher against an API Obsidian does not carry. The `$@codemirror/state` override collapses every consumer onto this one copy.",
+      "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/obsidian/package.json','utf8')).peerDependencies['@codemirror/state'])\"",
+      "expect": "6.7.6",
+      "manualCheck": "The check reads the exact peer the installed obsidian package declares. When an obsidian bump moves it, move this pin to the same version and update `expect`."
+    },
+    "@codemirror/view": {
+      "section": "devDependencies",
+      "why": "Obsidian provides @codemirror/view at runtime and never bundles a second copy, so the plugin compiles against the exact version Obsidian ships. The obsidian package declares that version as an EXACT peer, and @mnaoumov/obsidian-lib declares it as a caret floor, so a pin below it breaks obsidian-lib's peer and a pin above it types the Live Preview watcher against an API Obsidian does not carry. The `$@codemirror/view` override collapses every consumer onto this one copy.",
+      "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/obsidian/package.json','utf8')).peerDependencies['@codemirror/view'])\"",
+      "expect": "6.43.13",
+      "manualCheck": "The check reads the exact peer the installed obsidian package declares. When an obsidian bump moves it, move this pin to the same version and update `expect`."
+    },
+    "katex": {
+      "section": "overrides",
+      "why": "Clears the KaTeX prototype-pollution trust-bypass advisory (vulnerable >=0.11.0 <0.18.2), patched in 0.18.2. Reached only transitively, through markdownlint -> micromark-extension-math, which declares katex ^0.16.0 at its latest release, so no direct bump gets there. The forced 0.x minors (0.16 to 0.19) are safe because the code that calls katex is never loaded: markdownlint imports only the `math` syntax extension, and katex is used only by micromark-extension-math's `mathHtml` HTML compiler, which nothing in the tree imports. NEVER take the `npm audit fix --force` remedy here: it fixes by downgrading the dev toolkits.",
+      "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/micromark-extension-math/package.json','utf8')).dependencies.katex)\"",
+      "expect": "^0.16.0",
+      "manualCheck": "The check reads the range micromark-extension-math declares, because that range is what makes the override necessary. When it admits 0.18.2 or later, the override and this entry can both go."
+    },
+    "moment": {
+      "section": "overrides",
+      "why": "Clears GHSA-4p3w-j4w9-5jqw (moment path traversal via a crafted non-string locale name), patched in 2.31.0. The obsidian 1.14.4 this repo develops against already resolves 2.31.0, but the obsidian 1.12.3 that eslint-plugin-obsidianmd pins EXACTLY declares moment 2.29.4 exactly, and obsidian-test-mocks resolved onto that same copy, so the tree carried the vulnerable one beside the patched one. eslint-plugin-obsidianmd 0.4.2 is the latest release, so no direct bump gets there. The override collapses both onto the version Obsidian itself ships; 2.29 to 2.31 is a minor with no API removals, and the unit suites run obsidian-test-mocks' moment against it. NEVER take the `npm audit fix --force` remedy here: it downgrades @mnaoumov/obsidian-dev-toolkit to 1.0.0.",
+      "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/eslint-plugin-obsidianmd/node_modules/obsidian/package.json','utf8')).dependencies.moment)\"",
+      "expect": "2.29.4",
+      "manualCheck": "The check reads the exact moment the obsidian copy under eslint-plugin-obsidianmd declares. When eslint-plugin-obsidianmd moves to an obsidian that declares 2.31.0 or later, that path stops existing or the value changes, and the override and this entry can both go."
+    },
     "@puppeteer/browsers": {
       "section": "overrides",
       "why": "Clears GHSA-jmr9-qjv8-65gv (extract-zip unvalidated symlink path traversal, 8 high advisories) and nothing else. extract-zip is vulnerable at every published version, so there is no patched version to override it to, and the direct dependency cannot be bumped either: obsidian-integration-testing is already latest and pins webdriverio, and even the newest webdriverio still reaches extract-zip through @wdio/utils -> @puppeteer/browsers ^2.x. @puppeteer/browsers@3 replaced extract-zip with modern-tar, so forcing 3.x on @wdio/utils - the only consumer left on 2.x - removes the subtree entirely. It also dedupes: puppeteer-core already brings 3.2.0 into this tree, so the override collapses two copies into one rather than adding anything. The major bump is safe because @wdio/utils imports only install, canDownload, resolveBuildId, detectBrowserPlatform, Browser, ChromeReleaseChannel, computeExecutablePath and the InstallOptions type, all still exported by 3.x with compatible signatures, and both packages are ESM-only. NEVER take the `npm audit fix --force` remedy here: it downgrades obsidian-integration-testing from 10.x to 1.1.2.",
@@ -23,13 +51,6 @@
       "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/@wdio/utils/package.json','utf8')).dependencies['deepmerge-ts'])\"",
       "expect": "^7.0.3",
       "manualCheck": "The check reads the range @wdio/utils declares, not a version, because that range is what forces the override. When it moves to ^8 or later the override and this entry can both go. Before lifting it, re-run the deepmergeCustom probe rather than trusting the range alone: @wdio/config passes a handler that reads `meta.key`, and that is precisely the API 8.0.0 renamed, so a regression there would be silent rather than a crash."
-    },
-    "smol-toml": {
-      "section": "overrides",
-      "why": "Clears GHSA-7w5x-hrqm-74c2 (smol-toml denial of service via malformed TOML documents), patched in 1.8.0. Reached only transitively, and no direct bump gets there: markdownlint-cli2 EXACT-pins smol-toml at 1.7.0 - the last vulnerable version - and markdownlint-cli2 0.23.2 is itself already the latest release, so floating it reaches no patch. cspell resolves 1.8.0 on its own, so before this override the tree carried two copies and only the markdownlint-cli2 one was vulnerable; the override collapses them onto the patched version rather than adding anything. The forced minor is safe: smol-toml is a TOML parser markdownlint-cli2 uses only to read its own config file, and 1.8.0 changes no API. NEVER take the `npm audit fix --force` remedy here: it fixes by downgrading.",
-      "check": "node -e \"const fs=require('node:fs');process.stdout.write(JSON.parse(fs.readFileSync('node_modules/markdownlint-cli2/package.json','utf8')).dependencies['smol-toml'])\"",
-      "expect": "1.7.0",
-      "manualCheck": "The check reads the pin markdownlint-cli2 itself declares, not an installed version, because that pin is what makes the override necessary. When it moves off 1.7.0 to anything outside the advisory range `<=1.7.0`, markdownlint-cli2 no longer pulls a vulnerable smol-toml and this override can be deleted along with this entry."
     }
   }
 }
