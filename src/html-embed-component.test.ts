@@ -168,7 +168,7 @@ function createMockApp(): App {
     })
   });
 
-  // The real dev-utils helpers (invokeAsyncSafely / debug) read and write a shared state holder on
+  // The real obsidian-lib helpers (invokeAsyncSafely / debug) read and write a shared state holder on
   // the app. Seed it on the raw target behind the strict-proxy so those helpers can run, and expose
   // the same app as the global instance so helpers that resolve state without an explicit app argument
   // read/write the same holder.
