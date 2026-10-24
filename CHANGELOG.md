@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2.6.2
+
+- Move to `@mnaoumov/obsidian-lib` 6, so the plugin keeps working alongside the other plugins built on it.
+- Docs: the README's Debugging section leads with `Advanced Debug Mode`.
+
 ## 2.6.1
 
 - Fix: a remote `![](url)` embed in Live Preview now shows its button above the frame instead of beside it (re #16 - \[FR\] Add support for external links).
