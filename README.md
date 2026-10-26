@@ -52,6 +52,24 @@ A copy of the vault ships with every release. You can access it via any of the f
 - **Paths work how you expect** — relative to the note or from the vault root. [10 Relative and Full Path](<./demo-vault/10 Relative and Full Path.md>)
 - **Table headers stay put** while you scroll a long table. [12 Sticky Table Headers](<./demo-vault/12 Sticky Table Headers.md>)
 
+## Similar plugins
+
+- [`HTML Viewer Plus`](https://community.obsidian.md/plugins/html-viewer-plus) — the closest in syntax: `![[file.html]]` embeds with a `|WxH` size and an `#id` to show one element, plus a viewer with zoom, in-page search and MHTML files; it does not embed pages from the web.
+- [`ZJ HTML Studio`](https://community.obsidian.md/plugins/zj-html-studio) — `![[file.html]]` embeds with a `|WxH` size, served from a local server under three trust modes with scripts off by default, and live reload; desktop only, with no embedding of web pages.
+- [`HTML V Editor`](https://community.obsidian.md/plugins/html-v-editor) — `![[file.html]]` embeds and inline `html-v` blocks, and edits HTML files visually, saving back to the file; desktop only, while this plugin never writes to the file.
+- [`HTML Page Preview`](https://community.obsidian.md/plugins/html-page-preview) — expands a `![[page.html]]` embed inline in Reading view, at a fixed 16:9 or infinite height set globally; this plugin sizes each embed and renders in Live Preview too.
+- [`Local HTML Embed`](https://community.obsidian.md/plugins/local-html-embed) — embeds a vault HTML file through an `html-embed` code block, or picks the file named after the note; desktop only, and it uses a code block where this plugin uses Obsidian's own embed syntax.
+- [`HTML Prototype Viewer`](https://community.obsidian.md/plugins/html-prototype-viewer) — previews HTML files in their own tab at device-width presets with live reload, and embeds them through an `html-preview` code block.
+- [`Artifact Embed`](https://community.obsidian.md/plugins/artifact-embed) — one `artifact` code block takes a vault file, a URL or inline HTML and shows it as a card with reload and copy-source buttons, styled with the theme's variables; it sets the height only.
+- [`Style HTML Viewer`](https://community.obsidian.md/plugins/style-html-viewer) — opens HTML files in tabs and embeds them through an `html-viewer` code block resized by dragging, with scripts off until allowed per file and an assets and diagnostics panel.
+- [`HTML Embed`](https://github.com/the-pieza/obsidian-html-embed) (not in the community directory) — embeds a vault HTML file, scripts included, through an `html-embed` code block with a width and a height.
+- [`HTML Embed Anywhere`](https://github.com/k-u-knt/obsidian-html-embed-anywhere) (not in the community directory) — embeds vault HTML files and web pages through an `html-embed` code block in notes and in canvas cards, fitting a single Plotly figure to the frame.
+- [`HTML Reader`](https://community.obsidian.md/plugins/obsidian-html-plugin) — opens HTML and MHTML files in their own tab, under five modes from plain text to unrestricted scripts, with search and zoom; it does not embed them in notes.
+- [`Local Web Page Viewer`](https://community.obsidian.md/plugins/local-web-page-viewer) — opens HTML files in their own tab with inlined stylesheets, zoom, bookmarks and remembered scroll position, on desktop and mobile; it does not embed them in notes.
+- [`Custom Frames`](https://community.obsidian.md/plugins/obsidian-custom-frames) — turns web apps into panes with custom styling and presets, and embeds a configured frame through a `custom-frames` code block; it shows websites, not files from the vault.
+
+Last searched for similar plugins on 2026-10-26.
+
 ## Installation
 
 The plugin is available in [the official Community Plugins repository](https://community.obsidian.md/plugins/embed-html).
