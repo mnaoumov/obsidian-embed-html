@@ -96,7 +96,7 @@ const LINUX_TEST_FILES = 'src/**/*.linux.integration.test.ts';
  * pass `--project=unit-tests` AND `--project=unit-tests:*`, so the sibling runs and is covered with
  * no script change.
  */
-const GLOBAL_STUB_TEST_FILES = ['src/html-embed-component.test.ts'];
+const GLOBAL_STUB_TEST_FILES = ['src/embed/html-embed-component.test.ts'];
 
 export const config = defineObsidianPluginVitestConfig({
   customProjects(context: ObsidianPluginVitestConfigContext): TestProjectConfiguration[] {

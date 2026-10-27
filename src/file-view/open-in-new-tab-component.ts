@@ -6,8 +6,8 @@ import type {
 import { MonkeyAroundComponent } from '@mnaoumov/obsidian-lib/components/monkey-around-component';
 import { WorkspaceLeaf } from 'obsidian';
 
-import type { HtmlExtensions } from './html-extensions.ts';
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { HtmlExtensions } from '../html-extensions.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 // `EMPTY_VIEW_TYPE` is Obsidian's view type for an empty (unoccupied) leaf; it is not exported by `obsidian`.
 // A fresh leaf minted for a modifier-click new tab or for a layout restore reports this type.

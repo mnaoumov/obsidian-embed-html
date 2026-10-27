@@ -15,8 +15,8 @@ import {
   vi
 } from 'vitest';
 
-import type { HtmlExtensions } from './html-extensions.ts';
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { HtmlExtensions } from '../html-extensions.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 import { OpenInNewTabComponent } from './open-in-new-tab-component.ts';
 

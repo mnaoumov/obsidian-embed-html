@@ -29,10 +29,10 @@ import {
   vi
 } from 'vitest';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
-import { HtmlExtensions } from './html-extensions.ts';
-import { PluginSettings } from './plugin-settings.ts';
+import { HtmlExtensions } from '../html-extensions.ts';
+import { PluginSettings } from '../settings/plugin-settings.ts';
 import { RemoteHtmlEmbedsComponent } from './remote-html-embeds-component.ts';
 
 type DispatchFunction = (spec: TransactionSpec) => void;

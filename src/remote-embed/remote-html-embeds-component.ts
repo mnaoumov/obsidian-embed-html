@@ -13,8 +13,8 @@ import { ViewPlugin } from '@codemirror/view';
 import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
 import { MarkdownRenderChild } from 'obsidian';
 
-import type { HtmlExtensions } from './html-extensions.ts';
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { HtmlExtensions } from '../html-extensions.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 import type { RemoteHtmlUrl } from './remote-html-url.ts';
 
 import { getMarkdownImageSourceLength } from './markdown-image-source.ts';

@@ -7,18 +7,18 @@ import process from 'node:process';
 // Also asserts no note references a setting that no longer exists (guards against rename drift).
 // Runtime behavior of the plugin itself is covered by the other integration tests, not the demo vault.
 registerDemoVaultCoverageSuite({
-  configInterfaces: [{ interfaceName: 'PluginSettings', sourcePath: 'src/plugin-settings.ts' }],
+  configInterfaces: [{ interfaceName: 'PluginSettings', sourcePath: 'src/settings/plugin-settings.ts' }],
   interfaces: [{
     interfaceName: 'PluginSettings',
     kind: 'properties',
     receiver: 'settings',
-    sourcePath: 'src/plugin-settings.ts'
+    sourcePath: 'src/settings/plugin-settings.ts'
   }],
   nonTrivialGuard: {
     expectDemoNote: '02 Custom Size.md',
     expectMember: 'defaultHeight',
     interfaceName: 'PluginSettings',
-    sourcePath: 'src/plugin-settings.ts'
+    sourcePath: 'src/settings/plugin-settings.ts'
   },
   rootFolder: getRootFolder() ?? process.cwd()
 });

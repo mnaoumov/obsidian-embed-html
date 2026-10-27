@@ -9,13 +9,13 @@ import { PluginEventSourceImpl } from '@mnaoumov/obsidian-lib/plugin/plugin-even
 import { PluginViewRegistrar } from '@mnaoumov/obsidian-lib/view-registrar';
 import { castTo } from '@mnaoumov/typescript-lib/object-utils';
 
-import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
+import { HtmlEmbedRegistryComponent } from './embed/html-embed-registry-component.ts';
+import { HtmlFileViewComponent } from './file-view/html-file-view-component.ts';
+import { OpenInNewTabComponent } from './file-view/open-in-new-tab-component.ts';
 import { HtmlExtensions } from './html-extensions.ts';
-import { HtmlFileViewComponent } from './html-file-view-component.ts';
-import { OpenInNewTabComponent } from './open-in-new-tab-component.ts';
-import { PluginSettingsComponent } from './plugin-settings-component.ts';
-import { PluginSettingsTab } from './plugin-settings-tab.ts';
-import { RemoteHtmlEmbedsComponent } from './remote-html-embeds-component.ts';
+import { RemoteHtmlEmbedsComponent } from './remote-embed/remote-html-embeds-component.ts';
+import { PluginSettingsComponent } from './settings/plugin-settings-component.ts';
+import { PluginSettingsTab } from './settings/plugin-settings-tab.ts';
 
 export class Plugin extends PluginBase {
   /**

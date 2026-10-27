@@ -34,7 +34,7 @@ vi.mock('@mnaoumov/obsidian-lib/components/plugin-settings-tab-component', async
   };
 });
 
-vi.mock('./plugin-settings-component.ts', async () => {
+vi.mock('./settings/plugin-settings-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
   return {
     // eslint-disable-next-line prefer-arrow-callback -- mock must be constructable with `new` and return a loadable Component.
@@ -44,7 +44,7 @@ vi.mock('./plugin-settings-component.ts', async () => {
   };
 });
 
-vi.mock('./plugin-settings-tab.ts', () => ({
+vi.mock('./settings/plugin-settings-tab.ts', () => ({
   PluginSettingsTab: vi.fn()
 }));
 
@@ -52,7 +52,7 @@ vi.mock('./html-extensions.ts', () => ({
   HtmlExtensions: vi.fn()
 }));
 
-vi.mock('./html-embed-registry-component.ts', async () => {
+vi.mock('./embed/html-embed-registry-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
   return {
     // eslint-disable-next-line prefer-arrow-callback -- mock must be constructable with `new` and return a loadable Component.
@@ -62,7 +62,7 @@ vi.mock('./html-embed-registry-component.ts', async () => {
   };
 });
 
-vi.mock('./html-file-view-component.ts', async () => {
+vi.mock('./file-view/html-file-view-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
   return {
     // eslint-disable-next-line prefer-arrow-callback -- mock must be constructable with `new` and return a loadable Component.
@@ -72,7 +72,7 @@ vi.mock('./html-file-view-component.ts', async () => {
   };
 });
 
-vi.mock('./remote-html-embeds-component.ts', async () => {
+vi.mock('./remote-embed/remote-html-embeds-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
   return {
     // eslint-disable-next-line prefer-arrow-callback -- mock must be constructable with `new` and return a loadable Component.
@@ -82,7 +82,7 @@ vi.mock('./remote-html-embeds-component.ts', async () => {
   };
 });
 
-vi.mock('./open-in-new-tab-component.ts', async () => {
+vi.mock('./file-view/open-in-new-tab-component.ts', async () => {
   const { Component } = await vi.importActual<ComponentModule>('obsidian');
   return {
     // eslint-disable-next-line prefer-arrow-callback -- mock must be constructable with `new` and return a loadable Component.
@@ -104,21 +104,21 @@ import { PluginDataHandler } from '@mnaoumov/obsidian-lib/data-handler';
 import { PluginEventSourceImpl } from '@mnaoumov/obsidian-lib/plugin/plugin-event-source';
 
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
+import { HtmlEmbedRegistryComponent } from './embed/html-embed-registry-component.ts';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { HtmlFileViewComponent } from './file-view/html-file-view-component.ts';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { OpenInNewTabComponent } from './file-view/open-in-new-tab-component.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { HtmlExtensions } from './html-extensions.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { HtmlFileViewComponent } from './html-file-view-component.ts';
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { OpenInNewTabComponent } from './open-in-new-tab-component.ts';
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { PluginSettingsComponent } from './plugin-settings-component.ts';
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { PluginSettingsTab } from './plugin-settings-tab.ts';
-// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { Plugin } from './plugin.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { RemoteHtmlEmbedsComponent } from './remote-html-embeds-component.ts';
+import { RemoteHtmlEmbedsComponent } from './remote-embed/remote-html-embeds-component.ts';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { PluginSettingsComponent } from './settings/plugin-settings-component.ts';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { PluginSettingsTab } from './settings/plugin-settings-tab.ts';
 
 const manifest = strictProxy<PluginManifest>({
   id: 'embed-html',

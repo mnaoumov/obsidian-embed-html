@@ -6,7 +6,7 @@
  * the two size identically.
  */
 
-import type { PluginSettings } from './plugin-settings.ts';
+import type { PluginSettings } from '../settings/plugin-settings.ts';
 
 import { parseSizeSpec } from './size-spec.ts';
 

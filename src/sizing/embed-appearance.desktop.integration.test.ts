@@ -8,7 +8,7 @@ import {
 
 // Minimal structural view of the plugin's public settings API (`plugin.pluginSettingsComponent`), used only
 // to type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
-// `src/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
+// `src/settings/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
 interface EmbedAppearanceSettings {
   background: string;
   border: string;

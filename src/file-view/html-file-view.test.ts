@@ -16,14 +16,14 @@ import {
   vi
 } from 'vitest';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 interface EmbedStub extends Component {
   loadFileAsync: ReturnType<typeof vi.fn>;
   setSubpath: ReturnType<typeof vi.fn>;
 }
 
-vi.mock('./html-embed-component.ts', () => ({
+vi.mock('../embed/html-embed-component.ts', () => ({
   // eslint-disable-next-line prefer-arrow-callback, func-names -- mock must be constructable with `new` and return a loadable Component.
   HtmlEmbedComponent: vi.fn(function (): Component {
     const component = castTo<EmbedStub>(new Component());
@@ -34,7 +34,7 @@ vi.mock('./html-embed-component.ts', () => ({
 }));
 
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
-import { HtmlEmbedComponent } from './html-embed-component.ts';
+import { HtmlEmbedComponent } from '../embed/html-embed-component.ts';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { HtmlFileView } from './html-file-view.ts';
 

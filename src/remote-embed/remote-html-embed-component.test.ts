@@ -15,10 +15,10 @@ import {
   vi
 } from 'vitest';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
-import { OPEN_IN_EXTERNAL_BROWSER_BUTTON_CLASS } from './open-in-external-browser-button.ts';
-import { PluginSettings } from './plugin-settings.ts';
+import { OPEN_IN_EXTERNAL_BROWSER_BUTTON_CLASS } from '../embed/open-in-external-browser-button.ts';
+import { PluginSettings } from '../settings/plugin-settings.ts';
 import {
   REMOTE_EMBED_CLASS,
   RemoteHtmlEmbedComponent

@@ -19,8 +19,8 @@ import {
   vi
 } from 'vitest';
 
-import type { HtmlExtensions } from './html-extensions.ts';
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { HtmlExtensions } from '../html-extensions.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 import { HtmlEmbedComponent } from './html-embed-component.ts';
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
