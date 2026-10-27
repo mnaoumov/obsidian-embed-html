@@ -9,19 +9,19 @@ import {
   TFile
 } from 'obsidian';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
-import type { ContentKeyword } from './size-spec.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
+import type { ContentKeyword } from '../sizing/size-spec.ts';
 
-import { inlineDocumentStylesheetsAsync } from './document-stylesheet-inliner.ts';
 import {
   resolveEmbedDecoration,
   resolveEmbedSize
-} from './embed-size.ts';
+} from '../sizing/embed-size.ts';
+import { getContentKeyword } from '../sizing/size-spec.ts';
+import { inlineDocumentStylesheetsAsync } from '../stylesheets/document-stylesheet-inliner.ts';
+import { readStylesheetTextAsync } from '../stylesheets/stylesheet-reader.ts';
 import { buildFileUrl } from './file-url.ts';
 import { addOpenInExternalBrowserButton } from './open-in-external-browser-button.ts';
-import { getContentKeyword } from './size-spec.ts';
 import { measureStickyOverlap } from './sticky-overlap.ts';
-import { readStylesheetTextAsync } from './stylesheet-reader.ts';
 
 const WIDTH_ATTRIBUTE = 'width';
 const HEIGHT_ATTRIBUTE = 'height';

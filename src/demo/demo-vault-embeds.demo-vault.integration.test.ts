@@ -37,7 +37,7 @@ const EXCLUDED_TOP_LEVEL = new Set(['00 Start.md', 'README.md']);
 
 // Minimal structural view of the plugin's public settings API (`plugin.pluginSettingsComponent`), used only
 // to type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
-// `src/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
+// `src/settings/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
 interface EmbedHtmlPluginLike {
   pluginSettingsComponent: EmbedHtmlSettingsComponentLike;
 }

@@ -2,8 +2,8 @@ import type { App } from 'obsidian';
 
 import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
 
-import type { HtmlExtensions } from './html-extensions.ts';
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { HtmlExtensions } from '../html-extensions.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 import { HtmlEmbedComponent } from './html-embed-component.ts';
 

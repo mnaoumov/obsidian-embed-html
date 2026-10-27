@@ -3,15 +3,15 @@ import type { App } from 'obsidian';
 import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
 import { Platform } from 'obsidian';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
+import { addOpenInExternalBrowserButton } from '../embed/open-in-external-browser-button.ts';
+import { PluginSettings } from '../settings/plugin-settings.ts';
 import {
   resolveEmbedDecoration,
   resolveEmbedSize
-} from './embed-size.ts';
-import { addOpenInExternalBrowserButton } from './open-in-external-browser-button.ts';
-import { PluginSettings } from './plugin-settings.ts';
-import { getContentKeyword } from './size-spec.ts';
+} from '../sizing/embed-size.ts';
+import { getContentKeyword } from '../sizing/size-spec.ts';
 
 const WIDTH_ATTRIBUTE = 'width';
 const HEIGHT_ATTRIBUTE = 'height';

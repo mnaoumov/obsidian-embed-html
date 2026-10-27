@@ -12,8 +12,8 @@ import {
   vi
 } from 'vitest';
 
-import type { HtmlExtensions } from './html-extensions.ts';
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { HtmlExtensions } from '../html-extensions.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 import { HtmlFileViewComponent } from './html-file-view-component.ts';
 import { HtmlFileView } from './html-file-view.ts';

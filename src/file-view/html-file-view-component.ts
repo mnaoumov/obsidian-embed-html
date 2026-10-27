@@ -3,8 +3,8 @@ import type { ViewRegistrar } from '@mnaoumov/obsidian-lib/view-registrar';
 
 import { ComponentEx } from '@mnaoumov/obsidian-lib/components/component-ex';
 
-import type { HtmlExtensions } from './html-extensions.ts';
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { HtmlExtensions } from '../html-extensions.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 import { HtmlFileView } from './html-file-view.ts';
 

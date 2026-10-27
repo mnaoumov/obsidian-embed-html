@@ -21,7 +21,7 @@ import {
   vi
 } from 'vitest';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 import { HtmlEmbedComponent } from './html-embed-component.ts';
 import { OPEN_IN_EXTERNAL_BROWSER_BUTTON_CLASS } from './open-in-external-browser-button.ts';

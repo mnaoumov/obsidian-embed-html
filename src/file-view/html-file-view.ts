@@ -6,9 +6,9 @@ import {
   WorkspaceLeaf
 } from 'obsidian';
 
-import type { PluginSettingsComponent } from './plugin-settings-component.ts';
+import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
-import { HtmlEmbedComponent } from './html-embed-component.ts';
+import { HtmlEmbedComponent } from '../embed/html-embed-component.ts';
 
 export class HtmlFileView extends FileView {
   public static readonly VIEW_TYPE = 'html-file-view';
