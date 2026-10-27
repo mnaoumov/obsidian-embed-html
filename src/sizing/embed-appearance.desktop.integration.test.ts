@@ -10,25 +10,28 @@ import {
 // to type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
 // `src/settings/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
 interface EmbedAppearanceSettings {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   background: string;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   border: string;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   borderRadius: string;
 }
 
 interface EmbedHtmlPluginLike {
-  pluginSettingsComponent: EmbedHtmlSettingsComponentLike;
+  readonly pluginSettingsComponent: EmbedHtmlSettingsComponentLike;
 }
 
 interface EmbedHtmlSettingsComponentLike {
-  editAndSave: (this: void, editor: (settings: EmbedAppearanceSettings) => void) => Promise<void>;
-  settings: EmbedAppearanceSettings;
+  readonly editAndSave: (this: void, editor: (settings: EmbedAppearanceSettings) => void) => Promise<void>;
+  readonly settings: EmbedAppearanceSettings;
 }
 
 interface RgbChannels {
-  a: number;
-  b: number;
-  g: number;
-  r: number;
+  readonly a: number;
+  readonly b: number;
+  readonly g: number;
+  readonly r: number;
 }
 
 /*

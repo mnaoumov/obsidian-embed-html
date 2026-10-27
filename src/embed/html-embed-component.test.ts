@@ -27,91 +27,96 @@ import { HtmlEmbedComponent } from './html-embed-component.ts';
 import { OPEN_IN_EXTERNAL_BROWSER_BUTTON_CLASS } from './open-in-external-browser-button.ts';
 
 interface ClickEvent {
-  target: unknown;
+  readonly target: unknown;
 }
 
 type ClickHandler = ($event: ClickEvent) => void;
 
 interface ComponentWithApplySize {
-  applySize: () => void;
+  readonly applySize: () => void;
 }
 
 interface ComponentWithIframeEl {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   iframeEl: unknown;
 }
 
 interface ContainsCheck {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   contains: ReturnType<typeof vi.fn>;
 }
 
 interface DecorationOverrides {
-  background?: string;
-  border?: string;
-  borderRadius?: string;
+  readonly background?: string;
+  readonly border?: string;
+  readonly borderRadius?: string;
 }
 
 interface LoadedContentComponent {
-  component: HtmlEmbedComponent;
-  fireLoad: () => void;
+  readonly component: HtmlEmbedComponent;
+  readonly fireLoad: () => void;
 }
 
 interface MockContainerEl {
-  createEl: ReturnType<typeof vi.fn>;
-  empty: ReturnType<typeof vi.fn>;
-  getAttr: ReturnType<typeof vi.fn>;
-  setCssProps: ReturnType<typeof vi.fn>;
-  style: MockStyle;
+  readonly createEl: ReturnType<typeof vi.fn>;
+  readonly empty: ReturnType<typeof vi.fn>;
+  readonly getAttr: ReturnType<typeof vi.fn>;
+  readonly setCssProps: ReturnType<typeof vi.fn>;
+  readonly style: MockStyle;
 }
 
 interface MockElement {
-  addClass: ReturnType<typeof vi.fn>;
+  readonly addClass: ReturnType<typeof vi.fn>;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   closest: ReturnType<typeof vi.fn>;
-  getBoundingClientRect: ReturnType<typeof vi.fn>;
-  parentElement: MockElement | null;
-  target?: string;
+  readonly getBoundingClientRect: ReturnType<typeof vi.fn>;
+  readonly parentElement: MockElement | null;
+  readonly target?: string;
 }
 
 interface MockHead {
-  createEl: ReturnType<typeof vi.fn>;
+  readonly createEl: ReturnType<typeof vi.fn>;
 }
 
 interface MockIframeEl {
-  addEventListener: ReturnType<typeof vi.fn>;
-  setCssStyles: ReturnType<typeof vi.fn>;
-  srcdoc: string;
+  readonly addEventListener: ReturnType<typeof vi.fn>;
+  readonly setCssStyles: ReturnType<typeof vi.fn>;
+  readonly srcdoc: string;
 }
 
 interface MockIframeElWithContent extends MockIframeEl {
-  contentDocument: unknown;
+  readonly contentDocument: unknown;
 }
 
 interface MockScrollHeight {
-  scrollHeight: number;
+  readonly scrollHeight: number;
 }
 
 interface MockScrollWidth {
-  scrollWidth: number;
+  readonly scrollWidth: number;
 }
 
 interface MockStyle {
-  height: string;
+  readonly height: string;
 }
 
 interface MockStylesheetIframeDoc {
-  addEventListener: ReturnType<typeof vi.fn>;
+  readonly addEventListener: ReturnType<typeof vi.fn>;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   defaultView: unknown;
-  getElementById: ReturnType<typeof vi.fn>;
-  querySelectorAll: ReturnType<typeof vi.fn>;
-  removeEventListener: ReturnType<typeof vi.fn>;
+  readonly getElementById: ReturnType<typeof vi.fn>;
+  readonly querySelectorAll: ReturnType<typeof vi.fn>;
+  readonly removeEventListener: ReturnType<typeof vi.fn>;
 }
 
 interface MutableOpenInExternalBrowserSetting {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   shouldShowOpenInExternalBrowserButton: boolean;
 }
 
 interface OpenInExternalBrowserHarness {
-  buttonEls: HTMLButtonElement[];
-  containerEl: MockContainerEl;
+  readonly buttonEls: HTMLButtonElement[];
+  readonly containerEl: MockContainerEl;
 }
 
 interface OpenInExternalBrowserHarnessParams {
@@ -121,21 +126,23 @@ interface OpenInExternalBrowserHarnessParams {
 
 interface SizingIframeDoc {
   [key: string]: unknown;
-  body: MockScrollWidth;
+  readonly body: MockScrollWidth;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests remove the framed window to exercise the parent-window fallback.
   defaultView: unknown;
-  documentElement: MockScrollHeight;
-  head: MockHead;
+  readonly documentElement: MockScrollHeight;
+  readonly head: MockHead;
 }
 
 interface StylesheetObserverHarness {
-  component: HtmlEmbedComponent;
-  disconnect: ReturnType<typeof vi.fn>;
-  fireMutations: (mutations: MutationRecord[]) => void;
-  iframeDoc: MockStylesheetIframeDoc;
-  observe: ReturnType<typeof vi.fn>;
+  readonly component: HtmlEmbedComponent;
+  readonly disconnect: ReturnType<typeof vi.fn>;
+  readonly fireMutations: (mutations: MutationRecord[]) => void;
+  readonly iframeDoc: MockStylesheetIframeDoc;
+  readonly observe: ReturnType<typeof vi.fn>;
 }
 
 interface WindowWithApp {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   app: App;
 }
 

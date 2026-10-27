@@ -11,9 +11,9 @@ describe('anchor jump under a sticky table header', () => {
     const result = await evalInObsidian({
       callback: async ({ app, lib: { waitUntil } }) => {
         interface Measurement {
-          headerBottom: number;
-          rowTop: number;
-          viewportHeight: number;
+          readonly headerBottom: number;
+          readonly rowTop: number;
+          readonly viewportHeight: number;
         }
 
         const TIMEOUT_IN_MILLISECONDS = 20_000;

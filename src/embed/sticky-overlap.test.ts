@@ -13,17 +13,17 @@ const TARGET_HEIGHT = 30;
 const PROBE_WIDTH = 200;
 
 interface RectSpec {
-  bottom: number;
-  height: number;
-  left: number;
-  right: number;
-  top: number;
-  width: number;
+  readonly bottom: number;
+  readonly height: number;
+  readonly left: number;
+  readonly right: number;
+  readonly top: number;
+  readonly width: number;
 }
 
 interface Scenario {
-  headerEl: HTMLElement;
-  targetEl: HTMLElement;
+  readonly headerEl: HTMLElement;
+  readonly targetEl: HTMLElement;
 }
 
 /**
