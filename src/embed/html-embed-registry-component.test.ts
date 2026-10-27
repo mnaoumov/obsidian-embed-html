@@ -26,6 +26,7 @@ import { HtmlEmbedComponent } from './html-embed-component.ts';
 import { HtmlEmbedRegistryComponent } from './html-embed-registry-component.ts';
 
 interface AppWithEmbedRegistry {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   embedRegistry: EmbedRegistry;
 }
 

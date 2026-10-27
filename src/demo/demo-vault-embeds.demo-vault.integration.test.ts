@@ -39,12 +39,12 @@ const EXCLUDED_TOP_LEVEL = new Set(['00 Start.md', 'README.md']);
 // to type the cast inside the serialized closure — the real definition lives in `src/plugin.ts` /
 // `src/settings/plugin-settings.ts`. Type-only, so it is erased before the closure is serialized.
 interface EmbedHtmlPluginLike {
-  pluginSettingsComponent: EmbedHtmlSettingsComponentLike;
+  readonly pluginSettingsComponent: EmbedHtmlSettingsComponentLike;
 }
 
 interface EmbedHtmlSettingsComponentLike {
   readonly defaultSettings: Readonly<Record<string, unknown>>;
-  editAndSave: (this: void, editor: (settings: Record<string, unknown>) => void) => Promise<void>;
+  readonly editAndSave: (this: void, editor: (settings: Record<string, unknown>) => void) => Promise<void>;
 }
 
 interface NoteExpectation {
@@ -52,9 +52,9 @@ interface NoteExpectation {
   // Obsidian routes into the container's numeric `width`/`height` attributes. Each must actually be
   // measured at render time — a declared numeric size that is never measured signals the size check
   // silently did nothing (e.g. Obsidian changed its attribute routing), not that the size was correct.
-  expectedSizeKeys: string[];
-  htmlEmbedCount: number;
-  name: string;
+  readonly expectedSizeKeys: string[];
+  readonly htmlEmbedCount: number;
+  readonly name: string;
 }
 
 interface SettleResult {

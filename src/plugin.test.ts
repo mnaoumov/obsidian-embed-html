@@ -18,7 +18,7 @@ import {
 } from 'vitest';
 
 interface ComponentModule {
-  Component: new () => object;
+  readonly Component: new () => object;
 }
 
 // `PluginDataHandler` and `PluginEventSourceImpl` are NOT stubbed: the base

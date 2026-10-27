@@ -24,10 +24,10 @@ import {
 // `path-resolution.linux.integration.test.ts`), which is the missing verification for #4.
 
 interface EmbedObservation {
-  hasIframe: boolean;
-  isUnresolved: boolean;
-  src: string;
-  srcdocHasMarker: boolean;
+  readonly hasIframe: boolean;
+  readonly isUnresolved: boolean;
+  readonly src: string;
+  readonly srcdocHasMarker: boolean;
 }
 
 export function registerPathResolutionSuite(platform: string): void {

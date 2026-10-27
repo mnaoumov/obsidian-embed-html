@@ -7,11 +7,11 @@ import {
 } from 'vitest';
 
 interface SchemeObservation {
-  colorScheme: string;
-  expectedDark: boolean;
-  isDarkMode: boolean;
-  prefersDark: boolean | null;
-  theme: string;
+  readonly colorScheme: string;
+  readonly expectedDark: boolean;
+  readonly isDarkMode: boolean;
+  readonly prefersDark: boolean | null;
+  readonly theme: string;
 }
 
 describe('color-scheme propagation', () => {

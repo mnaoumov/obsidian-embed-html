@@ -62,14 +62,14 @@ interface EmbedProbe {
  * The settings component every plugin exposes for editing its own settings.
  */
 interface SettingsEditableComponent {
-  editAndSave: (this: void, settingsEditor: (settings: Record<string, unknown>) => void) => Promise<void>;
+  readonly editAndSave: (this: void, settingsEditor: (settings: Record<string, unknown>) => void) => Promise<void>;
 }
 
 /**
  * The plugin, reduced to the settings surface these shots configure.
  */
 interface SettingsEditablePlugin {
-  pluginSettingsComponent: SettingsEditableComponent;
+  readonly pluginSettingsComponent: SettingsEditableComponent;
 }
 
 const PLUGIN_ID = 'embed-html';

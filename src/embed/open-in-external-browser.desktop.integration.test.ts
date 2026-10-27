@@ -40,12 +40,13 @@ describe('open in external browser button', () => {
     const result = await evalInObsidian({
       async callback({ app, BUTTON_TEXT: buttonText, lib: { waitUntil }, NOTE_PATH: notePath }) {
         interface EmbedHtmlSettings {
+          // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
           shouldShowOpenInExternalBrowserButton: boolean;
         }
 
         interface SettingsCarrier {
-          editAndSave: (editor: (settings: EmbedHtmlSettings) => void) => Promise<void>;
-          settings: EmbedHtmlSettings;
+          readonly editAndSave: (editor: (settings: EmbedHtmlSettings) => void) => Promise<void>;
+          readonly settings: EmbedHtmlSettings;
         }
 
         function isEmbedHtmlSettings(value: unknown): value is EmbedHtmlSettings {

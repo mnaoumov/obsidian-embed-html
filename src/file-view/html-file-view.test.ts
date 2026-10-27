@@ -19,7 +19,9 @@ import {
 import type { PluginSettingsComponent } from '../settings/plugin-settings-component.ts';
 
 interface EmbedStub extends Component {
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   loadFileAsync: ReturnType<typeof vi.fn>;
+  // eslint-disable-next-line typescript-dev-toolkit/readonly-interface-members -- Tests reassign this member to configure the fixture.
   setSubpath: ReturnType<typeof vi.fn>;
 }
 
