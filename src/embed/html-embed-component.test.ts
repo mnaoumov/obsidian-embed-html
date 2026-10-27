@@ -698,8 +698,8 @@ describe('HtmlEmbedComponent', () => {
       let loadHandler: (() => void) | undefined;
       const clickHandlerSpy = vi.fn();
       const mockContentDocument = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'click') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'click') {
             clickHandlerSpy.mockImplementation(handler);
           }
         }),
@@ -710,8 +710,8 @@ describe('HtmlEmbedComponent', () => {
         scrollingElement: null
       };
       const mockIframeEl: MockIframeElWithContent = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -761,8 +761,8 @@ describe('HtmlEmbedComponent', () => {
     it('should return early from load handler when contentDocument is null', async () => {
       let loadHandler: (() => void) | undefined;
       const mockIframeEl: MockIframeElWithContent = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -886,8 +886,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -952,8 +952,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1014,8 +1014,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1082,8 +1082,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1168,8 +1168,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1304,8 +1304,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1399,8 +1399,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1473,8 +1473,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1535,8 +1535,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1609,8 +1609,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -1669,8 +1669,8 @@ describe('HtmlEmbedComponent', () => {
 
       let loadHandler: (() => void) | undefined;
       const mockIframeEl = {
-        addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-          if (event === 'load') {
+        addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+          if ($event === 'load') {
             loadHandler = handler;
           }
         }),
@@ -2033,8 +2033,8 @@ describe('auto-fit sizing', () => {
   ): Promise<LoadedContentComponent> {
     let loadHandler: (() => void) | undefined;
     const iframeEl = {
-      addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-        if (event === 'load') {
+      addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+        if ($event === 'load') {
           loadHandler = handler;
         }
       }),
@@ -2379,8 +2379,8 @@ async function loadWithStylesheetObserverAsync(): Promise<StylesheetObserverHarn
 
   let loadHandler: (() => void) | undefined;
   const mockIframeEl = {
-    addEventListener: vi.fn().mockImplementation((event: string, handler: () => void) => {
-      if (event === 'load') {
+    addEventListener: vi.fn().mockImplementation(($event: string, handler: () => void) => {
+      if ($event === 'load') {
         loadHandler = handler;
       }
     }),

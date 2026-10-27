@@ -258,9 +258,9 @@ async function observeNote(noteName: string, noteEmbedLines: string[]): Promise<
         await app.fileManager.trashFile(noteFile);
       }
 
-      function onMessage(event: MessageEvent<PageReport>): void {
-        if (event.source && typeof event.data.href === 'string') {
-          messages.set(event.source, event.data);
+      function onMessage($event: MessageEvent<PageReport>): void {
+        if ($event.source && typeof $event.data.href === 'string') {
+          messages.set($event.source, $event.data);
         }
       }
 
