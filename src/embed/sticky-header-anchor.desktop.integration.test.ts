@@ -39,6 +39,7 @@ describe('anchor jump under a sticky table header', () => {
 
         await app.vault.create(
           htmlPath,
+          // eslint-disable-next-line typescript-dev-toolkit/prefer-dedent -- This callback is serialized into Obsidian, where the dedent import is not in scope.
           [
             '<html><head><style>',
             'table { border-collapse: collapse; width: 100%; }',
