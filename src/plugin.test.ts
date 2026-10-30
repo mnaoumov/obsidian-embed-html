@@ -95,6 +95,8 @@ vi.mock('./file-view/open-in-new-tab-component.ts', async () => {
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { CommandHandlerComponent } from '@mnaoumov/obsidian-lib/command-handlers/command-handler-component';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
+import { OpenBugReportCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/open-bug-report-command-handler';
+// eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { OpenDemoVaultCommandHandler } from '@mnaoumov/obsidian-lib/command-handlers/open-demo-vault-command-handler';
 // eslint-disable-next-line import-x/first, import-x/imports-first -- vi.mock must precede imports.
 import { PluginSettingsTabComponent } from '@mnaoumov/obsidian-lib/components/plugin-settings-tab-component';
@@ -202,17 +204,19 @@ describe('Plugin', () => {
     expect(openInNewTabParams?.pluginSettingsComponent).toBe(settingsComponent);
   });
 
-  it('should register the open demo vault command handler', async () => {
+  it('should register the report bug and open demo vault command handlers', async () => {
     const registerCommandHandlersSpy = vi.spyOn(CommandHandlerComponent.prototype, 'registerCommandHandlers');
 
     await createLoadedPlugin();
 
-    const EXPECTED_COMMAND_HANDLER_COUNT = 1;
     // The handlers are built lazily by a factory, so build them here.
-    const openDemoVaultHandlers = registerCommandHandlersSpy.mock.calls
+    const pluginCommandHandlers = registerCommandHandlersSpy.mock.calls
       .map(([commandHandlerFactory]) => commandHandlerFactory())
       .find((commandHandlers) => commandHandlers.some((commandHandler) => commandHandler instanceof OpenDemoVaultCommandHandler));
-    expect(openDemoVaultHandlers).toHaveLength(EXPECTED_COMMAND_HANDLER_COUNT);
+    expect(pluginCommandHandlers).toStrictEqual([
+      expect.any(OpenBugReportCommandHandler),
+      expect.any(OpenDemoVaultCommandHandler)
+    ]);
   });
 
   it('should expose the settings component', async () => {
