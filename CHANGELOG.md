@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 2.7.0
+
+- docs(readme): point bug reports at the Report a bug command
+- feat: add a Report a bug command
+- docs: add issue-filing instructions for AI agents
+- chore(github): give the bug form the field ids bug-report links prefill
+- build(deps): bump typescript-dev-toolkit to ^5.4.2 and obsidian-dev-toolkit to ^7.4.0
+- build(deps): override re2js to ^2.9.1 for GHSA-gg6h-894w-4m9c
+- build(deps): bump typescript-dev-toolkit to ^5.2.0
+- build(deps): bump @mnaoumov/typescript-dev-toolkit to ^5.1.0
+- fix(deps): refresh vulnerable browser testing dependencies
+- chore: adopt shared keyword identifier rule
+- chore: adopt readonly interface members
+- docs(readme): combine related resources and plugin comparisons
+- refactor: group src files into folders by subject
+- docs: list similar plugins in the README
+
 ## 2.6.2
 
 - Move to `@mnaoumov/obsidian-lib` 6, so the plugin keeps working alongside the other plugins built on it.
