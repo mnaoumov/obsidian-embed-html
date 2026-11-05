@@ -1849,7 +1849,7 @@ describe('auto-fit sizing', () => {
   it('should apply min/max clamps from the alt token without an iframe', () => {
     const containerEl = createMockContainerEl();
     containerEl.getAttr.mockImplementation((attr: string) => (attr === 'alt' ? 'min-width: 100px; max-height: 800px' : null));
-    const component = createContentComponent(containerEl, null);
+    const component = createContentComponent(containerEl);
 
     castTo<ComponentWithApplySize>(component).applySize();
 
@@ -2013,18 +2013,14 @@ describe('auto-fit sizing', () => {
     };
   }
 
-  function createContentComponent(containerEl: MockContainerEl, iframeEl: unknown): HtmlEmbedComponent {
-    const component = new HtmlEmbedComponent({
+  function createContentComponent(containerEl: MockContainerEl): HtmlEmbedComponent {
+    return new HtmlEmbedComponent({
       app: createMockApp(),
       containerEl: asContainerEl(containerEl),
       file: createMockFile(),
       pluginSettingsComponent: createMockPluginSettingsComponent(),
       subpath: ''
     });
-    if (iframeEl) {
-      castTo<ComponentWithIframeEl>(component).iframeEl = iframeEl;
-    }
-    return component;
   }
 
   async function loadContentComponent(
@@ -2060,7 +2056,7 @@ describe('auto-fit sizing', () => {
     );
     vi.stubGlobal('location', { origin: 'app://obsidian.md' });
 
-    const component = createContentComponent(containerEl, null);
+    const component = createContentComponent(containerEl);
     component.load();
     await component.loadFileAsync();
 

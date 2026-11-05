@@ -49,10 +49,6 @@ export interface SizeSpec {
   readonly width: null | string;
 }
 
-type MutableSizeSpec = {
-  -readonly [Key in keyof SizeSpec]: null | string;
-};
-
 const EMPTY_SIZE_SPEC: SizeSpec = {
   height: null,
   maxHeight: null,
@@ -127,6 +123,9 @@ function normalizeValue(rawValue: string): null | string {
 }
 
 function parseDeclarationForm(token: string): SizeSpec {
+  type MutableSizeSpec = {
+    -readonly [Key in keyof SizeSpec]: null | string;
+  };
   const spec: MutableSizeSpec = { ...EMPTY_SIZE_SPEC };
 
   for (const declaration of token.split(DECLARATION_SEPARATOR)) {

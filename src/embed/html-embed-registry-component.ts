@@ -27,13 +27,13 @@ export class HtmlEmbedRegistryComponent extends ComponentEx {
 
   public override onload(): void {
     super.onload();
-    this.app.embedRegistry.registerExtensions(this.htmlExtensions.list(), (context, file, subpath) => {
+    this.app.embedRegistry.registerExtensions(this.htmlExtensions.list(), (context, file, subpath = '') => {
       return new HtmlEmbedComponent({
         app: this.app,
         containerEl: context.containerEl,
         file,
         pluginSettingsComponent: this.pluginSettingsComponent,
-        subpath: subpath ?? ''
+        subpath
       });
     });
 

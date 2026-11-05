@@ -8,7 +8,7 @@ import {
 
 describe('anchor jump under a sticky table header', () => {
   it('should land the target row below the sticky header rather than underneath it', async () => {
-    const result = await evalInObsidian({
+    const { measurement, toleranceInPixels } = await evalInObsidian({
       callback: async ({ app, lib: { waitUntil } }) => {
         interface Measurement {
           readonly headerBottom: number;
@@ -63,14 +63,14 @@ describe('anchor jump under a sticky table header', () => {
           timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS
         });
 
-        const measurement = measure();
+        const landedMeasurement = measure();
 
         leaf.detach();
         await deleteIfExists(htmlPath);
         await deleteIfExists(notePath);
 
         return {
-          measurement,
+          measurement: landedMeasurement,
           toleranceInPixels: TOLERANCE_IN_PIXELS
         };
 
@@ -124,7 +124,6 @@ describe('anchor jump under a sticky table header', () => {
       vaultPath: getTemporaryVault().path
     });
 
-    const { measurement, toleranceInPixels } = result;
     expect(measurement).not.toBeNull();
     if (!measurement) {
       return;

@@ -18,7 +18,6 @@ import type { PluginSettingsComponent } from '../settings/plugin-settings-compon
 import { HtmlFileViewComponent } from './html-file-view-component.ts';
 import { HtmlFileView } from './html-file-view.ts';
 
-type RegisterExtensionsParams = Parameters<ExtensionsRegistrar['registerExtensions']>[0];
 type RegisterViewParams = Parameters<ViewRegistrar['registerView']>[0];
 
 const EXTENSIONS = ['html'];
@@ -86,6 +85,7 @@ describe('HtmlFileViewComponent', () => {
 });
 
 beforeEach(() => {
+  type RegisterExtensionsParams = Parameters<ExtensionsRegistrar['registerExtensions']>[0];
   vi.clearAllMocks();
 
   registerExtensions = vi.fn<ExtensionsRegistrar['registerExtensions']>();

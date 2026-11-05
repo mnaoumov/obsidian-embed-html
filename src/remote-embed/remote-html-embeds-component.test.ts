@@ -37,7 +37,6 @@ import { RemoteHtmlEmbedsComponent } from './remote-html-embeds-component.ts';
 
 type DispatchFunction = (spec: TransactionSpec) => void;
 type PostProcessor = Parameters<MarkdownPostProcessorRegistrar['registerMarkdownPostProcessor']>[0]['postProcessor'];
-type WatcherFactory = (view: EditorView) => PluginValue;
 
 const REMOTE_URL = 'https://example.com/attachments/page.html';
 const NOT_FOUND_TEXT = 'Could not be found';
@@ -386,6 +385,7 @@ function createContext(): ContextHarness {
 }
 
 function createWatcher(view?: EditorView): PluginValue {
+  type WatcherFactory = (view: EditorView) => PluginValue;
   const factory = defineSpy.mock.calls[0]?.[0] as undefined | WatcherFactory;
   if (!factory) {
     throw new Error('No view plugin defined');
