@@ -120,14 +120,14 @@ body { background-image: url("bg.svg"); }
           const iframe = getIframe();
           const el = iframe?.contentDocument?.querySelector(selector);
           const win = iframe?.contentWindow;
-          return !el || !win ? '' : win.getComputedStyle(el).color;
+          return el && win ? win.getComputedStyle(el).color : '';
         }
 
         function getBackgroundImage(): string {
           const iframe = getIframe();
           const bodyEl = iframe?.contentDocument?.body;
           const win = iframe?.contentWindow;
-          return !bodyEl || !win ? '' : win.getComputedStyle(bodyEl).backgroundImage;
+          return bodyEl && win ? win.getComputedStyle(bodyEl).backgroundImage : '';
         }
 
         async function checkImageLoadsAsync(cssUrlValue: string): Promise<boolean> {

@@ -6,9 +6,9 @@
 - feat: add a Report a bug command
 - docs: add issue-filing instructions for AI agents
 - chore(github): give the bug form the field ids bug-report links prefill
-- build(deps): bump typescript-dev-toolkit to ^5.4.2 and obsidian-dev-toolkit to ^7.4.0
+- build(deps): bump `typescript-dev-toolkit` to ^5.4.2 and `obsidian-dev-toolkit` to ^7.4.0
 - build(deps): override re2js to ^2.9.1 for GHSA-gg6h-894w-4m9c
-- build(deps): bump typescript-dev-toolkit to ^5.2.0
+- build(deps): bump `typescript-dev-toolkit` to ^5.2.0
 - build(deps): bump @mnaoumov/typescript-dev-toolkit to ^5.1.0
 - fix(deps): refresh vulnerable browser testing dependencies
 - chore: adopt shared keyword identifier rule
@@ -36,13 +36,13 @@
 ## 2.5.10
 
 - chore: merge the applyObsidianTheme move for the desktop capture suite
-- chore(deps): merge the obsidian-integration-testing 17 float
-- chore(deps): merge the obsidian-test-mocks 7 float
+- chore(deps): merge the `obsidian-integration-testing` 17 float
+- chore(deps): merge the `obsidian-test-mocks` 7 float
 - fix(test): merge the headless demo-vault toolkit install
 - fix(deps): restore the lockfile's missing resolved and integrity fields
 - style(comments): stop rewriting symbol names that open a comment
 - test(vitest-config): run the location-stubbing suite on the default pool
-- build(markdownlint): forbid hard-wrapped markdown paragraphs
+- build(`markdownlint`): forbid hard-wrapped markdown paragraphs
 - test: size the open-in-new-tab closure's shared wait ceiling
 - fix(deps): float devalue to 5.9.4, clearing GHSA-9rgm-9g3h-6x36
 - test: give the capture suites' open-note closures room inside the per-eval cap
@@ -53,9 +53,9 @@
 - docs: name the library and the sibling plugins so a reader can resolve them
 - docs: replace the private tracker references with what they pointed at
 - test: keep the embed suites' declared waiting under the transport cap
-- chore(deps): move to obsidian-dev-utils 103
+- chore(deps): move to `obsidian-dev-utils` 103
 - test: bring the in-closure wait ceilings under the transport's per-eval cap
-- chore: adopt the npm run gate branch gate
+- chore: adopt the `npm run gate` branch gate
 - test: bring the in-closure wait ceiling under the transport's per-eval cap
 - docs: name the unversioned demo-vault asset and the folder it unzips into
 - chore: make the LICENSE copyright line checkable by the linter and guard it against the year roll-over
@@ -65,13 +65,13 @@
 ## 2.5.9
 
 - chore(deps): sweep caret-ranged dependencies to latest
-- fix(deps): move to obsidian-integration-testing 11 and obsidian-dev-utils 96.5.2
+- fix(deps): move to `obsidian-integration-testing` 11 and `obsidian-dev-utils` 96.5.2
 - fix(deps): drop the brace-expansion file: override that breaks a clean install
 
 ## 2.5.8
 
 - docs(demo-vault): unwrap the notes so Obsidian stops rendering a break per line
-- docs(readme): render the same in Obsidian's plugin page as on GitHub
+- docs(readme): render the same in Obsidian's plugin page as on `GitHub`
 
 ## 2.5.7
 
@@ -80,23 +80,23 @@
 
 ## 2.5.6
 
-- chore: update obsidian-dev-utils to 94.6.1
-- chore: update obsidian-dev-utils to 94.6.0
+- chore: update `obsidian-dev-utils` to 94.6.1
+- chore: update `obsidian-dev-utils` to 94.6.0
 - fix: override deepmerge-ts to clear GHSA-ggr8-5vv4-36mx
 - test: gate the demo vault by clicking every code button
-- fix(test): restore the demo-vault and linux vitest projects
-- chore: teach cspell the advisory wording
+- fix(test): restore the demo-vault and linux `vitest` projects
+- chore: teach `cspell` the advisory wording
 - chore: update libs
 - docs: capture the community-store screenshot set
 
 ## 2.5.5
 
 - docs: make the demo vault the documentation, in the standard layout
-- feat(demo-vault): migrate to obsidian-dev-utils 93.3.1 and adopt the authoring convention
+- feat(demo-vault): migrate to `obsidian-dev-utils` 93.3.1 and adopt the authoring convention
 
 ## 2.5.4
 
-- chore: update libs and adopt obsidian-integration-testing 10
+- chore: update libs and adopt `obsidian-integration-testing` 10
 
 ## 2.5.3
 
@@ -106,7 +106,7 @@
 
 ## 2.5.2
 
-- chore: teach cspell the word screenful
+- chore: teach `cspell` the word screenful
 - fix: re-render the embed when a late alt token changes the output mode
 - test: make the sticky-header case actually reproduce, and measure the laid-out embed
 - fix: land an anchor jump below a sticky header instead of underneath it
@@ -118,14 +118,14 @@
 - feat: re #14
 - chore: update libs
 - docs: point at the collapsed cross-platform test file names
-- chore(vitest): consume the shared vitest configuration and collapse the shared suites
+- chore(`vitest`): consume the shared `vitest` configuration and collapse the shared suites
 
 ## 2.5.0
 
 - refactor(settings): move the settings tab onto the declarative settings API
-- chore: update libs and clear the npm audit
+- chore: update libs and clear the `npm` audit
 - docs: fix the demo vault download instructions
-- ci: run Linux integration on Node 24 (npm 11) and bump actions (re #4)
+- ci: run Linux integration on Node 24 (`npm` 11) and bump actions (re #4)
 
 ## 2.4.0
 
@@ -175,7 +175,7 @@
 ## 2.1.1
 
 - chore: update libs
-- chore: update obsidian-dev-utils to 85.0.0
+- chore: update `obsidian-dev-utils` to 85.0.0
 - refactor: pass params objects to sizing helpers
 
 ## 2.1.0
@@ -231,7 +231,7 @@
 
 - chore: update libs
 - chore: lint
-- chore: enable markdownlint
+- chore: enable `markdownlint`
 
 ## 1.1.3
 

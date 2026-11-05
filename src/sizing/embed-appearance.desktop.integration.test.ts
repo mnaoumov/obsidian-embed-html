@@ -92,9 +92,7 @@ describe('embed appearance settings', () => {
             predicate: () => {
               embedEl = leaf.view.containerEl.querySelector<HTMLElement>(':scope .markdown-preview-view .internal-embed');
               // The border width is applied synchronously by `applySize()`, so it is the readiness signal.
-              return embedEl?.offsetParent
-                ? getComputedStyle(embedEl).borderTopWidth === EXPECTED_BORDER_WIDTH
-                : false;
+              return !!embedEl?.offsetParent && getComputedStyle(embedEl).borderTopWidth === EXPECTED_BORDER_WIDTH;
             },
             timeoutInMilliseconds: TIMEOUT_IN_MILLISECONDS
           });

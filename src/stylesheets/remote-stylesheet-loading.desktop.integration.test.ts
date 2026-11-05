@@ -37,7 +37,7 @@ describe('remote stylesheet loading', () => {
         server.listen(ANY_AVAILABLE_PORT, LOOPBACK_HOST, resolve);
       });
       const address = server.address();
-      const port = address !== null && typeof address !== 'string' ? address.port : 0;
+      const port = address === null || typeof address === 'string' ? 0 : address.port;
       expect(port).toBeGreaterThan(0);
 
       const result = await evalInObsidian({
@@ -88,7 +88,7 @@ describe('remote stylesheet loading', () => {
             const iframe = getIframe();
             const el = iframe?.contentDocument?.querySelector('h1');
             const win = iframe?.contentWindow;
-            return !el || !win ? '' : win.getComputedStyle(el).color;
+            return el && win ? win.getComputedStyle(el).color : '';
           }
 
           async function cleanup(): Promise<void> {

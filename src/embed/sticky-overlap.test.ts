@@ -39,8 +39,8 @@ function buildScenario(headerPosition: string, buildHitTestResult?: (scenario: S
   const targetEl = createDiv();
   document.body.append(headerEl, targetEl);
 
-  stubRect(headerEl, rectAt(0, HEADER_HEIGHT));
-  stubRect(targetEl, rectAt(0, TARGET_HEIGHT));
+  stubRect(headerEl, rectAt(HEADER_HEIGHT));
+  stubRect(targetEl, rectAt(TARGET_HEIGHT));
 
   vi.spyOn(window, 'getComputedStyle').mockImplementation((el) => ({ position: el === headerEl ? headerPosition : 'static' }) as CSSStyleDeclaration);
 
@@ -51,19 +51,18 @@ function buildScenario(headerPosition: string, buildHitTestResult?: (scenario: S
 }
 
 /**
- * Builds a rect from a top edge and a height, spanning the full probe width.
+ * Builds a rect at the top edge with a height, spanning the full probe width.
  *
- * @param top - The top edge.
  * @param height - The height.
  * @returns The rect.
  */
-function rectAt(top: number, height: number): RectSpec {
+function rectAt(height: number): RectSpec {
   return {
-    bottom: top + height,
+    bottom: height,
     height,
     left: 0,
     right: PROBE_WIDTH,
-    top,
+    top: 0,
     width: PROBE_WIDTH
   };
 }
