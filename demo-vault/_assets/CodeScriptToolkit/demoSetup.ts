@@ -1,13 +1,28 @@
-import type { App } from 'obsidian';
+import type {
+  App,
+  Plugin
+} from 'obsidian';
 
+import {
+  asCodeBlock,
+  createFragmentWithCodeBlocks
+} from '@mnaoumov/obsidian-lib/html-element';
 import {
   MarkdownView,
   Notice
 } from 'obsidian';
 
 /**
+ * The slice of the `Embed HTML` plugin the demo buttons use: its public settings component.
+ */
+interface EmbedHtmlPlugin extends Plugin {
+  readonly pluginSettingsComponent: EmbedHtmlSettingsComponent;
+}
+
+/* eslint-disable typescript-dev-toolkit/readonly-interface-members -- The demo buttons' settings editors assign to these fields. */
+/**
  * The `Embed HTML` plugin settings, mirrored here so the demo buttons get autocomplete and the notes
- * read as `settings.<name>`. The real definition lives in the plugin's `src/plugin-settings.ts`.
+ * read as `settings.<name>`. The real definition lives in the plugin's `src/settings/plugin-settings.ts`.
  */
 interface EmbedHtmlSettings {
   background: string;
@@ -20,9 +35,24 @@ interface EmbedHtmlSettings {
   defaultMinWidth: string;
   defaultWidth: string;
   shouldOpenInNewTab: boolean;
+  shouldShowOpenInExternalBrowserButton: boolean;
+}
+/* eslint-enable typescript-dev-toolkit/readonly-interface-members -- The demo buttons' settings editors assign to these fields. */
+
+/**
+ * The plugin's settings component, as far as the demo buttons use it.
+ */
+interface EmbedHtmlSettingsComponent {
+  readonly editAndSave: (editor: SettingsEditor) => Promise<void>;
+  readonly settings: EmbedHtmlSettings;
 }
 
 const PLUGIN_NAME = 'Embed HTML';
+
+/**
+ * How long the change toast stays up, in milliseconds.
+ */
+const NOTICE_DURATION_IN_MILLISECONDS = 5000;
 
 type SettingsEditor = (settings: EmbedHtmlSettings) => void;
 
@@ -36,10 +66,13 @@ const DEFAULT_SETTINGS: EmbedHtmlSettings = {
   defaultMinHeight: '',
   defaultMinWidth: '',
   defaultWidth: '100%',
-  shouldOpenInNewTab: false
+  shouldOpenInNewTab: false,
+  shouldShowOpenInExternalBrowserButton: true
 };
 
-/** Human-readable labels for each setting, used in the change toast. */
+/**
+ * Human-readable labels for each setting, used in the change toast.
+ */
 const SETTING_LABELS: Record<keyof EmbedHtmlSettings, string> = {
   background: 'Background',
   border: 'Border',
@@ -50,7 +83,8 @@ const SETTING_LABELS: Record<keyof EmbedHtmlSettings, string> = {
   defaultMinHeight: 'Default min height',
   defaultMinWidth: 'Default min width',
   defaultWidth: 'Default width',
-  shouldOpenInNewTab: 'Open in new tab'
+  shouldOpenInNewTab: 'Open in new tab',
+  shouldShowOpenInExternalBrowserButton: 'Show open in external browser button'
 };
 
 /**
@@ -62,36 +96,16 @@ const SETTING_LABELS: Record<keyof EmbedHtmlSettings, string> = {
  * button ran even after the note visibly rebuilds.
  */
 export async function editSettings(app: App, editor: SettingsEditor): Promise<void> {
-  const plugin = app.plugins.getPlugin('embed-html');
+  const plugin = app.plugins.getPlugin('embed-html') as EmbedHtmlPlugin | null;
   if (!plugin) {
-    new Notice(withPluginName('Enable the ', ' plugin first'));
+    new Notice(createFragmentWithCodeBlocks(`Enable the ${asCodeBlock(PLUGIN_NAME)} plugin first`));
     return;
   }
-  const before = { ...plugin.pluginSettingsComponent.settings } as EmbedHtmlSettings;
+  const before = { ...plugin.pluginSettingsComponent.settings };
   await plugin.pluginSettingsComponent.editAndSave(editor);
-  const changes = describeChanges(before, plugin.pluginSettingsComponent.settings as EmbedHtmlSettings);
+  const changes = describeChanges(before, plugin.pluginSettingsComponent.settings);
   await rerenderActivePreview(app);
   notifyResult(changes);
-}
-
-/**
- * Builds a toast message with the plugin's name rendered as code between `before` and `after`.
- */
-function withPluginName(before: string, after: string): DocumentFragment {
-  return createFragment((f) => {
-    f.appendText(before);
-    f.createEl('code', { text: PLUGIN_NAME });
-    f.appendText(after);
-  });
-}
-
-/**
- * Resets every `Embed HTML` setting back to its default and re-renders the active preview.
- */
-export async function resetSettings(app: App): Promise<void> {
-  await editSettings(app, (settings) => {
-    Object.assign(settings, DEFAULT_SETTINGS);
-  });
 }
 
 /**
@@ -103,6 +117,15 @@ export async function resetSettings(app: App): Promise<void> {
 export async function rerenderActivePreview(app: App): Promise<void> {
   const view = app.workspace.getActiveViewOfType(MarkdownView);
   await view?.leaf.rebuildView();
+}
+
+/**
+ * Resets every `Embed HTML` setting back to its default and re-renders the active preview.
+ */
+export async function resetSettings(app: App): Promise<void> {
+  await editSettings(app, (settings) => {
+    Object.assign(settings, DEFAULT_SETTINGS);
+  });
 }
 
 /**
@@ -123,11 +146,19 @@ function formatValue(value: boolean | string): string {
   return value === '' ? '(unset)' : value;
 }
 
-/** Shows a toast summarizing the change(s) and the re-render, so the clicked button is obvious. */
+/**
+ * Shows a toast summarizing the change(s) and the re-render, so the clicked button is obvious.
+ */
 function notifyResult(changes: string[]): void {
   if (changes.length === 0) {
-    new Notice(withPluginName('', ' · already at these values, nothing changed · preview re-rendered'), 5000);
+    new Notice(
+      createFragmentWithCodeBlocks(`${asCodeBlock(PLUGIN_NAME)} · already at these values, nothing changed · preview re-rendered`),
+      NOTICE_DURATION_IN_MILLISECONDS
+    );
     return;
   }
-  new Notice(withPluginName('', ` · preview re-rendered\n${changes.join('\n')}`), 5000);
+  new Notice(
+    createFragmentWithCodeBlocks(`${asCodeBlock(PLUGIN_NAME)} · preview re-rendered\n${changes.join('\n')}`),
+    NOTICE_DURATION_IN_MILLISECONDS
+  );
 }

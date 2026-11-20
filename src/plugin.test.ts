@@ -123,6 +123,8 @@ import { PluginSettingsComponent } from './settings/plugin-settings-component.ts
 import { PluginSettingsTab } from './settings/plugin-settings-tab.ts';
 
 const manifest = strictProxy<PluginManifest>({
+  // eslint-disable-next-line unicorn/name-replacements -- `dir` is Obsidian's `PluginManifest` field name.
+  dir: '.obsidian/plugins/embed-html',
   id: 'embed-html',
   name: 'Embed HTML',
   version: '2.2.0'

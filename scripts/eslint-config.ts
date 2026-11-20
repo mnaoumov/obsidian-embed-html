@@ -4,11 +4,17 @@ import { defineEslintConfigs } from '@mnaoumov/obsidian-dev-toolkit/linters/esli
 import { defineConfig } from 'eslint/config';
 
 export const configs: Linter.Config[] = defineEslintConfigs({
-  customConfigs() {
+  customConfigs(context) {
     return defineConfig([
       {
         // The demo vault ships illustrative scripts that intentionally break lint rules; it is linted for markdown + spelling only.
         ignores: ['demo-vault/**']
+      },
+      {
+        files: context.allFiles(),
+        rules: {
+          'typescript-dev-toolkit/no-undefined-return-type': 'error'
+        }
       }
     ]);
   }

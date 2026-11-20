@@ -755,7 +755,7 @@ describe('HtmlEmbedComponent', () => {
       loadHandler?.();
 
       // The real registerDomEvent calls contentDocument.addEventListener('click', handler).
-      expect(findClickHandler(mockContentDocument.addEventListener)).toBeDefined();
+      expect(findClickHandler(mockContentDocument.addEventListener)).not.toBeNull();
     });
 
     it('should return early from load handler when contentDocument is null', async () => {
@@ -930,7 +930,7 @@ describe('HtmlEmbedComponent', () => {
       loadHandler?.();
 
       const clickHandler = findClickHandler(mockContentDocument.addEventListener);
-      expect(clickHandler).toBeDefined();
+      expect(clickHandler).not.toBeNull();
 
       clickHandler?.({ target: mockClickTarget });
 
@@ -996,7 +996,7 @@ describe('HtmlEmbedComponent', () => {
       loadHandler?.();
 
       const clickHandler = findClickHandler(mockContentDocument.addEventListener);
-      expect(clickHandler).toBeDefined();
+      expect(clickHandler).not.toBeNull();
 
       expect(() => {
         clickHandler?.({ target: mockClickTarget });
@@ -1058,7 +1058,7 @@ describe('HtmlEmbedComponent', () => {
       loadHandler?.();
 
       const clickHandler = findClickHandler(mockContentDocument.addEventListener);
-      expect(clickHandler).toBeDefined();
+      expect(clickHandler).not.toBeNull();
 
       expect(() => {
         clickHandler?.({ target: {} });
@@ -2130,9 +2130,9 @@ describe('decoration (border/background)', () => {
 
 function findClickHandler(
   addEventListenerMock: ReturnType<typeof vi.fn>
-): ClickHandler | undefined {
+): ClickHandler | null {
   const clickCall = addEventListenerMock.mock.calls.find((call) => call[0] === 'click');
-  return clickCall?.[1] as ClickHandler | undefined;
+  return (clickCall?.[1] as ClickHandler | undefined) ?? null;
 }
 
 /*
