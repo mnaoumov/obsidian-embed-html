@@ -163,7 +163,6 @@ describe('open in external browser button', () => {
             openedUrl
           };
         } finally {
-          // eslint-disable-next-line require-atomic-updates -- restoring a global this test itself stubbed; nothing else runs concurrently in the closure.
           window.open = originalOpen;
           // Leave the workspace as it was found: suites sharing this Obsidian can count leaves.
           openedLeaf?.detach();
