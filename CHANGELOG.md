@@ -21,14 +21,28 @@ This release has 1 new feature, 1 fix and 4 documentation changes. 8 maintenance
 
 ## 2.6.2
 
+This release has 1 fix and 1 documentation change.
+
+### Fixed
+
 - Move to `@mnaoumov/obsidian-lib` 6, so the plugin keeps working alongside the other plugins built on it.
-- Docs: the README's Debugging section leads with `Advanced Debug Mode`.
+
+### Documentation
+
+- The README's Debugging section leads with `Advanced Debug Mode`.
 
 ## 2.6.1
 
-- Fix: a remote `![](url)` embed in Live Preview now shows its button above the frame instead of beside it (re #16 - \[FR\] Add support for external links).
-- Fix: clicking a remote embed in Live Preview reveals its source, like a vault embed (re #16 - \[FR\] Add support for external links).
+This release has 1 new feature and 2 fixes.
+
+### New
+
 - Every "open in external browser" button carries the `embed-html-open-in-external-browser` class, so a CSS snippet can restyle it.
+
+### Fixed
+
+- A remote `![](url)` embed in Live Preview now shows its button above the frame instead of beside it (re #16 - \[FR\] Add support for external links).
+- Clicking a remote embed in Live Preview reveals its source, like a vault embed (re #16 - \[FR\] Add support for external links).
 
 ## 2.6.0
 
@@ -88,10 +102,11 @@ This release has 1 fix. 1 maintenance commit (tests, build, CI, refactoring, dep
 
 ## 2.5.6
 
-This release has 2 fixes and 1 documentation change. 5 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+This release has 3 fixes and 1 documentation change. 4 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
 
 ### Fixed
 
+- Settings are no longer reset to their defaults while the plugin loads (#15): 2.5.5 could overwrite `.obsidian/plugins/embed-html/data.json` with `{}`. The cause was in `obsidian-dev-utils`, and moving to 94.6.1 picks up its fix. Settings lost that way can usually be restored from `Obsidian Sync` version history, `Obsidian Git` or an OS backup, since the file was overwritten, not deleted.
 - override deepmerge-ts to clear GHSA-ggr8-5vv4-36mx
 - **test:** restore the demo-vault and linux `vitest` projects
 
