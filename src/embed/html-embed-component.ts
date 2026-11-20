@@ -20,6 +20,7 @@ import { getContentKeyword } from '../sizing/size-spec.ts';
 import { inlineDocumentStylesheetsAsync } from '../stylesheets/document-stylesheet-inliner.ts';
 import { readStylesheetTextAsync } from '../stylesheets/stylesheet-reader.ts';
 import { buildFileUrl } from './file-url.ts';
+import { decodeHtmlBytes } from './html-decoding.ts';
 import { addOpenInExternalBrowserButton } from './open-in-external-browser-button.ts';
 import { measureStickyOverlap } from './sticky-overlap.ts';
 
@@ -122,7 +123,8 @@ export class HtmlEmbedComponent extends ComponentEx implements EmbedComponent {
 
     this.applySize();
 
-    const html = await this.app.vault.read(this.file);
+    // Bytes, not `vault.read`: that always decodes as UTF-8, so a page saved in a legacy encoding (a`n    // Windows-1251 `<meta charset>`) lost every non-ASCII letter to U+FFFD before it reached `srcdoc`.
+    const html = decodeHtmlBytes(await this.app.vault.readBinary(this.file));
     const parsedDoc = new DOMParser().parseFromString(html, 'text/html');
     // The injected `<base>` must be the FIRST thing in `<head>`: a `<base>` only governs the elements
     // that follow it, so appending it left every preceding relative `<link rel="stylesheet">` / `<img>` /

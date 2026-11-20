@@ -166,7 +166,7 @@ function createMockApp(): App {
     vault: strictProxy<App['vault']>({
       adapter: strictProxy<App['vault']['adapter']>({}),
       getResourcePath: vi.fn().mockReturnValue('app://vault/file.html'),
-      read: vi.fn().mockResolvedValue('<html><head></head><body>Hello</body></html>')
+      readBinary: vi.fn().mockResolvedValue(new TextEncoder().encode('<html><head></head><body>Hello</body></html>').buffer)
     }),
     workspace: strictProxy<App['workspace']>({
       // A plain object (not a strict proxy) so the real Component.unload cleanup can read the absent

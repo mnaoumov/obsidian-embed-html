@@ -28,6 +28,7 @@
     "offref",
     "oklch",
     "Plotly",
+    "prescan",
     "sandboxed",
     "screenful",
     "scroller",
@@ -41,7 +42,8 @@
     "virtualizes",
     "wdio",
     "wikilink",
-    "wikilinks"
+    "wikilinks",
+    "Привіт"
   ],
   "ignoreWords": [],
   "import": [],
