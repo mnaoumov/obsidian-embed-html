@@ -1,5 +1,21 @@
 # CHANGELOG
 
+## 2.7.1
+
+This release has 1 fix and 5 documentation changes. 7 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
+
+### Fixed
+
+- **embed:** show HTML files saved in a legacy encoding, such as Windows-1251, correctly
+
+### Documentation
+
+- **readme:** show Obsidian downloads and minimum Obsidian version badges
+- **changelog:** make every released entry human-readable
+- **changelog:** regroup the published release notes for readers
+- make issue attachments optional and strongly encouraged
+- link to the Obsidian resources page
+
 ## 2.7.0
 
 This release has 1 new feature, 1 fix and 4 documentation changes. 8 maintenance commits (tests, build, CI, refactoring, dependencies) are not listed.
